@@ -1,0 +1,129 @@
+   
+
+    #sidenav-main,#nsidenav-main {
+      width: 250px;
+      transition: all 0.5s ease;
+      padding-top: 1rem;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+      border-radius: 0 10px 10px 0;
+    }
+
+    #sidenav-main.collapsed {
+      transform: translateX(-100%);
+      width: 0;
+      margin-left: 0;
+      overflow: hidden;
+    }
+
+    #main-content {
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .nav-link {
+      padding: 12px 20px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      transition: background 0.2s ease;
+    }
+
+    .nav-link:hover {
+      background-color: #0d3a73;
+      color: green !important;
+    }
+
+    .navbar,
+    .btn-primary,
+    .sidebar-header {
+      background-color: #0d3a73;
+      color: white;
+    }
+
+    
+
+    /* Responsive Sidebar */
+    @media (max-width: 900px) {
+      #sidenav-main,#nsidenav-main {
+        position: fixed;
+        left: -250px;
+        z-index: 1031;
+      }
+
+      #sidenav-main.sidebar-visible {
+        left: 0;
+      }
+
+      .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1030;
+        display: none;
+      }
+    }
+
+    @media (min-width: 901px) {
+      #main-content {
+        width: calc(100% - 250px);
+      }
+    }
+
+ /* Indexs.............................................................................................. */
+ 
+ /* Button hover effect */
+    .btn[style*="#1a4b8c"]:hover {
+        background-color: #0d3a73 !important;
+    }
+    
+    /* View button hover */
+    a.badge[style*="#1a4b8c"]:hover {
+        background-color: #0d3a73 !important;
+        text-decoration: none;
+    }
+    
+    /* Table row hover effect */
+    .table-hover tbody tr:hover {
+        background-color: rgba(26, 75, 140, 0.05);
+    }
+ 
+    .card:hover {
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+    
+     /* Style for the "Voir" button hover */
+    a.badge[style*="#1a4b8c"]:hover {
+        background-color: #0d3a73 !important;
+        text-decoration: none;
+    }
+     /* Horizontal scrolling for wide tables */
+    .table-responsive {
+        overflow-x: auto;
+    }
+ /* EndIndex............................................................................................... */
+
+ /* FormationStatue............................................................................................... */
+
+
+ .card.shadow-sm {
+            transition: transform 0.2s ease-in-out;
+        }
+        .card.shadow-sm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .badge.bg-gradient-info {
+            background-color: #1a4b8c;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+ /* END............................................................................................... */
+ /* searshbarstyle */
+ .custom-search:focus {
+        border-color: #0d3a73 !important;
+        box-shadow: 0 0 5px rgba(13, 58, 115, 0.4);
+    }

@@ -1,0 +1,226 @@
+/* --- General Body and Container Styling --- */
+body {
+    font-family: 'Inter', sans-serif; /* A modern, clean font */
+    background-color: #F7F8FC; /* A very light, calming background */
+    color: #343A40; /* Soft dark grey for primary text */
+    line-height: 1.6;
+}
+
+.container.inscription-form {
+    max-width: 960px; /* Slightly wider for better content flow */
+    margin-top: 60px;
+    margin-bottom: 60px;
+    background-color: #FFFFFF; /* Crisp white background for the form area */
+    padding: 50px; /* Generous padding inside the form */
+    border-radius: 15px; /* More pronounced rounded corners for softness */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08); /* A sophisticated, diffused shadow */
+    border: 1px solid #E0E6ED; /* Subtle border for definition */
+}
+
+/* --- Section Titles --- */
+.section-title {
+    font-size: 2.2rem;
+    color: #2C3E50; /* A deep, rich blue-grey for headings */
+    margin-bottom: 35px;
+    border-bottom: 2px solid #D6DBE4; /* A soft, elegant underline */
+    padding-bottom: 18px;
+    text-align: center;
+    font-weight: 700; /* Bolder for impact */
+    letter-spacing: 0.5px;
+}
+
+h3 { /* Sub-titles for sections like Bac+2/Bac+3 Diplomas */
+    font-size: 1.6rem;
+    color: #495057;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    border-bottom: 1px dashed #E9ECEF; /* A delicate dashed line */
+    padding-bottom: 10px;
+}
+
+/* --- Form Group Spacing and Labels --- */
+.mb-3 {
+    margin-bottom: 1.75rem !important; /* Increased vertical spacing */
+}
+
+label {
+    font-weight: 500; /* Medium boldness for labels */
+    color: #555E6A; /* A slightly darker grey for labels */
+    margin-bottom: 10px; /* More space between label and input */
+    display: block;
+    font-size: 0.95rem;
+}
+
+/* --- Form Controls (Inputs, Selects, Textareas) --- */
+.form-control {
+    border: 1px solid #D1D9E6; /* Softer, light grey border */
+    border-radius: 10px; /* Generously rounded input fields */
+    padding: 14px 18px; /* Ample padding for comfortable typing */
+    font-size: 1rem;
+    color: #495057;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth, elegant transition */
+    background-color: #FDFDFD; /* Slightly off-white background for inputs */
+}
+
+.form-control::placeholder {
+    color: #ADB5BD; /* Softer placeholder text */
+    opacity: 1; /* Ensure placeholder is fully visible */
+}
+
+.form-control:focus {
+    border-color: #6C757D; /* A subtle, refined focus border color (dark grey) */
+    box-shadow: 0 0 0 0.3rem rgba(108, 117, 125, 0.15); /* A gentle, sophisticated glow on focus */
+    outline: none;
+    background-color: #FFFFFF; /* White background on focus */
+}
+
+select.form-control {
+    appearance: none; /* Remove default arrow in some browsers */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236C757D'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* Custom SVG arrow */
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 18px;
+}
+
+/* --- Error Messages --- */
+.text-danger {
+    font-size: 0.9rem;
+    color: #E74C3C; /* A slightly softer red for errors */
+    margin-top: 6px;
+    display: block;
+    font-weight: 500;
+}
+
+/* --- Alert Messages --- */
+.alert {
+    border-radius: 10px;
+    font-size: 1rem;
+    padding: 18px 25px;
+    margin-bottom: 30px;
+    font-weight: 500;
+    border-width: 1px; /* Ensure border is visible */
+}
+
+.alert-success {
+    background-color: #D4EDDA;
+    color: #155724;
+    border-color: #C3E6CB;
+}
+
+.alert-danger {
+    background-color: #F8D7DA;
+    color: #721C24;
+    border-color: #F5C6CB;
+}
+
+/* --- Buttons --- */
+.btn {
+    padding: 13px 30px;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    min-width: 120px; /* Ensure consistent button width */
+}
+
+.btn-primary {
+    background-color: #007BFF; /* A vibrant, yet professional blue */
+    border-color: #007BFF;
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.2);
+}
+
+.btn-primary:hover {
+    background-color: #0056B3; /* Darker blue on hover */
+    border-color: #004085;
+    transform: translateY(-3px); /* Subtle lift effect */
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.3);
+}
+
+.btn-secondary {
+    background-color: #6C757D; /* A sophisticated charcoal grey */
+    border-color: #6C757D;
+    color: #FFFFFF;
+}
+
+.btn-secondary:hover {
+    background-color: #5A6268;
+    border-color: #545B62;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.2);
+}
+
+.btn-danger {
+    background-color: #DC3545; /* Standard red, but fits well with the palette */
+    border-color: #DC3545;
+    color: #FFFFFF;
+}
+
+.btn-danger:hover {
+    background-color: #C82333;
+    border-color: #BD2130;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(220, 53, 69, 0.2);
+}
+
+/* --- Specific Section Styling for Repeatable Blocks (Stages, Attestations, Experiences) --- */
+.stage-form, .attestation-form, .experience-form {
+    border: 1px solid #E9ECEF; /* A very light grey border */
+    border-radius: 12px;
+    background-color: #FDFDFD; /* Slightly off-white for internal sections */
+    margin-bottom: 25px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03); /* Extremely subtle shadow */
+}
+
+/* --- Utilities and Spacing --- */
+.mt-3.text-center {
+    margin-top: 40px !important; /* More space above action buttons */
+}
+
+.mr-2 {
+    margin-right: 15px !important; /* Increased spacing between buttons */
+}
+
+hr {
+    border-top: 1px solid #E9ECEF; /* Lighter horizontal rule */
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+small.text-success {
+    font-size: 0.85rem;
+    color: #28A745; /* Standard success green */
+    margin-top: 5px;
+    display: block;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .container.inscription-form {
+        padding: 30px;
+        margin-top: 30px;
+        margin-bottom: 30px;
+        border-radius: 10px;
+    }
+
+    .section-title {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+    }
+
+    h3 {
+        font-size: 1.4rem;
+        margin-top: 20px;
+        margin-bottom: 15px;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+        min-width: unset; /* Remove fixed width on smaller screens */
+    }
+}

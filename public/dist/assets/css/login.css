@@ -1,0 +1,435 @@
+
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #eab9b9;
+            --accent-color: #4CAF50;
+            --button-hover: #e0e0e0;
+            --text-light: rgba(255, 255, 255, 0.9);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --glass-background: rgba(0, 0, 0, 0.3);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background-size: 200% 200%;
+            animation: gradientAnimation 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradientAnimation {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 380px;
+            background: var(--glass-background);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            z-index: 10;
+            position: relative;
+        }
+
+        .login-container:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .institution-logo {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 15px;
+            display: block;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .institution-logo:hover {
+            transform: rotate(10deg) scale(1.1);
+        }
+
+        .login-header {
+    text-align: center;
+    margin-bottom: 30px;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.login-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 2px;
+    background: var(--accent-color);
+    opacity: 0.7;
+    transition: width 0.3s ease-in-out;
+}
+
+.login-header:hover::after {
+    width: 100px;
+}
+
+.login-header h1 {
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, var(--text-light), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: transform 0.3s ease-in-out;
+}
+
+.login-header:hover h1 {
+    transform: translateY(-2px);
+}
+
+.login-header p {
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0;
+    line-height: 1.5;
+    opacity: 0.9;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 1;
+}
+.login-header {
+    animation: fadeInDown 0.5s ease-out;
+}
+
+@keyframes fadeInDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+        .form-group {
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .form-label {
+            color: var(--text-light);
+            font-size: 13px;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: 500;
+            transition: color 0.2s ease-in-out;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.4);
+        }
+
+        .input-icon {
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            font-size: 14px;
+            transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 13px;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+            transition: color 0.3s ease-in-out;
+        }
+
+        .form-control:focus {
+            outline: none;
+        }
+
+        .password-toggle {
+            padding: 10px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            transition: color 0.3s ease-in-out, transform 0.2s ease-in-out;
+        }
+
+        .password-toggle:hover {
+            color: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .checkbox-container input {
+            margin-right: 8px;
+            accent-color: var(--accent-color);
+        }
+
+        .checkbox-container label {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 10px;
+            background: white;
+            border: none;
+            border-radius: 6px;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            margin: 10px 0;
+        }
+
+        .btn-login:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-login:active {
+            transform: scale(1);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .forgot-password:hover {
+            transform: translateY(-1px);
+        }
+
+        .forgot-password a {
+            color: var(--text-muted);
+            font-size: 12px;
+            text-decoration: none;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+            color: var(--accent-color);
+        }
+
+        /* --- Improved Background Icons --- */
+        .background-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .university-icon {
+            position: absolute;
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: rgba(255, 255, 255, 0.15); /* More visible */
+            font-size: 40px; /* Smaller size */
+            animation: floatAndFade 30s infinite linear; /* Changed to linear for smoother movement */
+            opacity: 0.7; /* More visible */
+        }
+
+        .university-icon.icon-cap::before {
+            content: "\f19d";
+        }
+
+        .university-icon.icon-book::before {
+            content: "\f02d";
+        }
+
+        .university-icon.icon-flask::before {
+            content: "\f0c3";
+        }
+
+        .university-icon.icon-atom::before {
+            content: "\f5ec";
+        }
+
+        .university-icon.icon-microscope::before {
+            content: "\f610";
+        }
+
+        .university-icon.icon-pencil::before {
+            content: "\f303";
+        }
+
+        .university-icon.icon-calculator::before {
+            content: "\f1ec";
+        }
+
+        .university-icon.icon-globe::before {
+            content: "\f0ac";
+        }
+
+        @keyframes floatAndFade {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 0.7;
+            }
+            25% {
+                transform: translate(50px, 50px) rotate(90deg);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translate(100px, 0) rotate(180deg);
+                opacity: 0.7;
+            }
+            75% {
+                transform: translate(50px, -50px) rotate(270deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+                opacity: 0.7;
+            }
+        }
+
+        /* Position and size variations for icons */
+        .university-icon:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            font-size: 30px;
+            animation-duration: 25s;
+            animation-delay: 0s;
+        }
+        .university-icon:nth-child(2) {
+            top: 80%;
+            left: 15%;
+            font-size: 35px;
+            animation-duration: 28s;
+            animation-delay: 2s;
+        }
+        .university-icon:nth-child(3) {
+            top: 30%;
+            left: 5%;
+            font-size: 25px;
+            animation-duration: 22s;
+            animation-delay: 4s;
+        }
+        .university-icon:nth-child(4) {
+            top: 60%;
+            left: 25%;
+            font-size: 40px;
+            animation-duration: 30s;
+            animation-delay: 1s;
+        }
+        .university-icon:nth-child(5) {
+            top: 15%;
+            right: 10%;
+            font-size: 35px;
+            animation-duration: 26s;
+            animation-delay: 3s;
+        }
+        .university-icon:nth-child(6) {
+            top: 70%;
+            right: 15%;
+            font-size: 30px;
+            animation-duration: 24s;
+            animation-delay: 5s;
+        }
+        .university-icon:nth-child(7) {
+            top: 40%;
+            right: 5%;
+            font-size: 25px;
+            animation-duration: 27s;
+            animation-delay: 2s;
+        }
+        .university-icon:nth-child(8) {
+            top: 50%;
+            right: 20%;
+            font-size: 40px;
+            animation-duration: 29s;
+            animation-delay: 4s;
+        }
+        .university-icon:nth-child(9) {
+            top: 20%;
+            left: 30%;
+            font-size: 35px;
+            animation-duration: 31s;
+            animation-delay: 1s;
+        }
+        .university-icon:nth-child(10) {
+            top: 65%;
+            right: 30%;
+            font-size: 30px;
+            animation-duration: 23s;
+            animation-delay: 3s;
+        }
+        .university-icon:nth-child(12) {
+            bottom: 45%;
+            left: 5%;
+            font-size:40px;
+            animation-duration: 18s;
+            animation-delay: 1s;
+        }
+         .university-icon:nth-child(11) {
+            top: 20%;
+            right: 30%;
+            font-size: 45px;
+            animation-duration: 31s;
+            animation-delay: 1s;
+        }
+  
