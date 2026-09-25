@@ -21,4 +21,7 @@ return [
         'DUT', 'BTS', 'Licence', 'Licence professionnelle', 'Cycle ingénieur',
         'Master', 'Master spécialisé', 'Doctorat', 'Formation continue',
     ],
+
+    // Données de démonstration chargées au premier « php artisan migrate » (false pour démarrer à vide)
+    'demo' => (bool) env('DEMO_DONNEES', true),
 ];

@@ -39,7 +39,7 @@ php artisan key:generate
 # 6. Créer la base de données MySQL
 # Nom suggéré : preinscription
 
-# 7. Exécuter les migrations
+# 7. Créer les tables + le compte admin + les données de démonstration (voir README)
 php artisan migrate
 
 # 8. Compiler les assets

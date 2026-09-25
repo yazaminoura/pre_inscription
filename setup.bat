@@ -63,9 +63,8 @@ echo.
 echo ETAPES SUIVANTES:
 echo 1. Configurez votre base de donnees dans le fichier .env
 echo 2. Creez une base de donnees MySQL
-echo 3. Executez: php artisan migrate
-echo 4. Executez: php artisan db:seed (optionnel)
-echo 5. Lancez le serveur: php artisan serve
+echo 3. Executez: php artisan migrate  (cree aussi le compte admin et les donnees de demonstration)
+echo 4. Lancez le serveur: php artisan serve
 echo.
 echo Le projet sera accessible a: http://localhost:8000
 echo.

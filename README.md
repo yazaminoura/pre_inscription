@@ -19,13 +19,14 @@ npm install
 # Copier et configurer l’environnement
 cp .env.example .env
 # -> Modifier les infos MySQL dans .env
+# -> Sur votre PC : APP_ENV=local et APP_DEBUG=true
 
 # Générer la clé de l’application
 php artisan key:generate
 
 # Créer la base de données (ex. : preinscription)
 
-# Lancer les migrations
+# Créer les tables + le compte admin + les données de démonstration
 php artisan migrate
 
 # Compiler les fichiers front
@@ -57,6 +58,23 @@ Changer l'email ou le mot de passe d'un compte (même sans l'ancien mot de passe
 ```bash
 php artisan admin:modifier
 ```
+
+---
+
+## 🎓 Données de démonstration
+Le premier `php artisan migrate` remplit aussi le site pour que vous puissiez l'essayer tout de suite :
+- une école fictive, **Université Horizon** (à remplacer dans Paramètres > Établissement) ;
+- **14 formations** (Licence, Master, DUT, BTS, cycle ingénieur, doctorat…), traduites en anglais et en arabe ;
+- **24 candidats** avec leurs pièces (PDF factices), diplômes, stages et expériences ;
+- des candidatures dans tous les statuts (en attente, en cours, acceptée, refusée, liste d'attente, dossier incomplet), déposées sur les 14 derniers jours.
+
+Tous les emails se terminent par `@example.com` : aucun vrai candidat ne reçoit de message.
+
+Les données ne sont créées que si la base n'a encore aucune formation : un nouveau `migrate` ne crée pas de doublons.
+
+- **Démarrer avec une base vide** : mettez `DEMO_DONNEES=false` dans `.env` avant le premier `migrate`.
+- **Tout recommencer à zéro** (⚠️ efface toute la base) : `php artisan migrate:fresh`
+- **Recharger les données** dans une base existante : `php artisan db:seed`
 
 ---
 
