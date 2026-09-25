@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use App\Models\Candidat;
 use App\Models\Inscription;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -20,29 +19,27 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
     protected $formationId;
     protected $baseUrl;
 
-    public function __construct($formationId)
+    /** @param int|null $formationId null = toutes les formations */
+    public function __construct($formationId = null)
     {
         $this->formationId = $formationId;
         // Adresse réelle du site (celle de la requête), pas une URL codée en dur
         $this->baseUrl = url('responsable/documents') . '/';
     }
 
+    // Une ligne par candidature : un candidat inscrit à deux formations apparaît deux fois dans l'export global
     public function collection()
     {
-        return Candidat::whereHas('inscriptions', function ($query) {
-            $query->where('formation_id', $this->formationId);
-        })
-        ->with([
-            'stages',
-            'diplomes',
-            'attestations',
-            'experiences',
-            'inscriptions.formation',
-        ])
-        ->get();
+        return Inscription::query()
+            ->when($this->formationId, fn ($q) => $q->where('formation_id', $this->formationId))
+            ->whereHas('candidat')
+            ->with(['formation', 'candidat.stages', 'candidat.diplomes', 'candidat.attestations', 'candidat.experiences'])
+            ->orderBy('formation_id')
+            ->orderBy('created_at')
+            ->get();
     }
 
-   public function map($candidat): array
+   public function map($inscription): array
 {
     $makeLink = function ($path, $displayText) {
         if (!empty($path) && $path !== '0') {
@@ -51,8 +48,7 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
         return '';
     };
 
-    // La candidature à CETTE formation (un candidat peut en avoir plusieurs)
-    $inscription = $candidat->inscriptions->firstWhere('formation_id', $this->formationId);
+    $candidat = $inscription->candidat;
 
     return [
         // Personal Information

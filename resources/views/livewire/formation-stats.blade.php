@@ -6,7 +6,17 @@
       <h2>Statistiques & exports</h2>
       <p>Répartition des candidatures par formation et par statut. L'export Excel contient tout le dossier de chaque candidat.</p>
     </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <button type="button" class="btn btn-light border" data-bs-toggle="modal" data-bs-target="#import-candidats">
+        <span class="material-symbols-rounded">upload</span> Importer
+      </button>
+      <a href="{{ route('export.tout') }}" class="btn btn-brand">
+        <span class="material-symbols-rounded">download</span> Exporter tout
+      </a>
+    </div>
   </div>
+
+  @include('utilisateur.partials.import', ['formations' => $formations])
 
   <div class="d-flex flex-wrap gap-3 mb-3 small">
     @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])

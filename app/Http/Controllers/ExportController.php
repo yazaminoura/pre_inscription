@@ -1,8 +1,9 @@
 <?php
 namespace App\Http\Controllers;
 use App\Exports\CandidatsExport;
+use App\Models\Formation;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
-use Brian2694\Toastr\Facades\Toastr;
 
 class ExportController extends Controller
 {
@@ -13,6 +14,14 @@ class ExportController extends Controller
         'message' => 'Candidats exportés avec succès'
     ]);
 
-    return Excel::download(new CandidatsExport($formationId), 'candidats_export.xlsx');
+    $formation = Formation::findOrFail($formationId);
+
+    return Excel::download(new CandidatsExport($formationId), 'candidats_' . Str::slug($formation->titre) . '.xlsx');
 }
+
+    /** Toutes les candidatures, toutes formations confondues. */
+    public function exportTout()
+    {
+        return Excel::download(new CandidatsExport(), 'candidats_toutes-formations_' . now()->format('Y-m-d') . '.xlsx');
+    }
 }

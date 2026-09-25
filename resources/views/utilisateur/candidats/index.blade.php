@@ -20,8 +20,13 @@
         <span class="material-symbols-rounded">download</span> Excel
       </a>
     @endif
+    <button type="button" class="btn btn-light border text-nowrap" data-bs-toggle="modal" data-bs-target="#import-candidats">
+      <span class="material-symbols-rounded">upload</span> Importer
+    </button>
   </form>
 </div>
+
+@include('utilisateur.partials.import', ['formations' => $formations, 'formationId' => $formationId])
 
 <div class="filter-pills mb-3">
   <a href="{{ route('candidats.index', array_filter(['formation' => $formationId])) }}" class="{{ $statut ? '' : 'active' }}">

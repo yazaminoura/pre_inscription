@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EtablissementController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\ImportController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\RecuController;
 use App\Http\Controllers\SuiviController;
@@ -54,6 +55,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('responsable/stats_formations', FormationStats::class)->name('formation-stats');
     Route::get('/export-candidats/{id}', [ExportController::class, 'export'])->name('export.candidats');
+    Route::get('/export-candidats', [ExportController::class, 'exportTout'])->name('export.tout');
+    Route::get('responsable/import/modele', [ImportController::class, 'modele'])->name('import.modele');
+    Route::post('responsable/import', [ImportController::class, 'importer'])->name('import.candidats');
 
     Route::post('responsable/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
