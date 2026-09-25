@@ -36,6 +36,15 @@ return [
             'throw' => false,
         ],
 
+        // Pièces des candidats (CIN, diplômes, CV…) : hors du dossier public,
+        // lisibles uniquement via la route protégée « documents.voir »
+        'dossiers' => [
+            'driver' => 'local',
+            'root' => storage_path('app/dossiers'),
+            'visibility' => 'private',
+            'throw' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

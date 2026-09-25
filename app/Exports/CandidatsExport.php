@@ -22,7 +22,7 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
     {
         $this->formationId = $formationId;
         // Adresse réelle du site (celle de la requête), pas une URL codée en dur
-        $this->baseUrl = asset('storage') . '/';
+        $this->baseUrl = url('responsable/documents') . '/';
     }
 
     public function collection()

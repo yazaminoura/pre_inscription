@@ -332,7 +332,7 @@ class CandidatformController extends Controller
         $base = strtoupper($data['CNE'] ?? 'X') . '_' . preg_replace('/[^a-z]/', '', strtolower($data['nom'] ?? 'candidat'));
         $nom = $base . '_' . $type . '_' . now()->format('YmdHis') . '_' . substr(bin2hex(random_bytes(3)), 0, 6);
 
-        return $fichier->storeAs($dossier, $nom . '.' . strtolower($fichier->getClientOriginalExtension()), 'public');
+        return $fichier->storeAs($dossier, $nom . '.' . strtolower($fichier->getClientOriginalExtension()), 'dossiers');
     }
 
     private function enregistrer(array $data): Inscription

@@ -128,11 +128,11 @@ class DemoSeeder extends Seeder
             $fichiers = [];
             foreach (['CV' => 'CV', 'demande' => 'demande', 'scan_cartid' => 'cart', 'scan_bac' => 'bac'] as $champ => $dossier) {
                 $fichiers[$champ] = "$dossier/{$base}_{$champ}.pdf";
-                Storage::disk('public')->put($fichiers[$champ], $pdf);
+                Storage::disk('dossiers')->put($fichiers[$champ], $pdf);
             }
             // Pas de fichier photo : l'admin affiche alors les initiales
             $fichiers['photo'] = "photos/{$base}_photo.png";
-            Storage::disk('public')->put("bac_2/{$base}_bac2.pdf", $pdf);
+            Storage::disk('dossiers')->put("bac_2/{$base}_bac2.pdf", $pdf);
 
             $candidat = Candidat::create($fichiers + [
                 'email' => strtolower(str_replace(' ', '', "$prenom.$nom")) . '@example.com',

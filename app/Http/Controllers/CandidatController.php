@@ -71,7 +71,7 @@ class CandidatController extends Controller
             ->merge($candidat->attestations->pluck('attestation'))
             ->filter()
             ->all();
-        Storage::disk('public')->delete($fichiers);
+        Storage::disk('dossiers')->delete($fichiers);
 
         $candidat->diplomes()->delete();
         $candidat->stages()->delete();

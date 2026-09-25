@@ -7,6 +7,7 @@ use App\Http\Controllers\CandidatController;
 use App\Http\Controllers\FormationController;
 use App\Http\Controllers\CandidatformController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EtablissementController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InscriptionController;
@@ -39,6 +40,8 @@ Route::middleware('auth')->group(function () {
     // Les diplômes, stages, expériences et attestations font partie du dossier candidat (page show)
     Route::resource('responsable/candidats', CandidatController::class)->only(['index', 'show', 'destroy']);
     Route::patch('responsable/inscriptions/{inscription}/statut', [InscriptionController::class, 'updateStatut'])->name('inscriptions.statut');
+
+    Route::get('responsable/documents/{chemin}', [DocumentController::class, 'voir'])->where('chemin', '.*')->name('documents.voir');
 
     Route::get('responsable/stats_formations', FormationStats::class)->name('formation-stats');
     Route::get('/export-candidats/{id}', [ExportController::class, 'export'])->name('export.candidats');

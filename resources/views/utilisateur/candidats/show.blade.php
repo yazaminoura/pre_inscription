@@ -2,7 +2,7 @@
 @section('title', 'Dossier candidat')
 
 @php
-  $doc = fn ($path) => $path ? asset('storage/' . $path) : null;
+  $doc = fn ($path) => $path ? route('documents.voir', $path) : null;
   $documents = array_filter([
       ['CV', 'description', $candidat->CV],
       ['Demande', 'draft', $candidat->demande],
