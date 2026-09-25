@@ -91,7 +91,8 @@
         @endif
     </table>
 
-    @php $experiences = $candidat->stages->map(fn ($s) => [__('Stage'), $s])->merge($candidat->experiences->map(fn ($e) => [__('Expérience'), $e])); @endphp
+    {{-- toBase() : sans lui, une liste de stages vide reste une collection Eloquent et merge() plante sur les lignes [type, modèle] --}}
+    @php $experiences = $candidat->stages->toBase()->map(fn ($s) => [__('Stage'), $s])->merge($candidat->experiences->toBase()->map(fn ($e) => [__('Expérience'), $e])); @endphp
     @if ($experiences->isNotEmpty() || $candidat->attestations->isNotEmpty())
         <h2>{{ __('Expérience') }}</h2>
         <table class="liste">
