@@ -205,5 +205,6 @@ class DemoSeeder extends Seeder
         }
 
         $this->call(DemoTraductionsSeeder::class);
+        $this->call(DemoFormationsSeeder::class);
     }
 }

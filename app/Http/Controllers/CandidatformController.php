@@ -155,11 +155,15 @@ class CandidatformController extends Controller
 
     private function formationsOuvertes()
     {
+        // Types dans l'ordre de la config (du DUT au doctorat), puis par intitulé
+        $ordre = array_flip(config('etablissement.types_formation'));
+
         return Formation::whereDate('date_debut', '<=', today())
             ->whereDate('date_fin', '>=', today())
-            ->orderBy('type_formation')
             ->orderBy('titre')
-            ->get();
+            ->get()
+            ->sortBy(fn ($f) => $ordre[$f->type_formation] ?? PHP_INT_MAX)
+            ->values();
     }
 
     /** Dernière étape à laquelle le candidat a le droit d'accéder. */
