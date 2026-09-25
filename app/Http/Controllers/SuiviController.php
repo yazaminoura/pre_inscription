@@ -31,6 +31,9 @@ class SuiviController extends Controller
             return back()->withInput()->withErrors(['reference' => __('Aucun dossier ne correspond à cette référence et cet email.')]);
         }
 
+        // Référence + email vérifiés : le récapitulatif PDF devient téléchargeable pour cette session
+        RecuController::autoriser($inscription->reference);
+
         return view('candidateur.suivi', [
             'reference' => $inscription->reference,
             'inscription' => $inscription,

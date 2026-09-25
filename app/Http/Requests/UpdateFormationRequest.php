@@ -16,6 +16,7 @@ class UpdateFormationRequest extends FormRequest
         return [
             'type_formation' => ['required', 'string', \Illuminate\Validation\Rule::in(config('etablissement.types_formation'))],
             'titre' => 'required|string|max:255',
+            'niveau_acces' => ['required', \Illuminate\Validation\Rule::in(array_keys(\App\Models\Formation::NIVEAUX))],
             'date_debut' => 'required|date',
             'date_fin' => 'required|date|after_or_equal:date_debut',
             'user_id' => 'required|exists:users,id',

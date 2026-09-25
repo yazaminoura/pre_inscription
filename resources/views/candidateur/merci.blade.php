@@ -13,11 +13,38 @@
     <div class="merci-ref" dir="ltr">{{ $inscription->reference ?? session('inscription_ok') }}</div>
     <p class="text-muted small">{{ __('Un récapitulatif a été envoyé à :email.', ['email' => $inscription->candidat->email ?? '']) }}
         {{ __("Rappelez cette référence pour tout échange avec l'établissement.") }}</p>
-    <a href="{{ route('suivi', ['reference' => $inscription->reference ?? session('inscription_ok')]) }}" class="btn btn-brand mt-2">
+    @if ($inscription)
+        <div class="d-grid gap-2 my-3" style="max-width: 360px; margin-inline: auto;">
+            <a href="{{ route('candidat.recu', $inscription->reference) }}" class="btn btn-brand justify-content-center py-2" id="lien-recu">
+                <span class="material-symbols-rounded">download</span> {{ __('Télécharger mon récapitulatif (PDF)') }}
+            </a>
+            <span class="small text-muted">{{ __('Le téléchargement de votre récapitulatif démarre automatiquement.') }}</span>
+        </div>
+    @endif
+    <a href="{{ route('suivi', ['reference' => $inscription->reference ?? session('inscription_ok')]) }}" class="btn btn-soft mt-2">
         <span class="material-symbols-rounded">travel_explore</span> {{ __('Suivre mon dossier') }}
     </a>
-    <a href="{{ route('accueil') }}" class="btn btn-soft mt-2">
+    <a href="{{ route('accueil') }}" class="btn btn-light mt-2">
         <span class="material-symbols-rounded flip">arrow_back</span> {{ __('Retour aux formations') }}
     </a>
 </div>
 @endsection
+
+@if ($inscription)
+    @push('scripts')
+    <script>
+        // Téléchargement automatique du récapitulatif, une seule fois (pas à chaque rechargement de la page)
+        (function () {
+            const cle = 'recu-' + @json($inscription->reference);
+            try {
+                if (sessionStorage.getItem(cle)) return;
+                sessionStorage.setItem(cle, '1');
+            } catch (e) {}
+            const cadre = document.createElement('iframe');
+            cadre.hidden = true;
+            cadre.src = document.getElementById('lien-recu').href;
+            document.body.appendChild(cadre);
+        })();
+    </script>
+    @endpush
+@endif

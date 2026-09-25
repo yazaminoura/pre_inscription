@@ -11,6 +11,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EtablissementController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InscriptionController;
+use App\Http\Controllers\RecuController;
 use App\Http\Controllers\SuiviController;
 use App\Http\Middleware\DefinirLangue;
 use App\Livewire\FormationStats;
@@ -27,6 +28,7 @@ Route::middleware(DefinirLangue::class)->group(function () {
     Route::post('/preinscription', [CandidatformController::class, 'submitStep'])->name('candidat.submit');
     Route::get('/preinscription/merci', [CandidatformController::class, 'merci'])->name('candidat.merci');
     Route::post('/preinscription/recommencer', [CandidatformController::class, 'recommencer'])->name('candidat.recommencer');
+    Route::get('/preinscription/recu/{reference}', [RecuController::class, 'telecharger'])->name('candidat.recu');
 });
 
 // Authenticated routes

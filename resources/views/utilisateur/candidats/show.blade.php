@@ -90,21 +90,21 @@
           <h4>Baccalauréat · {{ $candidat->serie_bac }}</h4>
           <div class="text-muted small">Obtenu en {{ $candidat->annee_bac }}</div>
         </div>
-        @if ($diplome)
+        @if ($diplome && $diplome->type_diplome_bac_2)
           <div class="timeline-item">
             <h4>Bac+2 · {{ $diplome->type_diplome_bac_2 }} — {{ $diplome->filiere_diplome_bac_2 }}</h4>
             <div class="text-muted small">{{ $diplome->etablissement_bac_2 }} · {{ $diplome->annee_diplome_bac_2 }}
               @if ($diplome->scan_bac_2) · <a href="{{ $doc($diplome->scan_bac_2) }}" target="_blank">voir le diplôme</a>@endif
             </div>
           </div>
-          @if ($diplome->type_diplome_bac_3)
-            <div class="timeline-item">
-              <h4>Bac+3 · {{ $diplome->type_diplome_bac_3 }} — {{ $diplome->filiere_diplome_bac_3 }}</h4>
-              <div class="text-muted small">{{ $diplome->etablissement_bac_3 }} · {{ $diplome->annee_diplome_bac_3 }}
-                @if ($diplome->scan_bac_3) · <a href="{{ $doc($diplome->scan_bac_3) }}" target="_blank">voir le diplôme</a>@endif
-              </div>
+        @endif
+        @if ($diplome && $diplome->type_diplome_bac_3)
+          <div class="timeline-item">
+            <h4>Bac+3 · {{ $diplome->type_diplome_bac_3 }} — {{ $diplome->filiere_diplome_bac_3 }}</h4>
+            <div class="text-muted small">{{ $diplome->etablissement_bac_3 }} · {{ $diplome->annee_diplome_bac_3 }}
+              @if ($diplome->scan_bac_3) · <a href="{{ $doc($diplome->scan_bac_3) }}" target="_blank">voir le diplôme</a>@endif
             </div>
-          @endif
+          </div>
         @endif
       </div>
     </div>

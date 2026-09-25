@@ -21,6 +21,17 @@
     @error('titre')<div class="invalid-feedback">{{ $message }}</div>@enderror
   </div>
 
+  <div class="col-12">
+    <label for="niveau_acces" class="form-label">Niveau d'accès <span class="text-danger">*</span></label>
+    <select name="niveau_acces" id="niveau_acces" class="form-select @error('niveau_acces') is-invalid @enderror" required>
+      @foreach (\App\Models\Formation::NIVEAUX as $cle => [$libelle])
+        <option value="{{ $cle }}" @selected(old('niveau_acces', $formation->niveau_acces ?? 'bac') === $cle)>{{ $libelle }}</option>
+      @endforeach
+    </select>
+    <div class="form-text-soft">Décide des diplômes demandés au candidat : après le bac, seul le bac est exigé ; Bac+2 exige un diplôme Bac+2 ; Bac+3 exige Bac+2 et Bac+3.</div>
+    @error('niveau_acces')<div class="invalid-feedback">{{ $message }}</div>@enderror
+  </div>
+
   <div class="col-md-6">
     <label for="date_debut" class="form-label">Ouverture des préinscriptions <span class="text-danger">*</span></label>
     <input type="date" name="date_debut" id="date_debut" class="form-control @error('date_debut') is-invalid @enderror"

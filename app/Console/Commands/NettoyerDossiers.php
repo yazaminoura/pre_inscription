@@ -20,7 +20,8 @@ class NettoyerDossiers extends Command
     {
         // Tous les fichiers encore utilisés par un dossier enregistré
         $utilises = collect()
-            ->merge(Candidat::query()->get(['CV', 'demande', 'scan_cartid', 'photo', 'scan_bac'])->flatMap(fn ($c) => $c->only(['CV', 'demande', 'scan_cartid', 'photo', 'scan_bac'])))
+            // array_values : sans lui, les clés (« CV », « photo »…) de chaque candidat écrasent celles du précédent
+            ->merge(Candidat::query()->get(['CV', 'demande', 'scan_cartid', 'photo', 'scan_bac'])->flatMap(fn ($c) => array_values($c->only(['CV', 'demande', 'scan_cartid', 'photo', 'scan_bac']))))
             ->merge(Diplome::query()->pluck('scan_bac_2'))
             ->merge(Diplome::query()->pluck('scan_bac_3'))
             ->merge(Stage::query()->pluck('attestation'))

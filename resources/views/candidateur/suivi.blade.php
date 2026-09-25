@@ -56,6 +56,7 @@
                 </div>
                 <div class="form-card-foot">
                     <a href="{{ route('suivi') }}" class="btn btn-light"><span class="material-symbols-rounded">search</span> {{ __('Autre dossier') }}</a>
+                    <a href="{{ route('candidat.recu', $inscription->reference) }}" class="btn btn-brand"><span class="material-symbols-rounded">download</span> {{ __('Télécharger mon récapitulatif (PDF)') }}</a>
                     @if (config('etablissement.email'))
                         <a href="mailto:{{ config('etablissement.email') }}?subject={{ rawurlencode('Dossier ' . $inscription->reference) }}" class="btn btn-soft">
                             <span class="material-symbols-rounded">mail</span> {{ __("Contacter l'établissement") }}

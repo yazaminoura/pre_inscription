@@ -133,27 +133,29 @@
                 </x-champ>
             </div>
 
-            <div class="fieldset-title">{{ __('Diplôme Bac+2') }}</div>
-            <div class="row g-3">
-                <x-champ name="type_diplome_bac_2" :label="__('Type de diplôme')" :value="$d['type_diplome_bac_2'] ?? ''" required placeholder="DEUG, DEUST, DUT, BTS, DTS…" />
-                <x-champ name="filiere_diplome_bac_2" :label="__('Filière')" :value="$d['filiere_diplome_bac_2'] ?? ''" required :placeholder="__('Ex. : MIP')" />
-                <x-champ name="etablissement_bac_2" :label="__('Établissement')" :value="$d['etablissement_bac_2'] ?? ''" required />
-                <x-champ name="annee_diplome_bac_2" :label="$anneeObtention" :value="$d['annee_diplome_bac_2'] ?? ''" :options="$annees" :placeholder="__('Choisir…')" required />
-                <x-champ name="scan_bac_2" :label="__('Scan du diplôme Bac+2')" type="file" accept=".pdf,.jpg,.jpeg,.png" :required="!$dejaEnvoye('scan_bac_2')" col="col-12" :aide="$formatsFichier">
-                    @if ($dejaEnvoye('scan_bac_2'))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ $dejaEnvoyeTexte }}</span>@endif
-                </x-champ>
-            </div>
-
-            <div class="fieldset-title">{{ __('Diplôme Bac+3') }} <span class="optional">· {{ __('facultatif, obligatoire pour un Master') }}</span></div>
-            <div class="row g-3">
-                <x-champ name="type_diplome_bac_3" :label="__('Type de diplôme')" :value="$d['type_diplome_bac_3'] ?? ''" :placeholder="__('Licence fondamentale, Licence pro…')" />
-                <x-champ name="filiere_diplome_bac_3" :label="__('Filière')" :value="$d['filiere_diplome_bac_3'] ?? ''" />
-                <x-champ name="etablissement_bac_3" :label="__('Établissement')" :value="$d['etablissement_bac_3'] ?? ''" />
-                <x-champ name="annee_diplome_bac_3" :label="$anneeObtention" :value="$d['annee_diplome_bac_3'] ?? ''" :options="$annees" :placeholder="__('Choisir…')" />
-                <x-champ name="scan_bac_3" :label="__('Scan du diplôme Bac+3')" type="file" accept=".pdf,.jpg,.jpeg,.png" col="col-12" :aide="$formatsFichier">
-                    @if ($dejaEnvoye('scan_bac_3'))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ $dejaEnvoyeTexte }}</span>@endif
-                </x-champ>
-            </div>
+            {{-- Diplômes après le bac : selon le niveau d'accès de la formation (aucun, Bac+2, Bac+2 et Bac+3) --}}
+            @if ($diplomes[2] === 'non' && $diplomes[3] === 'non')
+                <div class="d-flex gap-2 align-items-start mt-4 p-3 rounded-3" style="background: var(--brand-50);">
+                    <span class="material-symbols-rounded" style="color: var(--brand);">info</span>
+                    <span class="small">{{ __('Cette formation recrute après le baccalauréat : aucun diplôme supérieur n\'est demandé.') }}</span>
+                </div>
+            @endif
+            @foreach ([2 => 'DEUG, DEUST, DUT, BTS, DTS…', 3 => __('Licence fondamentale, Licence pro…')] as $n => $exemple)
+                @continue($diplomes[$n] === 'non')
+                @php $requis = $diplomes[$n] === 'requis'; @endphp
+                <div class="fieldset-title">{{ $n === 2 ? __('Diplôme Bac+2') : __('Diplôme Bac+3') }}
+                    @unless ($requis)<span class="optional">· {{ __('facultatif') }}</span>@endunless
+                </div>
+                <div class="row g-3">
+                    <x-champ :name="'type_diplome_bac_' . $n" :label="__('Type de diplôme')" :value="$d['type_diplome_bac_' . $n] ?? ''" :required="$requis" :placeholder="$exemple" />
+                    <x-champ :name="'filiere_diplome_bac_' . $n" :label="__('Filière')" :value="$d['filiere_diplome_bac_' . $n] ?? ''" :required="$requis" :placeholder="__('Ex. : MIP')" />
+                    <x-champ :name="'etablissement_bac_' . $n" :label="__('Établissement')" :value="$d['etablissement_bac_' . $n] ?? ''" :required="$requis" />
+                    <x-champ :name="'annee_diplome_bac_' . $n" :label="$anneeObtention" :value="$d['annee_diplome_bac_' . $n] ?? ''" :options="$annees" :placeholder="__('Choisir…')" :required="$requis" />
+                    <x-champ :name="'scan_bac_' . $n" :label="$n === 2 ? __('Scan du diplôme Bac+2') : __('Scan du diplôme Bac+3')" type="file" accept=".pdf,.jpg,.jpeg,.png" :required="$requis && !$dejaEnvoye('scan_bac_' . $n)" col="col-12" :aide="$formatsFichier">
+                        @if ($dejaEnvoye('scan_bac_' . $n))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ $dejaEnvoyeTexte }}</span>@endif
+                    </x-champ>
+                </div>
+            @endforeach
         @endif
 
         {{-- 5. Expérience --}}
