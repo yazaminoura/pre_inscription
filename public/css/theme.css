@@ -933,3 +933,40 @@ table.dataTable.no-footer {
     .barre-enregistrer { flex-wrap: wrap; }
     .barre-enregistrer .barre-etat { width: 100%; }
 }
+
+/* Statistiques : compteurs par statut en tuiles neutres (seul le point porte la couleur du statut) */
+.statut-grille {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .5rem;
+}
+.statut-tuile {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    padding: .55rem .75rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color .15s, background .15s;
+}
+.statut-tuile:hover { border-color: var(--brand-100); background: var(--brand-50); color: var(--ink); }
+.statut-tuile-n { font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
+.statut-tuile-libelle {
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    font-size: .78rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.statut-point { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.statut-tuile.vide { opacity: .5; }
+.statut-tuile.vide .statut-tuile-n { font-weight: 500; }
+@media (max-width: 575.98px) {
+    .statut-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

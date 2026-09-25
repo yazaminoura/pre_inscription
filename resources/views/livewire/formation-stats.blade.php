@@ -40,9 +40,14 @@
               @endforeach
             </div>
 
-            <div class="d-flex flex-wrap gap-3 small mb-3">
+            {{-- Compteurs par statut : une tuile chacun, cliquable vers la liste filtrée --}}
+            <div class="statut-grille mb-3">
               @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
-                <span><strong style="color: {{ $couleur }};">{{ $repartition[$cle] ?? 0 }}</strong> {{ mb_strtolower($libelle) }}</span>
+                @php $n = $repartition[$cle] ?? 0; @endphp
+                <a href="{{ route('candidats.index', ['formation' => $formation->id, 'statut' => $cle]) }}" class="statut-tuile {{ $n ? '' : 'vide' }}">
+                  <span class="statut-tuile-n">{{ $n }}</span>
+                  <span class="statut-tuile-libelle"><span class="statut-point" style="background: {{ $couleur }};"></span>{{ $libelle }}</span>
+                </a>
               @endforeach
             </div>
 
