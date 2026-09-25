@@ -196,7 +196,7 @@
               @endforeach
             </div>
             <label class="form-label" for="motif-{{ $inscription->id }}">Motif / précision pour le candidat</label>
-            <textarea name="motif" id="motif-{{ $inscription->id }}" rows="2" class="form-control mb-2" placeholder="Ex. : relevé de notes manquant (optionnel)">{{ $inscription->motif }}</textarea>
+            <textarea name="motif" id="motif-{{ $inscription->id }}" rows="2" class="form-control mb-2" placeholder="Ex. : relevé de notes manquant (obligatoire pour « Dossier incomplet »)">{{ $inscription->motif }}</textarea>
             <div class="form-check mb-3">
               <input class="form-check-input" type="checkbox" name="notifier" value="1" id="notifier-{{ $inscription->id }}" checked>
               <label class="form-check-label small" for="notifier-{{ $inscription->id }}">Prévenir le candidat par email</label>

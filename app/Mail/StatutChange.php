@@ -15,6 +15,7 @@ class StatutChange extends Mailable
     // Phrase principale selon le statut
     public const MESSAGES = [
         'en_cours' => 'Votre dossier est en cours d\'étude par la commission.',
+        'incomplet' => 'Votre dossier est incomplet. Merci de faire parvenir à l\'établissement les éléments indiqués ci-dessous pour que votre candidature puisse être étudiée.',
         'liste_attente' => 'Votre candidature a été placée sur liste d\'attente. Nous vous recontacterons si une place se libère.',
         'acceptee' => 'Nous avons le plaisir de vous annoncer que votre candidature a été acceptée.',
         'refusee' => 'Après étude de votre dossier, nous sommes au regret de ne pas pouvoir retenir votre candidature.',

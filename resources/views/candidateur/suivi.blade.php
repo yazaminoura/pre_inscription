@@ -42,7 +42,7 @@
                     <p class="mb-3" style="font-size: 1.05rem;">{{ __($message) }}</p>
                     @if ($inscription->motif)
                         <div class="p-3 mb-4 rounded-3" style="background: var(--bg); border-inline-start: 4px solid {{ $inscription->statut_color }};">
-                            <strong>{{ __("Précision de l'établissement :") }}</strong><br>{{ $inscription->motif }}
+                            <strong>{{ $inscription->statut === 'incomplet' ? __('Éléments manquants :') : __("Précision de l'établissement :") }}</strong><br>{{ $inscription->motif }}
                         </div>
                     @endif
 

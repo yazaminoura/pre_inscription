@@ -20,6 +20,11 @@ class InscriptionController extends Controller
         ]);
         $motif = trim($validated['motif'] ?? '') ?: null;
 
+        // Le candidat doit savoir ce qui manque
+        if ($validated['statut'] === 'incomplet' && !$motif) {
+            return back()->with('toastr', ['type' => 'error', 'message' => 'Indiquez dans le motif le ou les documents manquants.']);
+        }
+
         if ($validated['statut'] === $inscription->statut && $motif === $inscription->motif) {
             return back()->with('toastr', ['type' => 'info', 'message' => 'Aucun changement.']);
         }

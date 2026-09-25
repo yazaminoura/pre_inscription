@@ -16,6 +16,7 @@ class Inscription extends Model
     public const STATUTS = [
         'en_attente' => ['En attente', '#6c757d'],
         'en_cours' => ["En cours d'étude", '#1a73e8'],
+        'incomplet' => ['Dossier incomplet', '#7c3aed'],
         'liste_attente' => ["Liste d'attente", '#f0ad4e'],
         'acceptee' => ['Acceptée', '#2e7d32'],
         'refusee' => ['Refusée', '#c62828'],
@@ -65,6 +66,7 @@ class Inscription extends Model
     public const PASTILLES = [
         'en_attente' => ['#FEF3C7', '#92400E'],
         'en_cours' => ['#DBEAFE', '#1E40AF'],
+        'incomplet' => ['#EDE9FE', '#5B21B6'],
         'liste_attente' => ['#FFEDD5', '#9A3412'],
         'acceptee' => ['#DCFCE7', '#166534'],
         'refusee' => ['#FEE2E2', '#991B1B'],

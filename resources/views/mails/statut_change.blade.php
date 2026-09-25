@@ -37,7 +37,7 @@
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;">
                                 <tr>
                                     <td style="background:#f3f6f9; border-left:4px solid {{ $inscription->statut_color }}; padding:12px 16px; font-size:14px; line-height:1.5;">
-                                        <strong>Précision de l'établissement :</strong><br>{{ $inscription->motif }}
+                                        <strong>{{ $inscription->statut === 'incomplet' ? 'Éléments manquants :' : "Précision de l'établissement :" }}</strong><br>{{ $inscription->motif }}
                                     </td>
                                 </tr>
                             </table>
