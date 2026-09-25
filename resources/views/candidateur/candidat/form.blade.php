@@ -95,10 +95,10 @@
         {{-- 2. Identité --}}
         @if ($step === 2)
             <div class="row g-3">
-                <x-champ name="nom" :label="__('Nom')" :value="$d['nom'] ?? ''" required autocomplete="family-name" />
-                <x-champ name="prenom" :label="__('Prénom')" :value="$d['prenom'] ?? ''" required autocomplete="given-name" />
-                <x-champ name="nom_ar" label="الاسم العائلي" :value="$d['nom_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" />
-                <x-champ name="prenom_ar" label="الاسم الشخصي" :value="$d['prenom_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" />
+                <x-champ name="nom" :label="__('Nom')" :value="$d['nom'] ?? ''" required autocomplete="family-name" data-langue="latin" />
+                <x-champ name="prenom" :label="__('Prénom')" :value="$d['prenom'] ?? ''" required autocomplete="given-name" data-langue="latin" />
+                <x-champ name="nom_ar" label="الاسم العائلي" :value="$d['nom_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" data-langue="ar"><button type="button" class="btn-clavier" data-clavier aria-expanded="false"><span class="material-symbols-rounded">keyboard</span> {{ __('Clavier arabe') }}</button></x-champ>
+                <x-champ name="prenom_ar" label="الاسم الشخصي" :value="$d['prenom_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" data-langue="ar"><button type="button" class="btn-clavier" data-clavier aria-expanded="false"><span class="material-symbols-rounded">keyboard</span> {{ __('Clavier arabe') }}</button></x-champ>
                 <x-champ name="CNE" :label="__('CNE / Code Massar')" :value="$d['CNE'] ?? ''" required />
                 <x-champ name="CIN" :label="__('CIN ou n° de passeport')" :value="$d['CIN'] ?? ''" required />
                 <x-champ name="date_naissance" :label="__('Date de naissance')" type="date" :value="$d['date_naissance'] ?? ''" required />
@@ -115,10 +115,10 @@
                     </div>
                     @error('sex')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                 </div>
-                <x-champ name="ville_naissance" :label="__('Ville de naissance')" :value="$d['ville_naissance'] ?? ''" required />
-                <x-champ name="pay_naissance" :label="__('Pays de naissance')" :value="$d['pay_naissance'] ?? ''" required />
-                <x-champ name="nationalite" :label="__('Nationalité')" :value="$d['nationalite'] ?? ''" required />
-                <x-champ name="ville_naissance_ar" label="مدينة الازدياد" :value="$d['ville_naissance_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" />
+                <x-champ name="ville_naissance" :label="__('Ville de naissance')" :value="$d['ville_naissance'] ?? ''" required data-langue="latin" />
+                <x-champ name="pay_naissance" :label="__('Pays de naissance')" :value="$d['pay_naissance'] ?? ''" required data-langue="latin" />
+                <x-champ name="nationalite" :label="__('Nationalité')" :value="$d['nationalite'] ?? ''" required data-langue="latin" />
+                <x-champ name="ville_naissance_ar" label="مدينة الازدياد" :value="$d['ville_naissance_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" data-langue="ar"><button type="button" class="btn-clavier" data-clavier aria-expanded="false"><span class="material-symbols-rounded">keyboard</span> {{ __('Clavier arabe') }}</button></x-champ>
             </div>
         @endif
 
@@ -326,6 +326,103 @@
             const liste = bouton.closest('.repeat-list').dataset.liste;
             bouton.closest('.repeat-item').remove();
             majListe(liste);
+        });
+    })();
+
+    // Champs en arabe / en lettres latines : l'autre alphabet est bloqué (frappe, collage, autocomplétion)
+    (function () {
+        const ARABE = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/;
+        const MESSAGES = {
+            ar: @json(__("Ce champ s'écrit en lettres arabes.")),
+            latin: @json(__("Ce champ s'écrit en lettres latines.")),
+        };
+        const autorise = (langue, c) => langue === 'ar' ? ARABE.test(c) || /[\s'\-]/.test(c) : !ARABE.test(c);
+
+        function avertir(champ) {
+            let bulle = champ.parentElement.querySelector('.alerte-langue');
+            if (!bulle) {
+                bulle = document.createElement('div');
+                bulle.className = 'alerte-langue';
+                bulle.setAttribute('role', 'status');
+                champ.insertAdjacentElement('afterend', bulle);
+            }
+            bulle.textContent = MESSAGES[champ.dataset.langue];
+            bulle.hidden = false;
+            clearTimeout(bulle.minuteur);
+            bulle.minuteur = setTimeout(() => { bulle.hidden = true; }, 3000);
+        }
+
+        document.querySelectorAll('[data-langue]').forEach(function (champ) {
+            champ.addEventListener('input', function () {
+                const avant = champ.value;
+                const propre = [...avant].filter((c) => autorise(champ.dataset.langue, c)).join('');
+                if (propre === avant) return;
+                const curseur = Math.max(0, champ.selectionStart - (avant.length - propre.length));
+                champ.value = propre;
+                champ.setSelectionRange(curseur, curseur);
+                avertir(champ);
+            });
+        });
+
+        // Clavier arabe à l'écran, partagé par les champs arabes
+        const boutons = document.querySelectorAll('[data-clavier]');
+        if (!boutons.length) return;
+
+        const RANGEES = [
+            ['ض', 'ص', 'ث', 'ق', 'ف', 'غ', 'ع', 'ه', 'خ', 'ح', 'ج', 'د'],
+            ['ش', 'س', 'ي', 'ب', 'ل', 'ا', 'ت', 'ن', 'م', 'ك', 'ط'],
+            ['ئ', 'ء', 'ؤ', 'ر', 'ى', 'ة', 'و', 'ز', 'ظ', 'ذ'],
+            ['أ', 'إ', 'آ'],
+        ];
+        const touche = (t) => `<button type="button" data-touche="${t}">${t}</button>`;
+        const clavier = document.createElement('div');
+        clavier.className = 'clavier-ar';
+        clavier.dir = 'rtl';
+        clavier.hidden = true;
+        clavier.innerHTML = RANGEES.map((r, i) => '<div class="clavier-rangee">' + r.map(touche).join('')
+            + (i === RANGEES.length - 1
+                ? `<button type="button" data-touche=" " class="touche-large">${@json(__('Espace'))}</button>`
+                + `<button type="button" data-action="effacer" aria-label="${@json(__('Effacer'))}"><span class="material-symbols-rounded">backspace</span></button>`
+                + `<button type="button" data-action="fermer" class="touche-ok" aria-label="${@json(__('Fermer'))}"><span class="material-symbols-rounded">check</span></button>`
+                : '') + '</div>').join('');
+
+        let cible = null;
+        let boutonOuvert = null;
+
+        function fermer() {
+            clavier.hidden = true;
+            if (boutonOuvert) boutonOuvert.setAttribute('aria-expanded', 'false');
+            cible = boutonOuvert = null;
+        }
+
+        boutons.forEach(function (bouton) {
+            bouton.addEventListener('click', function () {
+                if (boutonOuvert === bouton) return fermer();
+                fermer();
+                cible = bouton.parentElement.querySelector('[data-langue="ar"]');
+                boutonOuvert = bouton;
+                bouton.setAttribute('aria-expanded', 'true');
+                bouton.insertAdjacentElement('afterend', clavier);
+                clavier.hidden = false;
+                cible.focus();
+                cible.setSelectionRange(cible.value.length, cible.value.length);
+            });
+        });
+
+        // Le champ garde le focus (et son curseur) quand on clique sur une touche
+        clavier.addEventListener('mousedown', (e) => e.preventDefault());
+        clavier.addEventListener('click', function (e) {
+            const b = e.target.closest('button');
+            if (!b || !cible) return;
+            if (b.dataset.action === 'fermer') return fermer();
+            const debut = cible.selectionStart ?? cible.value.length;
+            const fin = cible.selectionEnd ?? debut;
+            if (b.dataset.action === 'effacer') {
+                cible.setRangeText('', debut === fin ? Math.max(0, debut - 1) : debut, fin, 'end');
+            } else {
+                cible.setRangeText(b.dataset.touche, debut, fin, 'end');
+            }
+            cible.dispatchEvent(new Event('input', { bubbles: true }));
         });
     })();
 </script>

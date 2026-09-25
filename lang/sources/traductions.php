@@ -243,6 +243,14 @@ return [
     "Contacter l'établissement" => ['Contact the institution', 'التواصل مع المؤسسة'],
     'Aucun dossier ne correspond à cette référence et cet email.' => ['No application matches this reference and email.', 'لا يوجد أي ملف يطابق هذا المرجع وهذا البريد الإلكتروني.'],
 
+    // Champs en arabe / en lettres latines
+    'Clavier arabe' => ['Arabic keyboard', 'لوحة المفاتيح العربية'],
+    'Espace' => ['Space', 'مسافة'],
+    'Effacer' => ['Delete', 'حذف'],
+    'Fermer' => ['Close', 'إغلاق'],
+    "Ce champ s'écrit en lettres arabes." => ['This field must be written in Arabic letters.', 'يُكتب هذا الحقل بالحروف العربية.'],
+    "Ce champ s'écrit en lettres latines." => ['This field must be written in Latin letters.', 'يُكتب هذا الحقل بالحروف اللاتينية.'],
+
     // Pages d'erreur
     "Retour à l'accueil" => ['Back to home', 'العودة إلى الصفحة الرئيسية'],
     'Accès refusé' => ['Access denied', 'الدخول مرفوض'],

@@ -94,7 +94,7 @@ class CandidatformController extends Controller
             return redirect()->route('candidat.form', ['step' => $this->etapeAtteinte($data)]);
         }
 
-        $validated = $request->validate($this->regles($step, $data), [], array_map('__', $this->libelles()));
+        $validated = $request->validate($this->regles($step, $data), $this->messages(), array_map('__', $this->libelles()));
 
         $data = match ($step) {
             1 => $this->etapeFormation($validated, $data),
@@ -207,6 +207,25 @@ class CandidatformController extends Controller
         return filled($data['type_diplome_bac_3'] ?? null) ? 3 : (filled($data['type_diplome_bac_2'] ?? null) ? 2 : 0);
     }
 
+    // Champs en arabe : lettres arabes seulement ; leurs équivalents en français : pas de lettres arabes
+    private const CHAMPS_ARABES = ['nom_ar', 'prenom_ar', 'ville_naissance_ar'];
+    private const CHAMPS_LATINS = ['nom', 'prenom', 'ville_naissance', 'pay_naissance', 'nationalite'];
+    private const ARABE = "/^[\p{Arabic}\s'\-]*$/u";
+    private const SANS_ARABE = '/\p{Arabic}/u';
+
+    private function messages(): array
+    {
+        $messages = [];
+        foreach (self::CHAMPS_ARABES as $champ) {
+            $messages["$champ.regex"] = __("Ce champ s'écrit en lettres arabes.");
+        }
+        foreach (self::CHAMPS_LATINS as $champ) {
+            $messages["$champ.not_regex"] = __("Ce champ s'écrit en lettres latines.");
+        }
+
+        return $messages;
+    }
+
     private function regles(int $step, array $data): array
     {
         // Un fichier déjà envoyé n'est plus obligatoire quand on revient sur l'étape
@@ -219,18 +238,18 @@ class CandidatformController extends Controller
                 'titre_id' => 'required|integer',
             ],
             2 => [
-                'nom' => 'required|string|max:50',
-                'prenom' => 'required|string|max:50',
-                'nom_ar' => 'nullable|string|max:50',
-                'prenom_ar' => 'nullable|string|max:50',
+                'nom' => ['required', 'string', 'max:50', 'not_regex:' . self::SANS_ARABE],
+                'prenom' => ['required', 'string', 'max:50', 'not_regex:' . self::SANS_ARABE],
+                'nom_ar' => ['nullable', 'string', 'max:50', 'regex:' . self::ARABE],
+                'prenom_ar' => ['nullable', 'string', 'max:50', 'regex:' . self::ARABE],
                 'CNE' => 'required|string|max:20',
                 'CIN' => 'required|string|max:20',
                 'date_naissance' => 'required|date|before:-15 years',
                 'sex' => 'required|in:Homme,Femme',
-                'nationalite' => 'required|string|max:50',
-                'ville_naissance' => 'required|string|max:50',
-                'ville_naissance_ar' => 'nullable|string|max:50',
-                'pay_naissance' => 'required|string|max:50',
+                'nationalite' => ['required', 'string', 'max:50', 'not_regex:' . self::SANS_ARABE],
+                'ville_naissance' => ['required', 'string', 'max:50', 'not_regex:' . self::SANS_ARABE],
+                'ville_naissance_ar' => ['nullable', 'string', 'max:50', 'regex:' . self::ARABE],
+                'pay_naissance' => ['required', 'string', 'max:50', 'not_regex:' . self::SANS_ARABE],
             ],
             3 => [
                 'email' => 'required|email:rfc|max:100',
