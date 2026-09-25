@@ -1,50 +1,107 @@
 @extends('candidateur.layout.index')
 @section('title', __('Préinscription enregistrée'))
 
+@php
+    $reference = $inscription->reference ?? session('inscription_ok');
+    $suite = [
+        ['download_done', __('Récapitulatif téléchargé'), __('Gardez le PDF : il contient toutes les informations de votre dossier.'), 'fait'],
+        ['mark_email_read', __('Email de confirmation'), __('Envoyé à :email. Pensez à vérifier les courriers indésirables.', ['email' => $inscription->candidat->email ?? '']), 'fait'],
+        ['fact_check', __('Étude du dossier'), __("L'établissement examine votre candidature."), 'encours'],
+        ['campaign', __('Décision'), __('Vous serez prévenu(e) par email, et la décision sera visible sur « Suivre mon dossier ».'), ''],
+    ];
+@endphp
+
 @section('content')
-<div class="merci-card">
-    <div class="merci-icon"><span class="material-symbols-rounded">check</span></div>
-    <h1 class="h3 fw-bold" style="color: var(--ok);">{{ __('Préinscription enregistrée') }}</h1>
-    @if ($inscription)
-        <p class="mb-1">{{ __(':nom, votre dossier pour', ['nom' => $inscription->candidat->prenom . ' ' . $inscription->candidat->nom]) }}</p>
-        <p class="fw-bold mb-3">{{ __($inscription->formation->type_formation) }} · {{ $inscription->formation->tr('titre') }}</p>
-    @endif
-    <p class="text-muted mb-1">{{ __('Conservez votre numéro de référence :') }}</p>
-    <div class="merci-ref" dir="ltr">{{ $inscription->reference ?? session('inscription_ok') }}</div>
-    <p class="text-muted small">{{ __('Un récapitulatif a été envoyé à :email.', ['email' => $inscription->candidat->email ?? '']) }}
-        {{ __("Rappelez cette référence pour tout échange avec l'établissement.") }}</p>
-    @if ($inscription)
-        <div class="d-grid gap-2 my-3" style="max-width: 360px; margin-inline: auto;">
-            <a href="{{ route('candidat.recu', $inscription->reference) }}" class="btn btn-brand justify-content-center py-2" id="lien-recu">
-                <span class="material-symbols-rounded">download</span> {{ __('Télécharger mon récapitulatif (PDF)') }}
-            </a>
-            <span class="small text-muted">{{ __('Le téléchargement de votre récapitulatif démarre automatiquement.') }}</span>
+<div class="thanks">
+    <section class="thanks-hero">
+        <div class="thanks-check">
+            <svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="24"/><path d="M15 27l7 7 15-16"/></svg>
         </div>
-    @endif
-    <a href="{{ route('suivi', ['reference' => $inscription->reference ?? session('inscription_ok')]) }}" class="btn btn-soft mt-2">
-        <span class="material-symbols-rounded">travel_explore</span> {{ __('Suivre mon dossier') }}
-    </a>
-    <a href="{{ route('accueil') }}" class="btn btn-light mt-2">
-        <span class="material-symbols-rounded flip">arrow_back</span> {{ __('Retour aux formations') }}
-    </a>
+        <h1>{{ __('Préinscription enregistrée') }}</h1>
+        @if ($inscription)
+            <p>{{ __('Merci :prenom ! Votre dossier pour :formation a bien été reçu.', ['prenom' => $inscription->candidat->prenom, 'formation' => $inscription->formation->tr('titre')]) }}</p>
+        @endif
+
+        <div class="ticket">
+            <span class="ticket-label">{{ __('Votre numéro de référence') }}</span>
+            <span class="ticket-ref" dir="ltr" id="reference">{{ $reference }}</span>
+            <button type="button" class="ticket-copy" id="copier-reference" data-ok="{{ __('Copié !') }}">
+                <span class="material-symbols-rounded">content_copy</span> <span class="texte">{{ __('Copier') }}</span>
+            </button>
+        </div>
+        <p class="thanks-hint">{{ __("Rappelez cette référence pour tout échange avec l'établissement.") }}</p>
+    </section>
+
+    <div class="thanks-grid">
+        <section class="thanks-card">
+            <h2><span class="material-symbols-rounded">route</span> {{ __('Et maintenant ?') }}</h2>
+            <ol class="next-steps">
+                @foreach ($suite as [$icone, $titre, $texte, $etat])
+                    <li class="{{ $etat }}">
+                        <span class="dot"><span class="material-symbols-rounded">{{ $etat === 'fait' ? 'check' : $icone }}</span></span>
+                        <div>
+                            <h3>{{ $titre }}</h3>
+                            <p>{{ $texte }}</p>
+                        </div>
+                    </li>
+                @endforeach
+            </ol>
+        </section>
+
+        <aside class="thanks-card thanks-side">
+            @if ($inscription)
+                <span class="fcard-type">{{ __($inscription->formation->type_formation) }}</span>
+                <h2 class="mt-2">{{ $inscription->formation->tr('titre') }}</h2>
+                <dl class="thanks-facts">
+                    <div><dt>{{ __('Candidat') }}</dt><dd>{{ $inscription->candidat->prenom }} {{ $inscription->candidat->nom }}</dd></div>
+                    <div><dt>{{ __('Déposée le') }}</dt><dd>{{ $inscription->created_at?->translatedFormat('d F Y, H:i') }}</dd></div>
+                    <div><dt>{{ __('Statut') }}</dt><dd><span class="status-badge" style="color: {{ $inscription->statut_color }}; background: {{ $inscription->statut_color }}1a;">{{ __($inscription->statut_label) }}</span></dd></div>
+                </dl>
+                <div class="d-grid gap-2">
+                    <a href="{{ route('candidat.recu', $inscription->reference) }}" class="btn btn-brand justify-content-center py-2" id="lien-recu">
+                        <span class="material-symbols-rounded">download</span> {{ __('Télécharger mon récapitulatif (PDF)') }}
+                    </a>
+                    <a href="{{ route('suivi', ['reference' => $reference]) }}" class="btn btn-soft justify-content-center">
+                        <span class="material-symbols-rounded">travel_explore</span> {{ __('Suivre mon dossier') }}
+                    </a>
+                    <a href="{{ route('accueil') }}" class="btn btn-light justify-content-center">
+                        <span class="material-symbols-rounded flip">arrow_back</span> {{ __('Retour aux formations') }}
+                    </a>
+                </div>
+                <p class="small text-muted mt-3 mb-0"><span class="material-symbols-rounded" style="font-size: 16px;">info</span> {{ __('Le téléchargement de votre récapitulatif démarre automatiquement.') }}</p>
+            @endif
+        </aside>
+    </div>
 </div>
 @endsection
 
-@if ($inscription)
-    @push('scripts')
-    <script>
-        // Téléchargement automatique du récapitulatif, une seule fois (pas à chaque rechargement de la page)
-        (function () {
-            const cle = 'recu-' + @json($inscription->reference);
-            try {
-                if (sessionStorage.getItem(cle)) return;
-                sessionStorage.setItem(cle, '1');
-            } catch (e) {}
-            const cadre = document.createElement('iframe');
-            cadre.hidden = true;
-            cadre.src = document.getElementById('lien-recu').href;
-            document.body.appendChild(cadre);
-        })();
-    </script>
-    @endpush
-@endif
+@push('scripts')
+<script>
+    // Copier la référence
+    document.getElementById('copier-reference')?.addEventListener('click', function () {
+        const bouton = this;
+        navigator.clipboard?.writeText(document.getElementById('reference').textContent.trim()).then(function () {
+            const texte = bouton.querySelector('.texte');
+            const avant = texte.textContent;
+            texte.textContent = bouton.dataset.ok;
+            bouton.classList.add('ok');
+            setTimeout(function () { texte.textContent = avant; bouton.classList.remove('ok'); }, 2000);
+        });
+    });
+
+    @if ($inscription)
+    // Téléchargement automatique du récapitulatif, une seule fois (pas à chaque rechargement)
+    (function () {
+        const cle = 'recu-' + @json($inscription->reference);
+        try {
+            if (sessionStorage.getItem(cle)) return;
+            sessionStorage.setItem(cle, '1');
+        } catch (e) {}
+        const cadre = document.createElement('iframe');
+        cadre.hidden = true;
+        cadre.src = document.getElementById('lien-recu').href;
+        document.body.appendChild(cadre);
+    })();
+    @endif
+</script>
+@endpush
