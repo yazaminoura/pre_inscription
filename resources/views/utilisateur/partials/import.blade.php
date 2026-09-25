@@ -33,13 +33,14 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
       </div>
       <div class="modal-body">
-        <label class="form-label" for="import-formation">Formation</label>
-        <select name="formation_id" id="import-formation" class="form-select mb-3" required>
-          <option value="">Choisir…</option>
+        <label class="form-label" for="import-formation">Formation <span class="text-muted fw-normal">(facultatif)</span></label>
+        <select name="formation_id" id="import-formation" class="form-select mb-1">
+          <option value="">Selon le fichier (colonne « Formation »)</option>
           @foreach ($formations as $f)
             <option value="{{ $f->id }}" @selected(($formationId ?? null) == $f->id)>{{ $f->type_formation }} · {{ $f->titre }}</option>
           @endforeach
         </select>
+        <div class="form-text-soft mb-3">Choisie ici, elle s'applique à toutes les lignes du fichier.</div>
 
         <label class="form-label" for="import-fichier">Fichier Excel ou CSV</label>
         <input type="file" name="fichier" id="import-fichier" class="form-control mb-2" accept=".xlsx,.xls,.csv" required>

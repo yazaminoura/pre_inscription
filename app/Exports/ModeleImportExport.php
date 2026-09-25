@@ -37,8 +37,8 @@ class ModeleImportExport implements FromArray, WithHeadings, WithStyles
             ]);
         }
         $sheet->getComment('A1')->getText()->createTextRun(
-            "Colonnes bleues : obligatoires. Grises : facultatives.\nDate : JJ/MM/AAAA. Sexe : M ou F.\nStatut : En attente, En cours d'étude, Dossier incomplet, Liste d'attente, Acceptée ou Refusée."
+            "Colonnes bleues : obligatoires. Grises : facultatives.\nFormation : l'intitulé exact (ex. Master Génie Logiciel), utile si vous ne choisissez pas la formation à l'import.\nDate : JJ/MM/AAAA. Sexe : M ou F.\nStatut : En attente, En cours d'étude, Dossier incomplet, Liste d'attente, Acceptée ou Refusée."
         );
-        $sheet->getComment('A1')->setWidth('320pt')->setHeight('90pt');
+        $sheet->getComment('A1')->setWidth('340pt')->setHeight('120pt');
     }
 }

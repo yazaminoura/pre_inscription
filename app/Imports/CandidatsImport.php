@@ -15,7 +15,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use PhpOffice\PhpSpreadsheet\Shared\Date as DateExcel;
 
 /**
- * Import de candidats depuis un fichier Excel/CSV dans une formation.
+ * Import de candidats depuis un fichier Excel/CSV : dans la formation choisie, sinon dans celle indiquée sur chaque ligne.
  * Les colonnes sont reconnues par leur titre : un fichier exporté peut être réimporté tel quel.
  * Un candidat déjà connu (même CNE ; l'email peut être partagé) est mis à jour, pas dupliqué. Les pièces jointes ne s'importent pas.
  */
@@ -23,6 +23,7 @@ class CandidatsImport implements ToArray
 {
     // Titre de colonne => champ ; le même titre que dans l'export
     public const COLONNES = [
+        'Formation' => 'formation',
         'Nom' => 'nom',
         'Prénom' => 'prenom',
         'الاسم العائلي' => 'nom_ar',
@@ -56,6 +57,9 @@ class CandidatsImport implements ToArray
         'Motif / précision' => 'motif',
     ];
 
+    // Autres titres acceptés (ceux de l'export)
+    private const ALIAS = ['Type De Formation' => 'formation'];
+
     private const DIPLOME = [
         'type_diplome_bac_2', 'annee_diplome_bac_2', 'filiere_diplome_bac_2', 'etablissement_bac_2',
         'type_diplome_bac_3', 'annee_diplome_bac_3', 'filiere_diplome_bac_3', 'etablissement_bac_3',
@@ -70,6 +74,9 @@ class CandidatsImport implements ToArray
 
     private array $lignes = [];
 
+    /** Formations trouvées par leur nom dans le fichier : [nom normalisé => Formation|null] */
+    private array $formations = [];
+
     public function array(array $lignes): void
     {
         // Première feuille seulement
@@ -79,18 +86,19 @@ class CandidatsImport implements ToArray
     }
 
     /**
+     * @param Formation|null $formation null = la formation de chaque ligne (colonne « Formation »)
      * @return array{crees: int, maj: int, erreurs: list<string>}
      */
-    public function importer(UploadedFile $fichier, Formation $formation, ?User $par): array
+    public function importer(UploadedFile $fichier, ?Formation $formation, ?User $par): array
     {
         Excel::import($this, $fichier);
         $rapport = ['crees' => 0, 'maj' => 0, 'erreurs' => []];
 
         $entetes = array_map(fn ($t) => $this->normaliser((string) $t), array_shift($this->lignes) ?? []);
         $champs = [];
-        foreach (self::COLONNES as $titre => $champ) {
+        foreach (self::COLONNES + self::ALIAS as $titre => $champ) {
             $index = array_search($this->normaliser($titre), $entetes, true);
-            if ($index !== false) {
+            if ($index !== false && !isset($champs[$champ])) {
                 $champs[$champ] = $index;
             }
         }
@@ -98,6 +106,11 @@ class CandidatsImport implements ToArray
         if ($manquantes) {
             $titres = array_map(fn ($c) => array_search($c, self::COLONNES, true), $manquantes);
             $rapport['erreurs'][] = 'Colonnes introuvables : ' . implode(', ', $titres) . '. Utilisez le modèle.';
+
+            return $rapport;
+        }
+        if (!$formation && !isset($champs['formation'])) {
+            $rapport['erreurs'][] = 'Choisissez une formation, ou ajoutez une colonne « Formation » au fichier.';
 
             return $rapport;
         }
@@ -127,9 +140,17 @@ class CandidatsImport implements ToArray
                 continue;
             }
 
+            $cible = $formation ?? $this->formationDuFichier($valeurs['formation'] ?? null);
+            if (!$cible) {
+                $rapport['erreurs'][] = "Ligne $numero : " . (isset($valeurs['formation'])
+                    ? "formation « {$valeurs['formation']} » introuvable."
+                    : 'formation manquante.');
+                continue;
+            }
+
             try {
-                DB::transaction(function () use ($valeurs, $formation, $par, &$rapport) {
-                    $this->enregistrer($valeurs, $formation, $par, $rapport);
+                DB::transaction(function () use ($valeurs, $cible, $par, &$rapport) {
+                    $this->enregistrer($valeurs, $cible, $par, $rapport);
                 });
             } catch (\Throwable $e) {
                 report($e);
@@ -143,7 +164,7 @@ class CandidatsImport implements ToArray
     private function enregistrer(array $valeurs, Formation $formation, ?User $par, array &$rapport): void
     {
         $fiche = array_filter(
-            array_diff_key($valeurs, array_flip([...self::DIPLOME, 'statut', 'motif'])),
+            array_diff_key($valeurs, array_flip([...self::DIPLOME, 'statut', 'motif', 'formation'])),
             fn ($v) => $v !== null
         );
 
@@ -175,6 +196,22 @@ class CandidatsImport implements ToArray
         } elseif (isset($valeurs['statut']) && ($valeurs['statut'] !== $inscription->statut || ($valeurs['motif'] ?? null) !== $inscription->motif)) {
             $inscription->changerStatut($valeurs['statut'], $valeurs['motif'] ?? null, $par);
         }
+    }
+
+    /** « Master Génie Logiciel » ou, comme dans l'export, « Master (Master Génie Logiciel) ». */
+    private function formationDuFichier(?string $nom): ?Formation
+    {
+        if ($nom === null) {
+            return null;
+        }
+        $cle = $this->normaliser($nom);
+        if (!array_key_exists($cle, $this->formations)) {
+            $parTitre = fn (string $t) => Formation::whereRaw('LOWER(titre) = ?', [$this->normaliser($t)])->first();
+            $this->formations[$cle] = $parTitre($nom)
+                ?? (preg_match('/^.+?\((.+)\)$/u', $nom, $m) ? $parTitre($m[1]) : null);
+        }
+
+        return $this->formations[$cle];
     }
 
     private function normaliser(string $texte): string
