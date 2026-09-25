@@ -59,6 +59,43 @@
     </div>
 @endif
 
+{{-- Présenter l'établissement avant ses formations --}}
+@php
+    $contacts = array_filter([
+        'location_on' => trim(collect([config('etablissement.adresse'), config('etablissement.ville'), config('etablissement.pays')])->filter()->implode(', ')),
+        'call' => config('etablissement.telephone'),
+        'mail' => config('etablissement.email'),
+        'language' => config('etablissement.site'),
+    ]);
+@endphp
+@if (config('etablissement.presentation') || $contacts)
+    <section class="about-block mb-5" id="etablissement">
+        <div class="about-main">
+            <img src="{{ asset(config('etablissement.logo')) }}" alt="" class="about-logo">
+            <h2 class="home-title">{{ __("L'établissement") }}</h2>
+            <div class="about-text">{{ config('etablissement.presentation') ?: config('etablissement.nom') }}</div>
+        </div>
+        @if ($contacts)
+            <div class="about-contact">
+                <h3>{{ __('Contact') }}</h3>
+                <div class="contact-list">
+                    @foreach ($contacts as $icone => $valeur)
+                        @if ($icone === 'mail')
+                            <a href="mailto:{{ $valeur }}"><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</a>
+                        @elseif ($icone === 'call')
+                            <a href="tel:{{ $valeur }}" dir="ltr"><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</a>
+                        @elseif ($icone === 'language')
+                            <a href="{{ $valeur }}" target="_blank" rel="noopener"><span class="material-symbols-rounded">{{ $icone }}</span> {{ parse_url($valeur, PHP_URL_HOST) ?: $valeur }}</a>
+                        @else
+                            <span><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</span>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        @endif
+    </section>
+@endif
+
 {{-- Comment ça marche --}}
 <section class="how">
     @foreach ($etapesAccueil as $i => [$icone, $titre, $texte])
@@ -165,42 +202,6 @@
                 </a>
             @endforeach
         </div>
-    </section>
-@endif
-
-@php
-    $contacts = array_filter([
-        'location_on' => trim(collect([config('etablissement.adresse'), config('etablissement.ville'), config('etablissement.pays')])->filter()->implode(', ')),
-        'call' => config('etablissement.telephone'),
-        'mail' => config('etablissement.email'),
-        'language' => config('etablissement.site'),
-    ]);
-@endphp
-@if (config('etablissement.presentation') || $contacts)
-    <section class="about-block mb-5" id="etablissement">
-        <div class="about-main">
-            <img src="{{ asset(config('etablissement.logo')) }}" alt="" class="about-logo">
-            <h2 class="home-title">{{ __("L'établissement") }}</h2>
-            <div class="about-text">{{ config('etablissement.presentation') ?: config('etablissement.nom') }}</div>
-        </div>
-        @if ($contacts)
-            <div class="about-contact">
-                <h3>{{ __('Contact') }}</h3>
-                <div class="contact-list">
-                    @foreach ($contacts as $icone => $valeur)
-                        @if ($icone === 'mail')
-                            <a href="mailto:{{ $valeur }}"><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</a>
-                        @elseif ($icone === 'call')
-                            <a href="tel:{{ $valeur }}" dir="ltr"><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</a>
-                        @elseif ($icone === 'language')
-                            <a href="{{ $valeur }}" target="_blank" rel="noopener"><span class="material-symbols-rounded">{{ $icone }}</span> {{ parse_url($valeur, PHP_URL_HOST) ?: $valeur }}</a>
-                        @else
-                            <span><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</span>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-        @endif
     </section>
 @endif
 

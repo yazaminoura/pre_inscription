@@ -218,6 +218,7 @@ return [
     'Édité le :date' => ['Issued on :date', 'حُرّر في :date'],
     'Récapitulatif de préinscription' => ['Application summary', 'ملخص التسجيل القبلي'],
     'Fourni' => ['Provided', 'مُرفق'],
+    'Page' => ['Page', 'الصفحة'],
     'Diplôme' => ['Diploma', 'الشهادة'],
     'Année' => ['Year', 'السنة'],
     'Stage' => ['Internship', 'تدريب'],

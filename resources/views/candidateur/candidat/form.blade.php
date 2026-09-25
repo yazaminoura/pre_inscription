@@ -102,7 +102,19 @@
                 <x-champ name="CNE" :label="__('CNE / Code Massar')" :value="$d['CNE'] ?? ''" required />
                 <x-champ name="CIN" :label="__('CIN ou n° de passeport')" :value="$d['CIN'] ?? ''" required />
                 <x-champ name="date_naissance" :label="__('Date de naissance')" type="date" :value="$d['date_naissance'] ?? ''" required />
-                <x-champ name="sex" :label="__('Sexe')" :value="$d['sex'] ?? ''" :options="['Homme' => __('Homme'), 'Femme' => __('Femme')]" :placeholder="__('Choisir…')" required />
+                {{-- Sexe : deux boutons radio plutôt qu'une liste déroulante --}}
+                <div class="col-md-6">
+                    <span class="form-label d-block">{{ __('Sexe') }} <span class="req">*</span></span>
+                    <div class="radio-pills" role="radiogroup" aria-label="{{ __('Sexe') }}">
+                        @foreach (['Homme' => ['male', __('Homme')], 'Femme' => ['female', __('Femme')]] as $valeur => [$icone, $libelle])
+                            <label class="radio-pill">
+                                <input type="radio" name="sex" value="{{ $valeur }}" @checked(old('sex', $d['sex'] ?? '') === $valeur) required>
+                                <span class="material-symbols-rounded">{{ $icone }}</span> {{ $libelle }}
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('sex')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
                 <x-champ name="ville_naissance" :label="__('Ville de naissance')" :value="$d['ville_naissance'] ?? ''" required />
                 <x-champ name="pay_naissance" :label="__('Pays de naissance')" :value="$d['pay_naissance'] ?? ''" required />
                 <x-champ name="nationalite" :label="__('Nationalité')" :value="$d['nationalite'] ?? ''" required />

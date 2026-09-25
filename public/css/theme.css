@@ -1,9 +1,10 @@
 /* Thème commun : admin, connexion. La couleur de marque vient de config('etablissement.couleur') via --brand. */
 :root {
     --brand: #096a9b;
-    --brand-dark: #064d71;
-    --brand-50: #eaf4f9;
-    --brand-100: #d3e8f2;
+    /* Teintes calculées à partir de --brand : elles suivent la couleur choisie dans l'administration */
+    --brand-dark: color-mix(in srgb, var(--brand) 72%, #000);
+    --brand-50: color-mix(in srgb, var(--brand) 9%, #fff);
+    --brand-100: color-mix(in srgb, var(--brand) 20%, #fff);
     --ink: #1c2b39;
     --muted: #6a7b8a;
     --line: #e3eaf0;
@@ -363,7 +364,7 @@ a:hover { color: var(--brand-dark); }
 .form-control:focus,
 .form-select:focus {
     border-color: var(--brand);
-    box-shadow: 0 0 0 3px rgba(9, 106, 155, .15);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 15%, transparent);
 }
 
 .form-label {
