@@ -4,11 +4,39 @@
 
 
 <div class="container inscription-form">
+    @if (session('inscription_ok'))
+        <div class="confirmation-card">
+            <div class="confirmation-icon"><i class="fas fa-check"></i></div>
+            <h2>Préinscription enregistrée</h2>
+            <p>Conservez votre numéro de référence, il vous sera demandé pour suivre votre dossier.</p>
+            <div class="confirmation-ref">{{ session('inscription_ok') }}</div>
+            <p class="text-muted small mb-0">Un récapitulatif a été envoyé à votre adresse email.</p>
+        </div>
+    @endif
+
     @if (session('success'))
         <div class="alert alert-success">
             {{ session('success') }}
         </div>
     @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @php
+        $etapes = ['Informations personnelles', 'Baccalauréat', 'Diplômes', 'Stages', 'Attestations', 'Expériences'];
+    @endphp
+    <ol class="stepper">
+        @foreach ($etapes as $i => $etape)
+            <li class="{{ $i + 1 < $step ? 'done' : ($i + 1 == $step ? 'active' : '') }}">
+                <span class="stepper-dot">@if ($i + 1 < $step)<i class="fas fa-check"></i>@else{{ $i + 1 }}@endif</span>
+                <span class="stepper-label">{{ $etape }}</span>
+            </li>
+        @endforeach
+    </ol>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -477,12 +505,6 @@
     </div>
 </div>
 <style>
-    body {
-        background-color: #f4f7fa;
-        color: #333;
-        font-family: 'Arial', sans-serif;
-    }
-
     .inscription-form {
         max-width: 900px;
         margin: 2rem auto;
@@ -492,43 +514,177 @@
     .form-section {
         background: white;
         padding: 2rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 14px;
+        border: 1px solid #e3ebf1;
+        box-shadow: 0 6px 24px rgba(9, 106, 155, .08);
     }
 
     .section-title {
-        color: #004aad;
+        color: var(--brand);
         margin-bottom: 1.5rem;
         text-align: center;
-        font-size: 1.8rem;
+        font-size: 1.6rem;
+        font-weight: 800;
     }
 
-    .form-group label {
-        font-weight: bold;
-        color: #333;
+    .inscription-form label {
+        font-weight: 700;
+        color: #3d4b58;
+        font-size: .9rem;
+        margin-bottom: .3rem;
     }
 
     .form-control {
-        border-radius: 5px;
-        transition: border-color 0.3s;
+        border-radius: 8px;
+        border-color: #d5e0e8;
+        transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .form-control:focus {
-        border-color: #004aad;
-        box-shadow: 0 0 5px rgba(0, 74, 173, 0.2);
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px rgba(9, 106, 155, .15);
     }
 
     .btn-primary {
-        background: #004aad;
+        background: var(--brand);
         border: none;
-        border-radius: 5px;
-        padding: 0.75rem 1.5rem;
-        font-size: 1.1rem;
-        transition: background 0.3s;
+        border-radius: 8px;
+        padding: 0.7rem 1.6rem;
+        font-weight: 700;
+        transition: filter 0.2s;
     }
 
-    .btn-primary:hover {
-        background: #003780;
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background: var(--brand);
+        filter: brightness(.88);
+    }
+
+    /* Barre de progression des étapes */
+    .stepper {
+        display: flex;
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.5rem;
+        counter-reset: none;
+    }
+
+    .stepper li {
+        flex: 1;
+        position: relative;
+        text-align: center;
+        color: #8a99a6;
+        font-size: .8rem;
+        font-weight: 700;
+    }
+
+    .stepper li::before {
+        content: '';
+        position: absolute;
+        top: 16px;
+        left: -50%;
+        width: 100%;
+        height: 3px;
+        background: #d5e0e8;
+        z-index: 0;
+    }
+
+    .stepper li:first-child::before {
+        display: none;
+    }
+
+    .stepper li.done::before,
+    .stepper li.active::before {
+        background: var(--brand);
+    }
+
+    .stepper-dot {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #d5e0e8;
+        margin-bottom: .35rem;
+    }
+
+    .stepper li.done .stepper-dot {
+        background: var(--brand);
+        border-color: var(--brand);
+        color: #fff;
+    }
+
+    .stepper li.active .stepper-dot {
+        border-color: var(--brand);
+        color: var(--brand);
+        box-shadow: 0 0 0 4px rgba(9, 106, 155, .15);
+    }
+
+    .stepper li.active,
+    .stepper li.done {
+        color: var(--brand);
+    }
+
+    .stepper-label {
+        display: block;
+    }
+
+    @media (max-width: 576px) {
+        .stepper-label {
+            display: none;
+        }
+
+        .stepper li.active .stepper-label {
+            display: block;
+        }
+    }
+
+    /* Confirmation après envoi */
+    .confirmation-card {
+        background: #fff;
+        border: 1px solid #cfe8d4;
+        border-top: 5px solid #2e7d32;
+        border-radius: 14px;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 6px 24px rgba(46, 125, 50, .1);
+    }
+
+    .confirmation-card h2 {
+        color: #2e7d32;
+        font-weight: 800;
+        font-size: 1.5rem;
+    }
+
+    .confirmation-icon {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto .75rem;
+        border-radius: 50%;
+        background: #2e7d32;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+    }
+
+    .confirmation-ref {
+        display: inline-block;
+        font-size: 1.6rem;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: var(--brand);
+        background: #eef4f8;
+        border: 2px dashed var(--brand);
+        border-radius: 10px;
+        padding: .4rem 1.2rem;
+        margin: .5rem 0 1rem;
     }
 
     .btn-secondary {

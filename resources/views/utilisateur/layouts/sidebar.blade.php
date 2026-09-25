@@ -5,14 +5,14 @@
     
     <div class="d-flex flex-column align-items-center">
   <a href="{{ route('dashboard') }}" style="text-decoration: none;">
-    <img 
-      src="{{ asset('dist/assets/img/logo-fsdm-fes.png') }}" 
-      class="navbar-brand-img mb-2" 
-      style="max-height: 50px; width: auto;"  
-      alt="main_logo">
-    <p class="font-weight-bold mb-0" style="color: red; font-size: 0.9rem;"> <!-- Smaller font -->
-      Pré-Inscription
-      <span style="color: green; font-size: 0.85rem; font-weight: bold;">FST FES</span> <!-- Changed <P> to <span> -->
+    <img
+      src="{{ asset(config('etablissement.logo')) }}"
+      class="mb-2"
+      style="max-height: 70px; width: auto;"
+      alt="{{ config('etablissement.nom') }}">
+    <p class="font-weight-bold mb-0" style="color: {{ config('etablissement.couleur') }}; font-size: 0.9rem;">
+      Préinscription
+      <span class="text-secondary" style="font-size: 0.8rem;">· {{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }}</span>
     </p>
   </a>
 </div>

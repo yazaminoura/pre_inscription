@@ -3,47 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="icon" type="image/png" href="{{ asset('dist/assets/img/logo-fsdm-fes.png') }}">
-
-    <title>FST Fès - Accueil</title>
+    <link rel="icon" type="image/png" href="{{ asset(config('etablissement.logo')) }}">
+    <title>{{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }} - Préinscription {{ date('Y') }}</title>
     @livewireStyles
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <link href="{{ asset('css/form-style.css') }}" rel="stylesheet">
-    <link rel="apple-touch-icon" sizes="76x76" href="../assets/img/apple-icon.png">
-  <link rel="icon" type="image/png" href="../assets/img/favicon.png">
-        <link rel="stylesheet" href="{{ asset('dist/assets/css/formacandidats.css') }}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-  <title>
-   
-  </title>
-  
-  <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700,900" />
- 
-  <link href="../assets/css/nucleo-icons.css" rel="stylesheet" />
-  <link href="../assets/css/nucleo-svg.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
-  
-  <link id="pagestyle" href="../assets/css/material-dashboard.css?v=3.2.0" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('dist/assets/css/formacandidats.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
 
     <style>
+        :root {
+            --brand: {{ config('etablissement.couleur') }};
+        }
+
         body {
             margin: 0;
             font-family: 'Nunito Sans', 'Verdana', sans-serif;
-            background-color: #f4f7fa;
-            color: #333;
+            background: linear-gradient(180deg, #eef4f8 0, #f6f9fb 320px);
+            color: #2b3440;
         }
 
-        /* Styles pour l'en-tête */
+        /* En-tête */
         .header {
-            background-color: #1a4b8c;
-            color: #FFFFFF;
-            padding: 1rem 2rem;
-            text-align: center;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background: #fff;
+            border-bottom: 4px solid var(--brand);
+            padding: .75rem 1.5rem;
+            box-shadow: 0 2px 12px rgba(9, 106, 155, .08);
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -54,43 +42,61 @@
             margin: 0 auto;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 1rem;
         }
 
         .header .logo {
-            height: 50px;
+            height: 56px;
             width: auto;
         }
 
+        .header .title-section {
+            border-left: 2px solid #e3ebf1;
+            padding-left: 1rem;
+        }
+
         .header .site-title {
-            font-size: 1.5rem;
+            font-size: 1.35rem;
             margin: 0;
-            font-weight: bold;
+            font-weight: 800;
+            color: var(--brand);
+            line-height: 1.2;
         }
 
         .header .site-subtitle {
-            font-size: 0.9rem;
+            font-size: .9rem;
             margin: 0;
-            font-style: italic;
+            color: #6b7a88;
+        }
+
+        .header .site-subtitle .badge-annee {
+            background: var(--brand);
+            color: #fff;
+            border-radius: 20px;
+            padding: 1px 10px;
+            font-weight: 700;
+            font-size: .8rem;
+            margin-left: .25rem;
         }
 
         @media (max-width: 768px) {
             .header-content {
                 flex-direction: column;
-                gap: 0.5rem;
+                text-align: center;
+                gap: .5rem;
+            }
+
+            .header .title-section {
+                border-left: 0;
+                padding-left: 0;
             }
 
             .header .site-title {
-                font-size: 1.2rem;
-            }
-
-            .header .site-subtitle {
-                font-size: 0.8rem;
+                font-size: 1.1rem;
             }
 
             .header .logo {
-                height: 40px;
+                height: 44px;
             }
         }
 
@@ -151,14 +157,22 @@ body {
 
 footer {
     margin-top: auto; /* Push the footer to the bottom */
-    background-color: #1a4b8c;
+    background-color: var(--brand);
     color: #FFFFFF;
     text-align: center;
-    padding: 1rem 0;
+    padding: 1rem;
+    font-size: .9rem;
 }
 
-        }
-    <style>
+footer p {
+    margin: 0;
+}
+
+footer a {
+    color: #fff;
+    font-weight: 700;
+}
+
         .toastify-success {
             font-family: 'Arial', sans-serif;
             font-size: 16px;
@@ -172,10 +186,10 @@ footer {
     <!-- En-tête -->
     <header class="header">
         <div class="header-content">
-            <img src="{{ asset('dist/assets/img/fst.png') }}"  class="logo">
+            <a href="{{ route('candidat.form') }}"><img src="{{ asset(config('etablissement.logo')) }}" class="logo" alt="{{ config('etablissement.nom') }}"></a>
             <div class="title-section">
-                <h1 class="site-title">Faculté des Sciences et Techniques - Fès</h1>
-                <p class="site-subtitle">Préinscription en ligne {{ date('Y') }} </p>
+                <h1 class="site-title">{{ config('etablissement.nom') }} - {{ config('etablissement.ville') }}</h1>
+                <p class="site-subtitle">Préinscription en ligne <span class="badge-annee">{{ date('Y') }}</span></p>
             </div>
         </div>
     </header>
@@ -183,7 +197,7 @@ footer {
      @yield('content')
     <!-- Pied de page -->
     <footer>
-        <p>© {{ date('Y') }} Faculté des Sciences et Techniques - Fès. Tous droits réservés.</p>
+        <p>© {{ date('Y') }} {{ config('etablissement.nom') }} - {{ config('etablissement.ville') }} · <a href="{{ config('etablissement.site') }}" target="_blank" rel="noopener">{{ parse_url(config('etablissement.site'), PHP_URL_HOST) }}</a></p>
     </footer>
 
     @livewireScripts
@@ -192,22 +206,14 @@ footer {
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 Toastify({
-                    text: "{{ session('toast.message') }}",
-                    duration: 5000,
+                    text: @json(session('toast.message')),
+                    duration: 8000,
                     close: true,
                     gravity: "top",
                     position: "center",
-                    backgroundColor: "#4CAF50",
+                    backgroundColor: "#2e7d32",
                     className: "toastify-success",
-                    callback: function() {
-                        window.location.href = "{{ session('toast.redirect') }}";
-                    }
                 }).showToast();
-
-                // Auto-redirect after 5 seconds
-                setTimeout(function() {
-                    window.location.href = "{{ session('toast.redirect') }}";
-                }, 5000);
             });
         </script>
     @endif

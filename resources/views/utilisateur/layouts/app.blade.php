@@ -5,8 +5,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="apple-touch-icon" sizes="76x76" href="{{ asset('dist/assets/img/apple-icon.png') }}">
-  <link rel="icon" type="image/png" href="{{ asset('dist/assets/img/fst.png') }}">
-  <title>PreInscription FST</title>
+  <link rel="icon" type="image/png" href="{{ asset(config('etablissement.logo')) }}">
+  <title>Préinscription - {{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }}</title>
 
   @livewireStyles
   <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">

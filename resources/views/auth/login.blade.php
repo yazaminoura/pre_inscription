@@ -3,13 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="{{ asset('dist/assets/img/logo-fsdm-fes.png') }}">
-    <title>FST Fès - Connexion</title>
+    <link rel="icon" type="image/png" href="{{ asset(config('etablissement.logo')) }}">
+    <title>{{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }} - Connexion</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('dist/assets/css/login.css') }}">
-   
+    <style>
+        :root {
+            --primary-color: #073b57;
+            --secondary-color: {{ config('etablissement.couleur') }};
+            --accent-color: #7cc8ec;
+        }
+        .login-header .institution-logo {
+            width: 150px;
+            height: auto;
+            background: #fff;
+            padding: 12px 16px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+            object-fit: contain;
+        }
+        .login-error {
+            background: rgba(198, 40, 40, .15);
+            border: 1px solid rgba(198, 40, 40, .5);
+            color: #fff;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            font-size: .9rem;
+        }
+    </style>
 </head>
 <body>
     <div class="background-icons">
@@ -30,13 +54,17 @@
 
     <div class="login-container">
         <div class="login-header">
-            <img src="{{ asset('dist/assets/img/logo-fsdm-fes.png') }}" alt="FST Fès Logo" class="institution-logo">
-            <h1>Connexion </h1><h1>Préinscription <span id="current-year"></span></h1>
-            <p>Accédez à votre espace personnel</p>
+            <img src="{{ asset(config('etablissement.logo')) }}" alt="{{ config('etablissement.nom') }}" class="institution-logo">
+            <h1>Espace administration</h1><h1>Préinscription {{ date('Y') }}</h1>
+            <p>{{ config('etablissement.nom') }} - {{ config('etablissement.ville') }}</p>
         </div>
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
+
+            @if ($errors->any())
+                <div class="login-error"><i class="fas fa-circle-exclamation"></i> {{ $errors->first() }}</div>
+            @endif
 
             <div class="form-group">
                 <label for="email" class="form-label">Adresse Email</label>
@@ -76,12 +104,6 @@
                 toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentYear = new Date().getFullYear();
-            const displayYear = currentYear >= 2025 ? currentYear : 2025;
-            document.getElementById('current-year').textContent = displayYear;
-        });
     </script>
 </body>
 </html>

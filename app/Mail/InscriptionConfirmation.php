@@ -34,7 +34,7 @@ class InscriptionConfirmation extends Mailable
     public function build()
     {
         return $this->view('mails.inscription_confirmation')
-            ->subject('Confirmation d\'inscription - FST USMBA')
+            ->subject('Confirmation de préinscription - ' . config('etablissement.nom_court') . ' ' . config('etablissement.ville'))
             ->with([
                 'candidatName' => $this->candidatName,
                 'candidatEmail' => $this->candidatEmail,

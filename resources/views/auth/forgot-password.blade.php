@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="{{ asset('dist/assets/img/logo-fsdm-fes.png') }}">
-    <title>FST Fès - Mot de passe oublié</title>
+    <link rel="icon" type="image/png" href="{{ asset(config('etablissement.logo')) }}">
+    <title>{{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }} - Mot de passe oublié</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -240,7 +240,7 @@
     <div class="guest-layout-container">
         <div class="login-header">
             {{-- You might want to add a logo here as well if it fits the design --}}
-            {{-- <img src="{{ asset('dist/assets/img/logo-fsdm-fes.png') }}" alt="FST Fès Logo" class="institution-logo"> --}}
+            {{-- <img src="{{ asset(config('etablissement.logo')) }}" alt="FST Fès Logo" class="institution-logo"> --}}
             <h1>Mot de passe oublié</h1>
             <p>Veuillez entrer votre adresse email.</p>
         </div>

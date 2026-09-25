@@ -10,6 +10,7 @@ use App\Models\Experience;
 use App\Models\Diplome;
 use App\Models\Inscription;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
@@ -78,6 +79,15 @@ class CandidatformController extends Controller
                     ->withErrors(['titre_id' => 'Le titre de formation sélectionné ne correspond pas au type de formation choisi.'])
                     ->withInput();
             }
+
+            $dejaInscrit = Inscription::where('formation_id', $formation->id)
+                ->whereHas('candidat', fn ($q) => $q->where('CNE', $validated['CNE']))
+                ->value('reference');
+            if ($dejaInscrit) {
+                return redirect()->route('candidat.form', ['step' => 1])
+                    ->withErrors(['CNE' => "Une préinscription existe déjà pour ce CNE dans cette formation (réf. $dejaInscrit)."])
+                    ->withInput();
+            }
         }
 
         // Traiter les téléchargements de fichiers
@@ -134,15 +144,14 @@ class CandidatformController extends Controller
             return redirect()->route('candidat.form', ['step' => $step + 1]);
         } else {
             try {
-                $this->saveCandidat($formData);
+                // Tout ou rien : pas de candidat à moitié enregistré si une étape échoue
+                $inscription = DB::transaction(fn () => $this->saveCandidat($formData));
                 $request->session()->forget('form_data');
-                
-                // Return with toast message that will trigger the redirect
+
                 return redirect()->route('candidat.form')
+                    ->with('inscription_ok', $inscription->reference)
                     ->with('toast', [
-                        'message' => 'Félicitations ! Votre inscription à la FST de l Université Sidi Mohamed Ben Abdellah de Fès a été confirmée. Consultez notre site pour plus d\'informations.',
-                        'redirect' => 'https://fst-usmba.ac.ma/',
-                        'icon' => 'check'
+                        'message' => 'Votre préinscription est enregistrée. Référence : ' . $inscription->reference,
                     ]);
             } catch (\Illuminate\Validation\ValidationException $e) {
                 Log::error('Validation error in final submission: ' . $e->getMessage());
@@ -182,7 +191,7 @@ class CandidatformController extends Controller
                 'telephone_mob' => ['required', 'regex:/^\+?\d{8,15}$/'],
                 'telephone_fix' => ['nullable', 'regex:/^(\+212|0)([5-7])\d{8}$/'],
                 'adresse' => 'required|string|max:255',
-                'email' => 'required|email|max:100',
+                'email' => 'required|email:rfc|max:100',
                 'ville' => 'required|string|max:50',
                 'pays' => 'required|string|max:50',
                 'CV' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
@@ -353,7 +362,7 @@ class CandidatformController extends Controller
     {
         // Valider les champs de base
         $validator = Validator::make($formData, [
-            'email' => 'required|email:rfc,dns',
+            'email' => 'required|email:rfc',
             'CNE' => 'required|string',
         ]);
 
@@ -392,7 +401,7 @@ class CandidatformController extends Controller
         ]);
 
         Log::info('Données complètes du formulaire dans saveCandidat:', $formData);
-        Inscription::create([
+        $inscription = Inscription::create([
             'formation_id' => $formData['titre_id'],
             'candidat_id' => $candidat->id,
             'annee' => now()->format('Y-m-d'),
@@ -607,8 +616,10 @@ class CandidatformController extends Controller
             ));
             Log::info('Email envoyé avec succès', ['email' => $candidat->email]);
         } catch (\Exception $e) {
+            // L'inscription est valable même si l'email ne part pas
             Log::error('Erreur lors de l\'envoi de l\'email : ' . $e->getMessage());
-            return redirect()->back()->withErrors(['error' => 'Erreur lors de l\'envoi de l\'e-mail.']);
         }
 
-  return true;    }}
+        return $inscription;
+    }
+}
