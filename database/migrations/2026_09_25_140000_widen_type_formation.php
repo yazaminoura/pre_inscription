@@ -10,6 +10,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Syntaxe MySQL ; la base SQLite en mémoire des tests garde la colonne d'origine
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
         DB::statement("ALTER TABLE formations MODIFY type_formation VARCHAR(60) NOT NULL");
     }
 

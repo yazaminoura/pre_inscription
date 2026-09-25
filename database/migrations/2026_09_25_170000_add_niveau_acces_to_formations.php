@@ -20,7 +20,10 @@ return new class extends Migration
         DB::table('formations')->where('type_formation', 'Licence professionnelle')->update(['niveau_acces' => 'bac2']);
         DB::table('formations')->where('type_formation', 'Doctorat')->update(['niveau_acces' => 'bac5']);
 
-        // Un candidat recruté après le bac n'a pas forcément de Bac+2
+        // Un candidat recruté après le bac n'a pas forcément de Bac+2 (syntaxe MySQL, ignorée par la base SQLite des tests)
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
         DB::statement('ALTER TABLE diplomes MODIFY type_diplome_bac_2 VARCHAR(255) NULL, MODIFY annee_diplome_bac_2 VARCHAR(255) NULL,
             MODIFY filiere_diplome_bac_2 VARCHAR(255) NULL, MODIFY scan_bac_2 VARCHAR(255) NULL, MODIFY etablissement_bac_2 VARCHAR(255) NULL');
     }
