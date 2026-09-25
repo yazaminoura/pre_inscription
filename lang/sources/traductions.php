@@ -267,6 +267,10 @@ return [
     'Formation continue' => ['Continuing education', 'التكوين المستمر'],
 
     // Erreurs
+    'Fichier trop volumineux (:taille Mo). Taille maximale : :max Mo.' => ['File too large (:taille MB). Maximum size: :max MB.', 'الملف كبير جدًا (:taille ميغابايت). الحجم الأقصى: :max ميغابايت.'],
+    'Fichiers trop volumineux' => ['Files too large', 'الملفات كبيرة جدًا'],
+    "Les documents envoyés dépassent la taille autorisée (10 Mo par fichier). Réduisez-les (scan en PDF, photo moins lourde) puis réessayez : les informations déjà saisies sont conservées." => ['The documents you sent exceed the allowed size (10 MB per file). Make them smaller (scan to PDF, lighter photo) and try again: what you already entered is kept.', 'الوثائق المرسلة تتجاوز الحجم المسموح به (10 ميغابايت لكل ملف). قلّص حجمها (مسح بصيغة PDF، صورة أخف) ثم أعد المحاولة: المعلومات التي أدخلتها محفوظة.'],
+    'Revenir au formulaire' => ['Back to the form', 'العودة إلى الاستمارة'],
     "Cette formation n'est pas ouverte aux préinscriptions." => ['This programme is not open for pre-registration.', 'هذا التكوين غير مفتوح للتسجيل القبلي.'],
     'Une préinscription existe déjà pour ce CNE dans cette formation (réf. :ref).' => ['An application already exists for this student ID in this programme (ref. :ref).', 'يوجد تسجيل قبلي سابق بهذا الرقم الوطني في هذا التكوين (المرجع :ref).'],
     "Une erreur est survenue lors de l'enregistrement. Veuillez réessayer." => ['An error occurred while saving. Please try again.', 'حدث خطأ أثناء التسجيل. المرجو إعادة المحاولة.'],

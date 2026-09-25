@@ -281,6 +281,23 @@
 
 @push('scripts')
 <script>
+    // Taille des fichiers vérifiée dès le choix : 10 Mo (5 Mo pour la photo), comme côté serveur
+    document.addEventListener('change', function (e) {
+        const champ = e.target;
+        if (champ.type !== 'file' || !champ.files.length) return;
+        const maxMo = champ.name === 'photo' ? 5 : 10;
+        const fichier = champ.files[0];
+        if (fichier.size > maxMo * 1024 * 1024) {
+            const message = @json(__('Fichier trop volumineux (:taille Mo). Taille maximale : :max Mo.'))
+                .replace(':taille', (fichier.size / 1024 / 1024).toFixed(1)).replace(':max', maxMo);
+            champ.value = '';
+            champ.setCustomValidity(message);
+            champ.reportValidity();
+        } else {
+            champ.setCustomValidity('');
+        }
+    });
+
     // Blocs répétables : ajouter / supprimer, 3 maximum par liste
     (function () {
         const MAX = 3;

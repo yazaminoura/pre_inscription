@@ -44,6 +44,12 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+
+        // Envoi plus lourd que post_max_size : page claire au lieu de l'erreur 413 brute.
+        // (La session n'est pas encore démarrée à ce stade : on ne peut pas renvoyer le formulaire avec un message.)
+        $this->renderable(function (\Illuminate\Http\Exceptions\PostTooLargeException $e) {
+            return response()->view('candidateur.trop-volumineux', [], 413);
+        });
     }
     
 }
