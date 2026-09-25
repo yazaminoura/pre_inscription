@@ -17,7 +17,7 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as DateExcel;
 /**
  * Import de candidats depuis un fichier Excel/CSV dans une formation.
  * Les colonnes sont reconnues par leur titre : un fichier exporté peut être réimporté tel quel.
- * Un candidat déjà connu (même CNE ou même email) est mis à jour, pas dupliqué. Les pièces jointes ne s'importent pas.
+ * Un candidat déjà connu (même CNE ; l'email peut être partagé) est mis à jour, pas dupliqué. Les pièces jointes ne s'importent pas.
  */
 class CandidatsImport implements ToArray
 {
@@ -147,7 +147,8 @@ class CandidatsImport implements ToArray
             fn ($v) => $v !== null
         );
 
-        $candidat = Candidat::where('CNE', $valeurs['CNE'])->orWhereRaw('LOWER(email) = ?', [$valeurs['email']])->first();
+        // Le CNE identifie le candidat : deux candidats peuvent avoir le même email
+        $candidat = Candidat::where('CNE', $valeurs['CNE'])->first();
         if ($candidat) {
             $candidat->update($fiche);
             $rapport['maj']++;

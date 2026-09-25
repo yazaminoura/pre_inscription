@@ -46,7 +46,7 @@
 
         <div class="form-text-soft">
           Mêmes colonnes que l'export : un fichier exporté peut être réimporté.
-          Un candidat déjà présent (même CNE ou même email) est mis à jour, pas dupliqué.
+          Un candidat déjà présent (même CNE) est mis à jour, pas dupliqué.
           Les pièces jointes ne s'importent pas.
         </div>
         <a href="{{ route('import.modele') }}" class="btn btn-sm btn-light mt-3">
