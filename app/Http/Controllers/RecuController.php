@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inscription;
+use ArPHP\I18N\Arabic;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -37,6 +38,7 @@ class RecuController extends Controller
             'candidat' => $candidat,
             'logo' => $this->imageEnDataUri(config('etablissement.logo'), false),
             'photo' => $candidat->photo ? $this->imageEnDataUri($candidat->photo, true) : null,
+            'arabe' => $this->arabePourPdf(...),
         ])->setPaper('a4')
             // N'embarque que les caractères utilisés : ~900 Ko -> quelques dizaines de Ko
             ->setOption('isFontSubsettingEnabled', true);
@@ -46,6 +48,19 @@ class RecuController extends Controller
             . '_' . $inscription->reference . '.pdf';
 
         return $pdf->download($nom);
+    }
+
+    /**
+     * Le moteur PDF écrit de gauche à droite et ne lie pas les lettres arabes :
+     * ar-php les remplace par leurs formes liées et les range de droite à gauche.
+     */
+    private function arabePourPdf(?string $texte): ?string
+    {
+        if (!$texte || !preg_match('/\p{Arabic}/u', $texte)) {
+            return $texte;
+        }
+
+        return (new Arabic())->utf8Glyphs($texte, 100);
     }
 
     /** Image intégrée au PDF (logo public ou photo du dossier privé). */

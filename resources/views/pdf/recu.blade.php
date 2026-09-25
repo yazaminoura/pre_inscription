@@ -95,8 +95,8 @@
                     <td style="vertical-align: top;">
                         <table class="kv">
                             <tr>
-                                <td class="k">{{ __('Nom') }}</td><td class="v">{{ $candidat->nom }}@if ($candidat->nom_ar)<br><span style="font-weight: normal; color: #64748b;">{{ $candidat->nom_ar }}</span>@endif</td>
-                                <td class="k">{{ __('Prénom') }}</td><td class="v">{{ $candidat->prenom }}@if ($candidat->prenom_ar)<br><span style="font-weight: normal; color: #64748b;">{{ $candidat->prenom_ar }}</span>@endif</td>
+                                <td class="k">{{ __('Nom') }}</td><td class="v">{{ $candidat->nom }}@if ($candidat->nom_ar)<br><span style="font-weight: normal; color: #64748b;">{{ $arabe($candidat->nom_ar) }}</span>@endif</td>
+                                <td class="k">{{ __('Prénom') }}</td><td class="v">{{ $candidat->prenom }}@if ($candidat->prenom_ar)<br><span style="font-weight: normal; color: #64748b;">{{ $arabe($candidat->prenom_ar) }}</span>@endif</td>
                             </tr>
                             <tr>
                                 <td class="k">{{ __('CNE / Code Massar') }}</td><td class="v">{{ $candidat->CNE }}</td>
@@ -104,7 +104,7 @@
                             </tr>
                             <tr>
                                 <td class="k">{{ __('Date de naissance') }}</td><td class="v">{{ \Carbon\Carbon::parse($candidat->date_naissance)->format('d/m/Y') }}</td>
-                                <td class="k">{{ __('Ville de naissance') }}</td><td class="v">{{ $candidat->ville_naissance }}, {{ $candidat->pay_naissance }}</td>
+                                <td class="k">{{ __('Ville de naissance') }}</td><td class="v">{{ $candidat->ville_naissance }}, {{ $candidat->pay_naissance }}@if ($candidat->ville_naissance_ar)<br><span style="font-weight: normal; color: #64748b;">{{ $arabe($candidat->ville_naissance_ar) }}</span>@endif</td>
                             </tr>
                             <tr>
                                 <td class="k">{{ __('Sexe') }}</td><td class="v">{{ $candidat->sexe === 'F' ? __('Femme') : __('Homme') }}</td>
