@@ -363,14 +363,10 @@ class CandidatformController extends Controller
 
         $formation = Formation::findOrFail($formData['titre_id']);
         $candidat = Candidat::create([
-            'formation_id' => $formation->id,
-            'type_formation' => $formData['type_formation'],
-            'titre_id' => $formData['titre_id'],
-            'titre' => $formation->titre,
             'nom' => $formData['nom'],
             'prenom' => $formData['prenom'],
-            'nom_ar' => $formData['nom_ar'],
-            'prenom_ar' => $formData['prenom_ar'],
+            'nom_ar' => $formData['nom_ar'] ?? '',
+            'prenom_ar' => $formData['prenom_ar'] ?? '',
             'CNE' => $formData['CNE'],
             'email' => $formData['email'],
             'CIN' => $formData['CIN'],
@@ -380,7 +376,7 @@ class CandidatformController extends Controller
             'province' => $formData['province'],
             'pay_naissance' => $formData['pay_naissance'],
             'nationalite' => $formData['nationalite'],
-            'sex' => $formData['sex'],
+            'sexe' => $formData['sex'] === 'Femme' ? 'F' : 'M',
             'telephone_mob' => $formData['telephone_mob'],
             'telephone_fix' => $formData['telephone_fix'] ?? null,
             'adresse' => $formData['adresse'],
@@ -394,15 +390,6 @@ class CandidatformController extends Controller
             'annee_bac' => $formData['annee_bac'],
             'scan_bac' => $formData['scan_bac'],
         ]);
-
-        // Send email verification
-        try {
-            $candidat->sendEmailVerificationNotification();
-            Log::info('Email de vérification envoyé', ['email' => $candidat->email]);
-        } catch (\Exception $e) {
-            Log::error('Erreur lors de l\'envoi de l\'email de vérification : ' . $e->getMessage());
-            // Continue with the process even if verification email fails
-        }
 
         Log::info('Données complètes du formulaire dans saveCandidat:', $formData);
         Inscription::create([

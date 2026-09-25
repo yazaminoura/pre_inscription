@@ -26,6 +26,19 @@
                     @php
                         $placeholder = 'Rechercher un candidat...';
                     @endphp
+
+                    <!-- Filtre par statut -->
+                    <div class="d-flex flex-wrap gap-2 mx-3 mb-2">
+                        <a href="{{ route('candidats.index') }}" class="btn btn-sm mb-0 {{ $statut ? 'btn-outline-secondary' : 'text-white' }}" @unless($statut) style="background-color: #1a4b8c;" @endunless>
+                            Tous ({{ $compteurs->sum() }})
+                        </a>
+                        @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
+                        <a href="{{ route('candidats.index', ['statut' => $cle]) }}" class="btn btn-sm mb-0 {{ $statut === $cle ? 'text-white' : '' }}"
+                           style="{{ $statut === $cle ? "background-color: $couleur;" : "border: 1px solid $couleur; color: $couleur;" }}">
+                            {{ $libelle }} ({{ $compteurs[$cle] ?? 0 }})
+                        </a>
+                        @endforeach
+                    </div>
                 
                 <div class="card-body px-0 pb-2">
                     <div class="table-responsive p-3">
@@ -34,6 +47,7 @@
                                 <tr>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-items-center">Photo & Info</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 align-items-center">Formation</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Statut</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Contact</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CIN & Naissance</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Documents</th>
@@ -93,7 +107,30 @@
                                             <p class="text-xs font-weight-bold mb-0">{{ $candidat->inscriptions->first()->formation->titre ?? '' }}</p>
                                         </div>
                                     </td>
-                                    
+
+                                    <!-- Statut -->
+                                    <td style="min-width: 190px;">
+                                        @php $inscription = $candidat->inscriptions->first(); @endphp
+                                        @if ($inscription)
+                                        <span class="badge badge-sm text-white mb-1" style="background-color: {{ $inscription->statut_color }};">{{ $inscription->statut_label }}</span>
+                                        <p class="text-xxs text-secondary mb-1">Réf. {{ $inscription->reference }}</p>
+                                        @if ($inscription->motif)
+                                        <p class="text-xxs text-secondary mb-1 text-truncate" style="max-width: 180px;" title="{{ $inscription->motif }}">Motif : {{ $inscription->motif }}</p>
+                                        @endif
+                                        <form action="{{ route('inscriptions.statut', $inscription) }}" method="POST" class="d-flex flex-column gap-1">
+                                            @csrf
+                                            @method('PATCH')
+                                            <select name="statut" class="form-select form-select-sm border px-2">
+                                                @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
+                                                <option value="{{ $cle }}" @selected($inscription->statut === $cle)>{{ $libelle }}</option>
+                                                @endforeach
+                                            </select>
+                                            <input type="text" name="motif" value="{{ $inscription->motif }}" placeholder="Motif (optionnel)" class="form-control form-control-sm border px-2">
+                                            <button type="submit" class="btn btn-sm text-white mb-0" style="background-color: #1a4b8c;">Enregistrer</button>
+                                        </form>
+                                        @endif
+                                    </td>
+
                                     <!-- Contact -->
                                     <td>
                                         <p class="text-xs font-weight-bold mb-0">

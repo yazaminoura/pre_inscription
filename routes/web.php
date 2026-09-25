@@ -13,6 +13,7 @@ use App\Http\Controllers\FormationController;
 use App\Http\Controllers\CandidatformController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\InscriptionController;
 use App\Livewire\FormationStats;
 
 require __DIR__.'/auth.php';
@@ -44,4 +45,6 @@ Route::middleware('auth')->group(function () {
     Route::post('responsable/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     Route::get('/export-candidats/{id}', [ExportController::class, 'export'])->name('export.candidats');
+
+    Route::patch('responsable/inscriptions/{inscription}/statut', [InscriptionController::class, 'updateStatut'])->name('inscriptions.statut');
 });

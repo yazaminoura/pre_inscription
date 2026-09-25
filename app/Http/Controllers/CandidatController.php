@@ -5,21 +5,29 @@ use App\Http\Requests\UpdateCandidatRequest;
 use App\Models\Candidat;
 use App\Models\Formation;
 use App\Models\Inscription;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Brian2694\Toastr\Facades\Toastr;
 
 class CandidatController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $statut = $request->query('statut');
         $candidats = Candidat::with([
             'stages',
             'attestations',
             'diplomes',
             'experiences',
             'inscriptions.formation'
-        ])->get();
-        return view('utilisateur.candidats.index', compact('candidats'));
+        ])
+            ->when($statut && isset(Inscription::STATUTS[$statut]), fn ($q) =>
+                $q->whereHas('inscriptions', fn ($i) => $i->where('statut', $statut)))
+            ->get();
+
+        $compteurs = Inscription::selectRaw('statut, count(*) as total')->groupBy('statut')->pluck('total', 'statut');
+
+        return view('utilisateur.candidats.index', compact('candidats', 'statut', 'compteurs'));
     }
 
     public function create()
