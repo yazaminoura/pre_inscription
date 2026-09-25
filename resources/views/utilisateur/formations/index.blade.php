@@ -37,7 +37,7 @@
               $fin = \Carbon\Carbon::parse($formation->date_fin);
               [$etat, $couleur] = today()->lt($debut) ? ['À venir', '#1a73e8'] : (today()->gt($fin) ? ['Clôturée', '#64748b'] : ['Ouverte', '#2e7d32']);
             @endphp
-            <tr>
+            <tr class="row-link" data-href="{{ route('formations.edit', $formation) }}">
               <td>
                 <div class="d-flex align-items-center gap-3">
                   <span class="stat-icon" style="width: 38px; height: 38px; background: var(--brand-50); color: var(--brand); font-weight: 800; font-size: .8rem;">{{ $formation->type_formation === 'Master' ? 'M' : 'L' }}</span>

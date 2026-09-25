@@ -257,10 +257,181 @@
     font-weight: 700;
 }
 
+.formation-card p {
+    color: var(--muted);
+    font-size: .88rem;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.formation-card .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem .9rem;
+    font-size: .8rem;
+    color: #3d4d5c;
+    font-weight: 600;
+}
+
+.formation-card .actions {
+    display: flex;
+    gap: .5rem;
+}
+
+.formation-card .actions .btn {
+    flex: 1;
+    justify-content: center;
+}
+
+/* Rubrique « L'établissement » */
+.about {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.about-text {
+    white-space: pre-line;
+    color: #3d4d5c;
+    line-height: 1.7;
+}
+
+.contact-list {
+    display: grid;
+    gap: .7rem;
+    font-size: .92rem;
+}
+
+.contact-list > * {
+    display: flex;
+    gap: .6rem;
+    align-items: flex-start;
+    color: var(--ink);
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.contact-list .material-symbols-rounded {
+    color: var(--brand);
+}
+
+@media (max-width: 860px) {
+    .about {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- Fiche formation ---------- */
+.fiche-head h1 {
+    font-size: 1.9rem;
+    font-weight: 800;
+    margin: .6rem 0 .8rem;
+}
+
+.fiche-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.25rem;
+    color: #3d4d5c;
+    font-weight: 600;
+    font-size: .9rem;
+}
+
+.fiche-facts .material-symbols-rounded {
+    color: var(--brand);
+}
+
+.fiche-texte {
+    line-height: 1.75;
+    color: #2f3d4a;
+}
+
+.fiche-liste {
+    padding-left: 1.1rem;
+    margin: 0;
+}
+
+.fiche-liste li {
+    margin-bottom: .4rem;
+}
+
+.fiche-liste li::marker {
+    color: var(--brand);
+}
+
+.fiche-etapes {
+    list-style: none;
+    counter-reset: etape;
+    padding: 0;
+    margin: 0;
+}
+
+.fiche-etapes li {
+    counter-increment: etape;
+    display: flex;
+    gap: .7rem;
+    align-items: flex-start;
+    margin-bottom: .6rem;
+}
+
+.fiche-etapes li::before {
+    content: counter(etape);
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--brand-50);
+    color: var(--brand);
+    font-weight: 800;
+    font-size: .8rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chip {
+    background: var(--brand-50);
+    color: var(--brand-dark);
+    border-radius: 20px;
+    padding: .35rem .85rem;
+    font-weight: 600;
+    font-size: .88rem;
+}
+
+.fiche-cta {
+    position: sticky;
+    top: 90px;
+    border-top: 4px solid var(--brand);
+}
+
+.fiche-compte {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.fiche-compte .n {
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--brand);
+    line-height: 1;
+}
+
+.fiche-compte.urgent .n {
+    color: #c62828;
+}
+
 /* ---------- Formulaire ---------- */
 .form-shell {
-    max-width: 920px;
-    margin: 0 auto;
+    width: 100%;
 }
 
 .stepper {
@@ -394,61 +565,6 @@
         padding-left: 1.1rem;
         padding-right: 1.1rem;
     }
-}
-
-.fieldset-title {
-    font-size: .8rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: .06em;
-    color: var(--brand);
-    margin: 1.75rem 0 .9rem;
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-}
-
-.fieldset-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--line);
-}
-
-.fieldset-title:first-child {
-    margin-top: 0;
-}
-
-.fieldset-title .optional {
-    text-transform: none;
-    letter-spacing: 0;
-    font-weight: 500;
-    color: var(--muted);
-}
-
-.req {
-    color: #c62828;
-}
-
-.form-text-soft {
-    font-size: .78rem;
-    color: var(--muted);
-    margin-top: .25rem;
-}
-
-.file-kept {
-    display: inline-flex;
-    align-items: center;
-    gap: .3rem;
-    font-size: .78rem;
-    color: var(--ok);
-    font-weight: 600;
-    margin-top: .3rem;
-}
-
-.file-kept .material-symbols-rounded {
-    font-size: 16px;
-    vertical-align: 0;
 }
 
 /* Choix de la formation */

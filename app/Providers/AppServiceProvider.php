@@ -22,6 +22,11 @@ class AppServiceProvider extends ServiceProvider
         // Dates affichées en français (« il y a 2 jours », « 25 septembre 2026 »)
         \Carbon\Carbon::setLocale('fr');
 
+        // Nom, logo, couleur… saisis dans l'administration
+        \App\Models\Etablissement::appliquerALaConfig();
+        // Nom court pour les titres : le sigle s'il existe, sinon le nom complet
+        config(['etablissement.court' => config('etablissement.sigle') ?: config('etablissement.nom')]);
+
         // Add macro to check if any of multiple fields are filled
         \Illuminate\Http\Request::macro('anyFilled', function ($keys) {
             foreach ((array) $keys as $key) {

@@ -2,8 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -23,13 +21,7 @@ return new class extends Migration
             $table->rememberToken();
 
         });
-        DB::table('users')->insert([
-            'name'=>' FST Admin',
-            'email'=>'adminfst20252@fsdm.ma',
-            'password'=>Hash::make('fst11231123'),          
-            'created_at' => now(),
-            'updated_at'=>now(),
-        ]);
+        // Pas de compte par défaut : le premier administrateur se crée avec « php artisan admin:creer »
     }
 
     /**

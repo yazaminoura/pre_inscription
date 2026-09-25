@@ -1,11 +1,18 @@
 <?php
 
-// Identité de l'établissement : tout se change ici ou dans le .env, pas dans les vues.
+// Valeurs par défaut, neutres. L'établissement saisit les siennes dans l'administration
+// (menu Paramètres > Établissement) : elles sont stockées en base et remplacent celles-ci.
 return [
-    'nom' => env('ETAB_NOM', 'Faculté des Sciences et Techniques'),
-    'nom_court' => env('ETAB_NOM_COURT', 'FST'),
-    'ville' => env('ETAB_VILLE', 'Fès'),
-    'site' => env('ETAB_SITE', 'https://fst-usmba.ac.ma'),
+    'nom' => env('ETAB_NOM', 'Votre établissement'),
+    'sigle' => env('ETAB_SIGLE'),
+    'ville' => env('ETAB_VILLE'),
+    'pays' => env('ETAB_PAYS'),
+    'adresse' => null,
+    'telephone' => null,
+    'email' => null,
+    'site' => env('ETAB_SITE'),
+    'slogan' => null,
+    'presentation' => null,
     'logo' => env('ETAB_LOGO', 'images/logo.png'),
     'couleur' => env('ETAB_COULEUR', '#096a9b'),
 ];

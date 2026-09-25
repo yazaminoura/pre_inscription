@@ -812,3 +812,60 @@ table.dataTable.no-footer {
         height: 60px;
     }
 }
+
+/* ---------- Champs de formulaire (admin et public) ---------- */
+.fieldset-title {
+    font-size: .8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--brand);
+    margin: 1.75rem 0 .9rem;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.fieldset-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+}
+
+.fieldset-title:first-child {
+    margin-top: 0;
+}
+
+.fieldset-title .optional {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 500;
+    color: var(--muted);
+}
+
+.req {
+    color: #c62828;
+}
+
+.form-text-soft {
+    font-size: .78rem;
+    color: var(--muted);
+    margin-top: .25rem;
+}
+
+.file-kept {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    font-size: .78rem;
+    color: var(--ok);
+    font-weight: 600;
+    margin-top: .3rem;
+}
+
+.file-kept .material-symbols-rounded {
+    font-size: 16px;
+    vertical-align: 0;
+}
+

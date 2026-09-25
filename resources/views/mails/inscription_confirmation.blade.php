@@ -87,8 +87,8 @@
         <h1>Bienvenue {{ $candidatName }} !</h1>
         
         <div class="success-message">
-            <p><strong>Félicitations !</strong> Votre inscription à la FST de l'Université Sidi Mohamed Ben Abdellah de Fès a été confirmée.</p>
-            <p>Votre inscription a été effectuée avec succès dans notre système le {{ now()->format('d/m/Y') }} à {{ now()->format('H:i') }}</p>
+            <p><strong>Votre préinscription est bien enregistrée</strong> auprès de {{ config('etablissement.nom') }}.</p>
+            <p>Dossier reçu le {{ now()->format('d/m/Y') }} à {{ now()->format('H:i') }}. Il sera étudié par l'établissement : cette préinscription ne vaut pas admission.</p>
         </div>
 
         <h2>Informations Personnelles</h2>
@@ -285,7 +285,12 @@
 
         <div class="footer">
             <p><strong>Merci de votre confiance !</strong></p>
-            <p>Pour plus d'informations, consultez notre site : <a href="https://fst-usmba.ac.ma/">https://fst-usmba.ac.ma/</a></p>
+            @if (config('etablissement.site'))
+                <p>Pour plus d'informations, consultez notre site : <a href="{{ config('etablissement.site') }}">{{ config('etablissement.site') }}</a></p>
+            @endif
+            @if (config('etablissement.email'))
+                <p>Contact : <a href="mailto:{{ config('etablissement.email') }}">{{ config('etablissement.email') }}</a></p>
+            @endif
             <p>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
         </div>
     </div>

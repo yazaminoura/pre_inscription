@@ -15,7 +15,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'FST USMBA - Préinscription'),
+    'name' => env('APP_NAME', 'Préinscription'),
 
     /*
     |--------------------------------------------------------------------------

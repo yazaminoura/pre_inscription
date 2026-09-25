@@ -8,7 +8,7 @@
   </a>
 </div>
 
-<div class="panel" style="max-width: 880px;">
+<div class="panel">
   <div class="panel-head"><h3><span class="material-symbols-rounded">manage_accounts</span> {{ $user->name }}</h3></div>
   <div class="panel-body">
     <form action="{{ route('administrateurs.update', $user) }}" method="POST">

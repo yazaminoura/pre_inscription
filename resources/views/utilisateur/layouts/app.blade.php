@@ -5,7 +5,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="{{ asset(config('etablissement.logo')) }}">
-  <title>@hasSection('title')@yield('title') · @endif Préinscription - {{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }}</title>
+  <title>@hasSection('title')@yield('title') · @endif Préinscription - {{ config('etablissement.court') }}</title>
 
   @livewireStyles
   <link rel="preconnect" href="https://fonts.googleapis.com">

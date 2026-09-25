@@ -3,8 +3,8 @@
 
 @section('content')
 <section class="hero">
-    <h1>Préinscriptions {{ date('Y') }}</h1>
-    <p>Choisissez une formation ci-dessous puis déposez votre dossier en ligne, en quelques minutes. Vous recevrez un numéro de référence à la fin.</p>
+    <h1>{{ config('etablissement.nom') }}</h1>
+    <p>{{ config('etablissement.slogan') ?: 'Préinscriptions ' . date('Y') . ' : choisissez une formation puis déposez votre dossier en ligne, en quelques minutes.' }}</p>
     <div class="hero-steps">
         <span><b>1</b> Choisir une formation</span>
         <span><b>2</b> Remplir le formulaire</span>
@@ -33,7 +33,16 @@
             <div class="col-md-6 col-lg-4">
                 <div class="formation-card">
                     <span class="formation-type">{{ $formation->type_formation }}</span>
-                    <h3>{{ $formation->titre }}</h3>
+                    <h3><a href="{{ route('formation.public', $formation) }}" class="text-reset text-decoration-none">{{ $formation->titre }}</a></h3>
+                    @if ($formation->description)
+                        <p>{{ $formation->description }}</p>
+                    @endif
+                    @if ($formation->duree || $formation->places)
+                        <div class="facts">
+                            @if ($formation->duree)<span><span class="material-symbols-rounded">schedule</span> {{ $formation->duree }}</span>@endif
+                            @if ($formation->places)<span><span class="material-symbols-rounded">groups</span> {{ $formation->places }} places</span>@endif
+                        </div>
+                    @endif
                     <div class="formation-meta">
                         <span>
                             <span class="material-symbols-rounded">event</span>
@@ -43,15 +52,18 @@
                             {{ $jours === 0 ? 'Dernier jour' : ($jours . ' j restant' . ($jours > 1 ? 's' : '')) }}
                         </span>
                     </div>
-                    <a href="{{ route('candidat.form', ['formation' => $formation->id]) }}" class="btn btn-brand justify-content-center">
-                        Postuler <span class="material-symbols-rounded">arrow_forward</span>
-                    </a>
+                    <div class="actions">
+                        <a href="{{ route('formation.public', $formation) }}" class="btn btn-soft">Détails</a>
+                        <a href="{{ route('candidat.form', ['formation' => $formation->id]) }}" class="btn btn-brand">
+                            Postuler <span class="material-symbols-rounded">arrow_forward</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         @endforeach
     </div>
 @empty
-    <div class="panel">
+    <div class="panel mb-4">
         <div class="empty-state">
             <span class="material-symbols-rounded">event_busy</span>
             Aucune formation n'est ouverte aux préinscriptions pour le moment.
@@ -61,20 +73,55 @@
 
 @if ($aVenir->isNotEmpty())
     <h2 class="section-heading mt-2">Bientôt ouvertes</h2>
-    <div class="panel">
+    <div class="panel mb-4">
         <div class="table-responsive">
             <table class="table table-clean">
                 <tbody>
                     @foreach ($aVenir as $formation)
                         <tr>
                             <td><span class="formation-type">{{ $formation->type_formation }}</span></td>
-                            <td class="fw-semibold">{{ $formation->titre }}</td>
+                            <td class="fw-semibold"><a href="{{ route('formation.public', $formation) }}" class="text-reset">{{ $formation->titre }}</a></td>
                             <td class="text-muted text-end text-nowrap">Ouverture le {{ \Carbon\Carbon::parse($formation->date_debut)->translatedFormat('d M Y') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
         </div>
+    </div>
+@endif
+
+@php
+    $contacts = array_filter([
+        'location_on' => trim(collect([config('etablissement.adresse'), config('etablissement.ville'), config('etablissement.pays')])->filter()->implode(', ')),
+        'call' => config('etablissement.telephone'),
+        'mail' => config('etablissement.email'),
+        'language' => config('etablissement.site'),
+    ]);
+@endphp
+@if (config('etablissement.presentation') || $contacts)
+    <h2 class="section-heading mt-2" id="etablissement">L'établissement</h2>
+    <div class="about">
+        <div class="panel">
+            <div class="panel-body about-text">{{ config('etablissement.presentation') ?: config('etablissement.nom') }}</div>
+        </div>
+        @if ($contacts)
+            <div class="panel">
+                <div class="panel-head"><h3><span class="material-symbols-rounded">contact_support</span> Contact</h3></div>
+                <div class="panel-body contact-list">
+                    @foreach ($contacts as $icone => $valeur)
+                        @if ($icone === 'mail')
+                            <a href="mailto:{{ $valeur }}"><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</a>
+                        @elseif ($icone === 'call')
+                            <a href="tel:{{ $valeur }}"><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</a>
+                        @elseif ($icone === 'language')
+                            <a href="{{ $valeur }}" target="_blank" rel="noopener"><span class="material-symbols-rounded">{{ $icone }}</span> {{ parse_url($valeur, PHP_URL_HOST) ?: $valeur }}</a>
+                        @else
+                            <span><span class="material-symbols-rounded">{{ $icone }}</span> {{ $valeur }}</span>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 @endif
 @endsection

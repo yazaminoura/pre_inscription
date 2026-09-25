@@ -18,7 +18,13 @@ class UpdateFormationRequest extends FormRequest
             'titre' => 'required|string|max:255',
             'date_debut' => 'required|date',
             'date_fin' => 'required|date|after_or_equal:date_debut',
-            'user_id' => 'required|exists:users,id'
+            'user_id' => 'required|exists:users,id',
+            'description' => 'nullable|string|max:3000',
+            'duree' => 'nullable|string|max:50',
+            'places' => 'nullable|integer|min:1|max:10000',
+            'conditions_acces' => 'nullable|string|max:3000',
+            'modalites_selection' => 'nullable|string|max:3000',
+            'debouches' => 'nullable|string|max:3000'
         ];
     }
 

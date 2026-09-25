@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="{{ asset(config('etablissement.logo')) }}">
-    <title>@yield('title') - {{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }}</title>
+    <title>@yield('title') - {{ config('etablissement.court') }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..24,400..600,0..1,0" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -17,7 +17,7 @@
         <div>
             <span class="logo-tile"><img src="{{ asset(config('etablissement.logo')) }}" alt="{{ config('etablissement.nom') }}"></span>
             <h1>Préinscription {{ date('Y') }}</h1>
-            <p>{{ config('etablissement.nom') }} - {{ config('etablissement.ville') }}. Espace réservé à l'équipe qui étudie les candidatures.</p>
+            <p>{{ config('etablissement.nom') }}. Espace réservé à l'équipe qui étudie les candidatures.</p>
             <ul>
                 <li><span class="material-symbols-rounded">folder_shared</span> Tous les dossiers au même endroit</li>
                 <li><span class="material-symbols-rounded">gavel</span> Décisions suivies par statut</li>

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Candidat;
 use App\Models\Diplome;
+use App\Models\Etablissement;
 use App\Models\Experience;
 use App\Models\Formation;
 use App\Models\Inscription;
@@ -21,6 +22,58 @@ class DemoSeeder extends Seeder
     public function run(): void
     {
         $adminId = User::query()->value('id');
+        if (!$adminId) {
+            $this->command?->error('Créez d\'abord un administrateur : php artisan admin:creer');
+            return;
+        }
+
+        // Établissement fictif, uniquement si aucun n'a encore été saisi
+        if (!Etablissement::query()->exists()) {
+            Etablissement::create([
+                'nom' => 'Université Horizon',
+                'sigle' => 'UH',
+                'ville' => 'Casablanca',
+                'pays' => 'Maroc',
+                'adresse' => '1 avenue de la Connaissance',
+                'telephone' => '+212 5 22 00 00 00',
+                'email' => 'contact@example.com',
+                'slogan' => 'Déposez votre préinscription en ligne pour la rentrée ' . date('Y') . ' : une formation, un formulaire, une référence.',
+                'presentation' => "Université Horizon est un établissement de démonstration : remplacez ce texte depuis l'administration (Paramètres > Établissement).\n\nPrésentez ici votre établissement : son histoire, ses départements, ses laboratoires, ses partenariats et ce qui le rend unique pour vos futurs étudiants.",
+            ]);
+        }
+
+        $details = [
+            'Licence Génie Informatique' => ['3 ans (6 semestres)', 60,
+                "Une formation solide en programmation, bases de données, réseaux et génie logiciel, avec des projets en équipe chaque semestre et un stage en entreprise en dernière année.",
+                "Baccalauréat scientifique ou technique\nBonne moyenne en mathématiques",
+                "Étude du dossier\nTest écrit de mathématiques et logique",
+                "Développeur\nAdministrateur systèmes et réseaux\nPoursuite en Master"],
+            'Licence Génie Électrique' => ['3 ans (6 semestres)', 45,
+                "Électronique, électrotechnique, automatique et informatique industrielle, avec une forte part de travaux pratiques en laboratoire.",
+                "Baccalauréat Sciences Mathématiques ou Sciences Physiques",
+                "Étude du dossier\nEntretien",
+                "Technicien supérieur en électricité\nAutomaticien\nPoursuite en Master"],
+            'Licence Biotechnologie' => ['3 ans (6 semestres)', 40,
+                "Biologie moléculaire, microbiologie et biochimie appliquées à la santé, à l'agroalimentaire et à l'environnement.",
+                "Baccalauréat Sciences de la Vie et de la Terre ou Sciences Physiques",
+                "Étude du dossier",
+                "Technicien de laboratoire\nContrôle qualité\nPoursuite en Master"],
+            'Master Intelligence Artificielle et Data Science' => ['2 ans (4 semestres)', 30,
+                "Apprentissage automatique, deep learning, big data et statistiques, avec un projet de fin d'études en entreprise ou en laboratoire.",
+                "Licence en informatique, mathématiques ou équivalent\nBonnes bases en programmation (Python) et en statistiques",
+                "Présélection sur dossier\nTest écrit\nEntretien oral",
+                "Data scientist\nIngénieur machine learning\nData engineer\nDoctorat"],
+            'Master Génie Logiciel' => ['2 ans (4 semestres)', 35,
+                "Architecture logicielle, méthodes agiles, DevOps, qualité et sécurité des applications.",
+                "Licence en informatique ou équivalent",
+                "Présélection sur dossier\nEntretien oral",
+                "Architecte logiciel\nChef de projet informatique\nIngénieur DevOps"],
+            'Master Énergies Renouvelables' => ['2 ans (4 semestres)', 25,
+                "Solaire, éolien, efficacité énergétique et gestion des réseaux électriques intelligents.",
+                "Licence en physique, électrique ou énergétique",
+                "Présélection sur dossier\nTest écrit\nEntretien",
+                "Ingénieur en énergies renouvelables\nAuditeur énergétique\nChef de projet énergie"],
+        ];
 
         $formations = collect([
             ['Licence', 'Licence Génie Informatique'],
@@ -29,10 +82,20 @@ class DemoSeeder extends Seeder
             ['Master', 'Master Intelligence Artificielle et Data Science'],
             ['Master', 'Master Génie Logiciel'],
             ['Master', 'Master Énergies Renouvelables'],
-        ])->map(fn ($f) => Formation::firstOrCreate(
-            ['titre' => $f[1]],
-            ['type_formation' => $f[0], 'date_debut' => '2026-09-01', 'date_fin' => '2026-12-31', 'user_id' => $adminId]
-        ));
+        ])->map(function ($f) use ($adminId, $details) {
+            [$duree, $places, $description, $conditions, $modalites, $debouches] = $details[$f[1]];
+            $formation = Formation::firstOrCreate(
+                ['titre' => $f[1]],
+                ['type_formation' => $f[0], 'date_debut' => '2026-09-01', 'date_fin' => '2026-12-31', 'user_id' => $adminId]
+            );
+            // Compléter la présentation sans écraser ce qu'un administrateur aurait déjà saisi
+            if (!$formation->description) {
+                $formation->update(compact('duree', 'places', 'description') + [
+                    'conditions_acces' => $conditions, 'modalites_selection' => $modalites, 'debouches' => $debouches,
+                ]);
+            }
+            return $formation;
+        });
 
         // nom, prénom, sexe, ville, pays, nationalité, n° formation, statut, motif
         $candidats = [
@@ -101,12 +164,12 @@ class DemoSeeder extends Seeder
                 'type_diplome_bac_2' => 'DEUST',
                 'annee_diplome_bac_2' => (string) (2021 + $i % 3),
                 'filiere_diplome_bac_2' => ['MIP', 'BCG', 'GE-GM'][$i % 3],
-                'etablissement_bac_2' => 'FST Fès',
+                'etablissement_bac_2' => 'Faculté des Sciences',
                 'scan_bac_2' => "bac_2/{$base}_bac2.pdf",
                 'type_diplome_bac_3' => $master ? 'Licence' : null,
                 'annee_diplome_bac_3' => $master ? (string) (2023 + $i % 3) : null,
                 'filiere_diplome_bac_3' => $master ? 'Génie Informatique' : null,
-                'etablissement_bac_3' => $master ? 'FST Fès' : null,
+                'etablissement_bac_3' => $master ? 'Faculté des Sciences' : null,
             ]);
 
             if ($i % 2 === 0) {

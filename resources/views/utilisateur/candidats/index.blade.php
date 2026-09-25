@@ -56,7 +56,7 @@
         <tbody>
           @foreach ($inscriptions as $inscription)
             @php $candidat = $inscription->candidat; @endphp
-            <tr class="row-link" data-href="{{ route('candidats.show', $candidat) }}">
+            <tr class="row-link" data-href="{{ route('candidats.show', ['candidat' => $candidat] + $filtres) }}">
               <td>
                 <div class="person">
                   @include('utilisateur.partials.avatar', ['candidat' => $candidat])
@@ -74,7 +74,7 @@
               <td data-order="{{ $inscription->created_at?->timestamp }}">{{ $inscription->created_at?->format('d/m/Y') }}</td>
               <td>@include('utilisateur.partials.statut', ['inscription' => $inscription])</td>
               <td class="text-end text-nowrap">
-                <a href="{{ route('candidats.show', $candidat) }}" class="btn btn-soft btn-sm">
+                <a href="{{ route('candidats.show', ['candidat' => $candidat] + $filtres) }}" class="btn btn-soft btn-sm">
                   <span class="material-symbols-rounded">folder_open</span> Dossier
                 </a>
                 <form action="{{ route('candidats.destroy', $candidat) }}" method="POST" class="d-inline">

@@ -10,7 +10,7 @@
 <aside class="admin-sidebar">
   <a href="{{ route('dashboard') }}" class="admin-brand">
     <img src="{{ asset(config('etablissement.logo')) }}" alt="{{ config('etablissement.nom') }}">
-    <span class="brand-name">{{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }}</span>
+    <span class="brand-name">{{ config('etablissement.court') }}</span>
     <span class="brand-sub">Préinscription {{ date('Y') }}</span>
   </a>
 
@@ -27,6 +27,10 @@
     @endforeach
 
     <div class="nav-section">Paramètres</div>
+    <a href="{{ route('etablissement.edit') }}" class="{{ request()->routeIs('etablissement.*') ? 'active' : '' }}">
+      <span class="material-symbols-rounded">apartment</span>
+      Établissement
+    </a>
     <a href="{{ route('administrateurs.index') }}" class="{{ request()->routeIs('administrateurs.*') ? 'active' : '' }}">
       <span class="material-symbols-rounded">admin_panel_settings</span>
       Administrateurs

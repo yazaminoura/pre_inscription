@@ -25,7 +25,7 @@
       </thead>
       <tbody>
         @foreach ($users as $user)
-          <tr>
+          <tr class="row-link" data-href="{{ route('administrateurs.edit', $user) }}">
             <td>
               <div class="person">
                 <span class="avatar-initials">{{ mb_strtoupper(mb_substr(trim($user->name), 0, 1)) }}</span>

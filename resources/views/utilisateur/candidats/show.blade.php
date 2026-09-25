@@ -13,10 +13,27 @@
 @endphp
 
 @section('content')
-<div class="mb-3">
-  <a href="{{ url()->previous() !== url()->current() ? url()->previous() : route('candidats.index') }}" class="text-decoration-none fw-semibold">
+{{-- Navigation : retour à la liste + dossier précédent / suivant (flèches ← → du clavier) --}}
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  <a href="{{ route('candidats.index', $navigation['filtres']) }}" class="text-decoration-none fw-semibold me-auto">
     <span class="material-symbols-rounded">arrow_back</span> Retour aux candidatures
+    @if (!empty($navigation['filtres']['statut']))
+      <span class="text-muted fw-normal small">({{ \App\Models\Inscription::STATUTS[$navigation['filtres']['statut']][0] }})</span>
+    @endif
   </a>
+  @if ($navigation['position'])
+    <span class="text-muted small">Dossier {{ $navigation['position'] }} sur {{ $navigation['total'] }}</span>
+    <div class="btn-group">
+      <a id="dossier-precedent" class="btn btn-sm btn-light border {{ $navigation['precedent'] ? '' : 'disabled' }}"
+         href="{{ $navigation['precedent'] ? route('candidats.show', ['candidat' => $navigation['precedent']] + $navigation['filtres']) : '#' }}" title="Dossier précédent (←)">
+        <span class="material-symbols-rounded">chevron_left</span> Précédent
+      </a>
+      <a id="dossier-suivant" class="btn btn-sm btn-light border {{ $navigation['suivant'] ? '' : 'disabled' }}"
+         href="{{ $navigation['suivant'] ? route('candidats.show', ['candidat' => $navigation['suivant']] + $navigation['filtres']) : '#' }}" title="Dossier suivant (→)">
+        Suivant <span class="material-symbols-rounded">chevron_right</span>
+      </a>
+    </div>
+  @endif
 </div>
 
 {{-- En-tête du dossier --}}
@@ -202,3 +219,14 @@
   </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+  // ← / → pour passer au dossier précédent / suivant (sauf pendant la saisie d'un motif)
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest('input, textarea, select') || e.altKey || e.ctrlKey || e.metaKey) return;
+    const lien = document.getElementById(e.key === 'ArrowLeft' ? 'dossier-precedent' : e.key === 'ArrowRight' ? 'dossier-suivant' : '');
+    if (lien && !lien.classList.contains('disabled')) window.location = lien.href;
+  });
+</script>
+@endpush

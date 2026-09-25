@@ -7,6 +7,7 @@ use App\Http\Controllers\CandidatController;
 use App\Http\Controllers\FormationController;
 use App\Http\Controllers\CandidatformController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EtablissementController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InscriptionController;
 use App\Livewire\FormationStats;
@@ -15,6 +16,7 @@ require __DIR__.'/auth.php';
 
 // Public routes
 Route::get('/', [CandidatformController::class, 'accueil'])->name('accueil');
+Route::get('/formations/{formation}', [CandidatformController::class, 'formation'])->name('formation.public');
 Route::get('/preinscription', [CandidatformController::class, 'showForm'])->name('candidat.form');
 Route::post('/preinscription', [CandidatformController::class, 'submitStep'])->name('candidat.submit');
 Route::get('/preinscription/merci', [CandidatformController::class, 'merci'])->name('candidat.merci');
@@ -30,6 +32,9 @@ Route::middleware('auth')->group(function () {
         ->names('administrateurs');
 
     Route::resource('responsable/formations', FormationController::class)->except('show');
+
+    Route::get('responsable/etablissement', [EtablissementController::class, 'edit'])->name('etablissement.edit');
+    Route::put('responsable/etablissement', [EtablissementController::class, 'update'])->name('etablissement.update');
 
     // Les diplômes, stages, expériences et attestations font partie du dossier candidat (page show)
     Route::resource('responsable/candidats', CandidatController::class)->only(['index', 'show', 'destroy']);

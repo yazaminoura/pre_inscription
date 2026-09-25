@@ -11,30 +11,54 @@ class CandidatController extends Controller
 {
     public function index(Request $request)
     {
-        $statut = $request->query('statut');
-        $statut = isset(Inscription::STATUTS[$statut]) ? $statut : null;
-        $formationId = $request->integer('formation') ?: null;
+        [$statut, $formationId] = $this->filtres($request);
 
         // Une ligne = une candidature (un candidat peut postuler à plusieurs formations)
-        $inscriptions = Inscription::with(['candidat', 'formation'])
-            ->whereHas('candidat')
-            ->when($statut, fn ($q) => $q->where('statut', $statut))
-            ->when($formationId, fn ($q) => $q->where('formation_id', $formationId))
-            ->latest()
-            ->get();
+        $inscriptions = $this->candidatures($statut, $formationId)->with(['candidat', 'formation'])->get();
 
         $compteurs = Inscription::when($formationId, fn ($q) => $q->where('formation_id', $formationId))
             ->selectRaw('statut, count(*) as total')->groupBy('statut')->pluck('total', 'statut');
         $formations = Formation::orderBy('type_formation')->orderBy('titre')->get();
+        $filtres = array_filter(['statut' => $statut, 'formation' => $formationId]);
 
-        return view('utilisateur.candidats.index', compact('inscriptions', 'statut', 'compteurs', 'formations', 'formationId'));
+        return view('utilisateur.candidats.index', compact('inscriptions', 'statut', 'compteurs', 'formations', 'formationId', 'filtres'));
     }
 
-    public function show(Candidat $candidat)
+    public function show(Request $request, Candidat $candidat)
     {
         $candidat->load(['inscriptions.formation', 'diplomes', 'stages', 'experiences', 'attestations']);
 
-        return view('utilisateur.candidats.show', compact('candidat'));
+        // Précédent / suivant dans la même liste (mêmes filtres, même ordre) que la page Candidatures
+        [$statut, $formationId] = $this->filtres($request);
+        $filtres = array_filter(['statut' => $statut, 'formation' => $formationId]);
+        $ids = $this->candidatures($statut, $formationId)->pluck('candidat_id')->unique()->values();
+        $position = $ids->search($candidat->id);
+        $navigation = [
+            'filtres' => $filtres,
+            'position' => $position === false ? null : $position + 1,
+            'total' => $ids->count(),
+            'precedent' => $position ? $ids[$position - 1] : null,
+            'suivant' => $position !== false && $position + 1 < $ids->count() ? $ids[$position + 1] : null,
+        ];
+
+        return view('utilisateur.candidats.show', compact('candidat', 'navigation'));
+    }
+
+    private function filtres(Request $request): array
+    {
+        $statut = $request->query('statut');
+
+        return [isset(Inscription::STATUTS[$statut]) ? $statut : null, $request->integer('formation') ?: null];
+    }
+
+    private function candidatures(?string $statut, ?int $formationId)
+    {
+        return Inscription::query()
+            ->whereHas('candidat')
+            ->when($statut, fn ($q) => $q->where('statut', $statut))
+            ->when($formationId, fn ($q) => $q->where('formation_id', $formationId))
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
     }
 
     public function destroy(Candidat $candidat)

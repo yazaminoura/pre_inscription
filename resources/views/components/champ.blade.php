@@ -26,7 +26,7 @@
             @endforeach
         </select>
     @elseif ($type === 'textarea')
-        <textarea name="{{ $name }}" id="{{ $id }}" rows="2" class="form-control @error($cleErreur) is-invalid @enderror" placeholder="{{ $placeholder }}" @if ($required) required @endif {{ $attributes }}>{{ $valeur }}</textarea>
+        <textarea name="{{ $name }}" id="{{ $id }}" rows="{{ $attributes->get('rows', 2) }}" class="form-control @error($cleErreur) is-invalid @enderror" placeholder="{{ $placeholder }}" @if ($required) required @endif {{ $attributes->except('rows') }}>{{ $valeur }}</textarea>
     @else
         <input type="{{ $type }}" name="{{ $name }}" id="{{ $id }}" value="{{ $type === 'file' ? '' : $valeur }}"
                class="form-control @error($cleErreur) is-invalid @enderror" placeholder="{{ $placeholder }}"

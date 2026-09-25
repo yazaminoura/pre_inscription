@@ -41,6 +41,17 @@ class CandidatformController extends Controller
         return view('candidateur.accueil', compact('formations', 'aVenir'));
     }
 
+    /** Fiche publique d'une formation (ouverte ou à venir ; une formation clôturée n'est plus affichée). */
+    public function formation(Formation $formation)
+    {
+        abort_if(today()->gt(\Carbon\Carbon::parse($formation->date_fin)), 404);
+
+        $ouverte = today()->gte(\Carbon\Carbon::parse($formation->date_debut));
+        $autres = $this->formationsOuvertes()->where('id', '!=', $formation->id)->take(3);
+
+        return view('candidateur.formation', compact('formation', 'ouverte', 'autres'));
+    }
+
     public function showForm(Request $request)
     {
         $data = session('form_data', []);

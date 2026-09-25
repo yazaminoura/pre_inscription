@@ -36,6 +36,20 @@
   </div>
 </div>
 
+<div class="fieldset-title mt-4">Présentation sur le site public <span class="optional">· facultatif, mais conseillé</span></div>
+<div class="row g-3">
+  <x-champ name="duree" label="Durée" :value="$formation->duree ?? ''" placeholder="Ex. : 2 ans (4 semestres)" />
+  <x-champ name="places" label="Nombre de places" type="number" min="1" :value="$formation->places ?? ''" placeholder="Ex. : 40" />
+  <x-champ name="description" label="Description" type="textarea" rows="4" col="col-12" :value="$formation->description ?? ''"
+           placeholder="Objectifs de la formation, contenu, points forts…" />
+  <x-champ name="conditions_acces" label="Conditions d'accès" type="textarea" rows="3" :value="$formation->conditions_acces ?? ''"
+           placeholder="Diplômes acceptés, mentions, prérequis…" aide="Une condition par ligne." />
+  <x-champ name="modalites_selection" label="Modalités de sélection" type="textarea" rows="3" :value="$formation->modalites_selection ?? ''"
+           placeholder="Étude du dossier, test écrit, entretien…" aide="Une étape par ligne." />
+  <x-champ name="debouches" label="Débouchés" type="textarea" rows="3" col="col-12" :value="$formation->debouches ?? ''"
+           placeholder="Métiers visés, poursuite d'études…" aide="Un débouché par ligne." />
+</div>
+
 <div class="d-flex gap-2 justify-content-end mt-4">
   <a href="{{ route('formations.index') }}" class="btn btn-light">Annuler</a>
   <button type="submit" class="btn btn-brand">
