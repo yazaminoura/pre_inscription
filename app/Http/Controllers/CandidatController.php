@@ -26,7 +26,7 @@ class CandidatController extends Controller
 
     public function show(Request $request, Candidat $candidat)
     {
-        $candidat->load(['inscriptions.formation', 'diplomes', 'stages', 'experiences', 'attestations']);
+        $candidat->load(['inscriptions.formation', 'inscriptions.historique.user', 'diplomes', 'stages', 'experiences', 'attestations']);
 
         // Précédent / suivant dans la même liste (mêmes filtres, même ordre) que la page Candidatures
         [$statut, $formationId] = $this->filtres($request);

@@ -192,12 +192,32 @@
                 </label>
               @endforeach
             </div>
-            <label class="form-label" for="motif-{{ $inscription->id }}">Motif / commentaire</label>
-            <textarea name="motif" id="motif-{{ $inscription->id }}" rows="2" class="form-control mb-3" placeholder="Ex. : relevé de notes manquant (optionnel)">{{ $inscription->motif }}</textarea>
+            <label class="form-label" for="motif-{{ $inscription->id }}">Motif / précision pour le candidat</label>
+            <textarea name="motif" id="motif-{{ $inscription->id }}" rows="2" class="form-control mb-2" placeholder="Ex. : relevé de notes manquant (optionnel)">{{ $inscription->motif }}</textarea>
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" name="notifier" value="1" id="notifier-{{ $inscription->id }}" checked>
+              <label class="form-check-label small" for="notifier-{{ $inscription->id }}">Prévenir le candidat par email</label>
+            </div>
             <button type="submit" class="btn btn-brand w-100 justify-content-center">
               <span class="material-symbols-rounded">check</span> Enregistrer la décision
             </button>
           </form>
+
+          @if ($inscription->historique->isNotEmpty())
+            <div class="fieldset-title mt-4">Historique</div>
+            @foreach ($inscription->historique->reverse() as $h)
+              <div class="timeline-item">
+                {{-- La plus ancienne ligne (affichée en dernier) est le dépôt du dossier --}}
+                <h4 style="color: {{ $h->statut_color }};">{{ $loop->last ? 'Dossier déposé' : $h->statut_label }}</h4>
+                <div class="text-muted small">
+                  {{ $h->created_at?->format('d/m/Y à H:i') }}
+                  @if ($h->user) · {{ $h->user->name }}@endif
+                  @if ($h->notifie) · <span title="Email envoyé au candidat"><span class="material-symbols-rounded" style="font-size: 15px;">mark_email_read</span> prévenu</span>@endif
+                </div>
+                @if ($h->motif)<div class="small mt-1">« {{ $h->motif }} »</div>@endif
+              </div>
+            @endforeach
+          @endif
         </div>
       </div>
     @endforeach

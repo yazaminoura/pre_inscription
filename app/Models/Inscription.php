@@ -28,7 +28,32 @@ class Inscription extends Model
                 $inscription->reference = 'PI' . now()->format('Y') . '-' . str_pad($inscription->id, 5, '0', STR_PAD_LEFT);
                 $inscription->saveQuietly();
             }
+            // Première ligne de l'historique : le dépôt du dossier
+            $inscription->historique()->create(['statut' => 'en_attente', 'created_at' => $inscription->created_at]);
+            if (($inscription->statut ?? 'en_attente') !== 'en_attente') {
+                $inscription->historique()->create(['statut' => $inscription->statut, 'motif' => $inscription->motif, 'created_at' => $inscription->statut_at ?? now()]);
+            }
         });
+    }
+
+    /**
+     * Change le statut et l'inscrit dans l'historique. Renvoie la ligne d'historique créée.
+     */
+    public function changerStatut(string $statut, ?string $motif, ?User $par = null): InscriptionHistorique
+    {
+        $this->update(['statut' => $statut, 'motif' => $motif, 'statut_at' => now()]);
+
+        return $this->historique()->create([
+            'statut' => $statut,
+            'motif' => $motif,
+            'user_id' => $par?->id,
+            'created_at' => now(),
+        ]);
+    }
+
+    public function historique()
+    {
+        return $this->hasMany(InscriptionHistorique::class)->orderBy('created_at')->orderBy('id');
     }
 
     public function getStatutLabelAttribute()

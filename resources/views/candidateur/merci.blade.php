@@ -13,6 +13,9 @@
     <div class="merci-ref">{{ $inscription->reference ?? session('inscription_ok') }}</div>
     <p class="text-muted small">Un récapitulatif a été envoyé à <strong>{{ $inscription->candidat->email ?? 'votre adresse email' }}</strong>.
         Rappelez cette référence pour tout échange avec l'établissement.</p>
+    <a href="{{ route('suivi', ['reference' => $inscription->reference ?? session('inscription_ok')]) }}" class="btn btn-brand mt-2">
+        <span class="material-symbols-rounded">travel_explore</span> Suivre mon dossier
+    </a>
     <a href="{{ route('accueil') }}" class="btn btn-soft mt-2">
         <span class="material-symbols-rounded">arrow_back</span> Retour aux formations
     </a>

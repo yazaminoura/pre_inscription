@@ -26,6 +26,7 @@
             <nav class="public-nav">
                 <a href="{{ route('accueil') }}" class="{{ request()->routeIs('accueil', 'formation.public') ? 'active' : '' }}">Formations</a>
                 @if (config('etablissement.presentation'))<a href="{{ route('accueil') }}#etablissement">L'établissement</a>@endif
+                <a href="{{ route('suivi') }}" class="{{ request()->routeIs('suivi*') ? 'active' : '' }}">Suivre mon dossier</a>
                 @if (session('form_data'))
                     <a href="{{ route('candidat.form', ['step' => session('form_data._etape', 1)]) }}" class="{{ request()->routeIs('candidat.form') ? 'active' : '' }}">Ma préinscription</a>
                 @endif
