@@ -7,7 +7,7 @@
     <label for="type_formation" class="form-label">Type <span class="text-danger">*</span></label>
     <select name="type_formation" id="type_formation" class="form-select @error('type_formation') is-invalid @enderror" required>
       <option value="">Choisir…</option>
-      @foreach (['Licence', 'Master'] as $type)
+      @foreach (config('etablissement.types_formation') as $type)
         <option value="{{ $type }}" @selected(old('type_formation', $formation->type_formation ?? '') === $type)>{{ $type }}</option>
       @endforeach
     </select>

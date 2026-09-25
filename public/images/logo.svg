@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Logo">
+  <!-- Logo neutral par défaut : chaque établissement téléverse le sien (Paramètres > Établissement) -->
+  <circle cx="60" cy="60" r="56" fill="#096a9b"/>
+  <circle cx="60" cy="60" r="49" fill="none" stroke="#ffffff" stroke-opacity=".35" stroke-width="2"/>
+  <path d="M60 30 L98 47 L60 64 L22 47 Z" fill="#ffffff"/>
+  <path d="M38 56 V73 C38 81 49 87 60 87 C71 87 82 81 82 73 V56 L60 66 Z" fill="#ffffff" fill-opacity=".92"/>
+  <path d="M92 50 V72" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="92" cy="75" r="4" fill="#ffffff"/>
+</svg>

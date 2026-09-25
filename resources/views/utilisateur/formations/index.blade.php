@@ -40,7 +40,7 @@
             <tr class="row-link" data-href="{{ route('formations.edit', $formation) }}">
               <td>
                 <div class="d-flex align-items-center gap-3">
-                  <span class="stat-icon" style="width: 38px; height: 38px; background: var(--brand-50); color: var(--brand); font-weight: 800; font-size: .8rem;">{{ $formation->type_formation === 'Master' ? 'M' : 'L' }}</span>
+                  <span class="stat-icon" style="width: 38px; height: 38px; background: var(--brand-50); color: var(--brand); font-weight: 800; font-size: .8rem;">{{ mb_strtoupper(mb_substr($formation->type_formation, 0, 1)) }}</span>
                   <div>
                     <div class="fw-semibold">{{ $formation->titre }}</div>
                     <div class="person-sub">{{ $formation->type_formation }}</div>

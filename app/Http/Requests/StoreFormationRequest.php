@@ -14,7 +14,7 @@ class StoreFormationRequest extends FormRequest
     public function rules()
     {
         return [
-            'type_formation' => ['required', 'string', 'in:Licence,Master'],
+            'type_formation' => ['required', 'string', \Illuminate\Validation\Rule::in(config('etablissement.types_formation'))],
             'titre' => 'required|string|max:255',
             'date_debut' => 'required|date',
             'date_fin' => 'required|date|after_or_equal:date_debut',
@@ -32,7 +32,7 @@ class StoreFormationRequest extends FormRequest
     {
         return [
             'type_formation.required' => 'Le type de formation est obligatoire.',
-            'type_formation.in' => 'Le type de formation doit être soit "licence" soit "master".',
+            'type_formation.in' => 'Ce type de formation n\'est pas proposé.',
             'titre.required' => 'Le titre est obligatoire.',
             'date_debut.required' => 'La date de début est obligatoire.',
             'date_debut.date' => 'La date de début doit être une date valide.',

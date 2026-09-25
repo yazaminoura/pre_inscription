@@ -13,6 +13,12 @@ return [
     'site' => env('ETAB_SITE'),
     'slogan' => null,
     'presentation' => null,
-    'logo' => env('ETAB_LOGO', 'images/logo.png'),
+    'logo' => env('ETAB_LOGO', 'images/logo.svg'),
     'couleur' => env('ETAB_COULEUR', '#096a9b'),
+
+    // Types de formation proposés dans l'administration (ordre d'affichage sur le site public)
+    'types_formation' => [
+        'DUT', 'BTS', 'Licence', 'Licence professionnelle', 'Cycle ingénieur',
+        'Master', 'Master spécialisé', 'Doctorat', 'Formation continue',
+    ],
 ];

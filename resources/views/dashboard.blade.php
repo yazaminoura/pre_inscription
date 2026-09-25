@@ -119,7 +119,7 @@
       <div class="panel-body">
         @forelse ($formations as $f)
           <a href="{{ route('candidats.index', ['formation' => $f->id]) }}" class="d-flex align-items-center gap-3 text-decoration-none text-body mb-3">
-            <span class="stat-icon" style="width: 38px; height: 38px; background: var(--brand-50); color: var(--brand); font-weight: 800; font-size: .8rem;">{{ $f->type_formation === 'Master' ? 'M' : 'L' }}</span>
+            <span class="stat-icon" style="width: 38px; height: 38px; background: var(--brand-50); color: var(--brand); font-weight: 800; font-size: .8rem;">{{ mb_strtoupper(mb_substr($f->type_formation, 0, 1)) }}</span>
             <span class="flex-grow-1" style="min-width: 0;">
               <span class="d-block fw-semibold text-truncate">{{ $f->titre }}</span>
               <span class="person-sub">{{ $f->acceptees_count }} acceptée(s) · {{ $f->en_attente_count }} à traiter</span>
