@@ -96,7 +96,7 @@
         <h2>{{ __('Expérience') }}</h2>
         <table class="liste">
             @foreach ($experiences as [$type, $e])
-                <tr><td style="width: 18%;">{{ $type }}</td><td><strong>{{ $e->fonction }}</strong> · {{ $e->etablissement }}</td><td style="width: 26%;">{{ $e->periode }}</td></tr>
+                <tr><td style="width: 18%;">{{ $type }}</td><td><strong>{{ $e->fonction }}</strong> · {{ $e->etablissement }}</td><td style="width: 26%;">{{ is_numeric($e->periode) ? $e->periode . ' ' . __('mois') : $e->periode }}</td></tr>
             @endforeach
             @foreach ($candidat->attestations as $a)
                 <tr><td>{{ __('Attestation') }}</td><td><strong>{{ $a->type_attestation }}</strong></td><td>{{ $a->description }}</td></tr>

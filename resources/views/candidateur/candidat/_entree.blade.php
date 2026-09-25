@@ -19,7 +19,7 @@
         @else
             <x-champ :name="$p . '[fonction]'" :label="$lFonction" :value="$e['fonction'] ?? ''" required />
             <x-champ :name="$p . '[etablissement]'" :label="$lOrganisme" :value="$e['etablissement'] ?? ''" required />
-            <x-champ :name="$p . '[periode]'" :label="__('Période')" :value="$e['periode'] ?? ''" :placeholder="__('Ex. : juillet - août 2025')" />
+            <x-champ :name="$p . '[periode]'" :label="__('Période (mois)')" type="number" min="1" max="600" :value="$e['periode'] ?? ''" :placeholder="__('Ex. : 6')" />
             <x-champ :name="$p . '[secteur_activite]'" :label="$lSecteur" :value="$e['secteur_activite'] ?? ''" />
             <x-champ :name="$p . '[description]'" :label="__('Missions')" type="textarea" :value="$e['description'] ?? ''" col="col-12" :placeholder="__('En une ou deux phrases')" />
         @endif

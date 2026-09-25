@@ -120,7 +120,7 @@
             @forelse ($candidat->stages as $stage)
               <div class="timeline-item">
                 <h4>{{ $stage->fonction ?: 'Stage' }}</h4>
-                <div class="text-muted small">{{ $stage->etablissement }}@if($stage->periode) · {{ $stage->periode }}@endif</div>
+                <div class="text-muted small">{{ $stage->etablissement }}@if($stage->periode) · {{ is_numeric($stage->periode) ? $stage->periode . ' mois' : $stage->periode }}@endif</div>
                 @if ($stage->description)<div class="small mt-1">{{ $stage->description }}</div>@endif
                 @if ($stage->attestation)<a href="{{ $doc($stage->attestation) }}" target="_blank" class="small">Attestation</a>@endif
               </div>
@@ -137,7 +137,7 @@
             @forelse ($candidat->experiences as $exp)
               <div class="timeline-item">
                 <h4>{{ $exp->fonction ?: 'Expérience' }}</h4>
-                <div class="text-muted small">{{ $exp->etablissement }}@if($exp->periode) · {{ $exp->periode }}@endif</div>
+                <div class="text-muted small">{{ $exp->etablissement }}@if($exp->periode) · {{ is_numeric($exp->periode) ? $exp->periode . ' mois' : $exp->periode }}@endif</div>
                 @if ($exp->description)<div class="small mt-1">{{ $exp->description }}</div>@endif
                 @if ($exp->attestation)<a href="{{ $doc($exp->attestation) }}" target="_blank" class="small">Attestation</a>@endif
               </div>

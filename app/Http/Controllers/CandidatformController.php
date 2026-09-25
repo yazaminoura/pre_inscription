@@ -266,7 +266,7 @@ class CandidatformController extends Controller
             ] : [
                 "$liste.*.fonction" => 'required|string|max:100',
                 "$liste.*.etablissement" => 'required|string|max:100',
-                "$liste.*.periode" => 'nullable|string|max:100',
+                "$liste.*.periode" => 'nullable|integer|min:1|max:600', // durée en mois
                 "$liste.*.secteur_activite" => 'nullable|string|max:100',
             ]))->all(),
             6 => [
