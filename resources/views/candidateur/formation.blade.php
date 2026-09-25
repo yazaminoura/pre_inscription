@@ -33,6 +33,7 @@
                     <span><span class="material-symbols-rounded">location_on</span> {{ config('etablissement.ville') }}</span>
                 @endif
                 <span><span class="material-symbols-rounded">event</span> {{ __('Préinscriptions du :debut au :fin', ['debut' => $debut->format('d/m/Y'), 'fin' => $fin->format('d/m/Y')]) }}</span>
+                <span><span class="material-symbols-rounded">school</span> {{ __("Condition d'accès") }} : {{ $formation->conditionAcces() }}</span>
             </div>
         </div>
 

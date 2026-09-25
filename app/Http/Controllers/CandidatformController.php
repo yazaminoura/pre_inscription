@@ -81,7 +81,7 @@ class CandidatformController extends Controller
             'formations' => $formations,
             'formationChoisie' => $formationChoisie,
             'data' => $data,
-            'diplomes' => $this->diplomesDemandes($data),
+            'parcours' => $this->exigencesParcours($data),
         ]);
     }
 
@@ -115,7 +115,10 @@ class CandidatformController extends Controller
             // Tout ou rien : pas de candidat à moitié enregistré si une étape échoue
             $inscription = DB::transaction(fn () => $this->enregistrer($data));
         } catch (ValidationException $e) {
-            throw $e;
+            // Vérification finale refusée : renvoyer à l'étape où se trouve le champ en cause
+            $cle = array_key_first($e->errors());
+            $etape = str_starts_with($cle, 'titre') ? 1 : (in_array($cle, ['CNE', 'CIN'], true) ? 2 : (str_contains($cle, 'diplome') ? 4 : 6));
+            return redirect()->route('candidat.form', ['step' => $etape])->withErrors($e->errors());
         } catch (\Throwable $e) {
             Log::error('Erreur lors de l\'enregistrement de la préinscription : ' . $e->getMessage());
             return redirect()->route('candidat.form', ['step' => 6])
@@ -166,17 +169,38 @@ class CandidatformController extends Controller
     }
 
     /**
-     * Diplômes post-bac demandés selon le niveau d'accès de la formation choisie :
-     * [2 => 'requis'|'facultatif'|'non', 3 => ...]. Après le bac : aucun ; Bac+2 : Bac+2 exigé, Bac+3 facultatif ; Bac+3 et plus : les deux exigés.
+     * Ce que l'étape « Parcours » demande pour la formation choisie :
+     * - afficher : sections Bac+2 / Bac+3 visibles (inutiles pour une formation recrutant après le bac, sans voie alternative) ;
+     * - experience : question « années d'expérience » (seulement s'il existe une voie alternative) ;
+     * - condition : texte de la condition d'accès, montré au candidat.
+     * Aucun diplôme n'est exigé individuellement : c'est le plus haut diplôme (ou la voie alternative) qui compte.
      */
-    private function diplomesDemandes(array $data): array
+    private function exigencesParcours(array $data): array
     {
-        $rang = Formation::find($data['titre_id'] ?? 0)?->rangAcces() ?? 0;
+        $formation = Formation::find($data['titre_id'] ?? 0);
 
         return [
-            2 => $rang >= 2 ? 'requis' : 'non',
-            3 => $rang >= 3 ? 'requis' : ($rang === 2 ? 'facultatif' : 'non'),
+            'afficher' => $formation && ($formation->rangAcces() >= 2 || ($formation->rangAlternatif() ?? 0) >= 2),
+            'experience' => $formation && $formation->rangAlternatif() !== null,
+            'condition' => $formation?->conditionAcces() ?? '',
         ];
+    }
+
+    /** Refuse l'étape « Parcours » si le candidat n'atteint pas la condition d'accès de la formation. */
+    private function verifierRecevabilite(array $data): void
+    {
+        $formation = Formation::find($data['titre_id'] ?? 0);
+        if ($formation && !$formation->estRecevable($this->plusHautDiplome($data), $data['annees_experience'] ?? null)) {
+            throw ValidationException::withMessages([
+                'type_diplome_bac_3' => __('Cette formation demande : :condition.', ['condition' => $formation->conditionAcces()]),
+            ]);
+        }
+    }
+
+    /** Plus haut diplôme renseigné : 3 (Bac+3), 2 (Bac+2) ou 0 (bac seulement). */
+    private function plusHautDiplome(array $data): int
+    {
+        return filled($data['type_diplome_bac_3'] ?? null) ? 3 : (filled($data['type_diplome_bac_2'] ?? null) ? 2 : 0);
     }
 
     private function regles(int $step, array $data): array
@@ -217,20 +241,20 @@ class CandidatformController extends Controller
                 'serie_bac' => 'required|string|max:50',
                 'annee_bac' => "required|$annee",
                 'scan_bac' => $fichier('scan_bac'),
-            ], ...array_map(function ($n) use ($data, $fichier, $annee) {
-                // Bac+2 / Bac+3 : exigé, facultatif ou pas demandé du tout selon le niveau d'accès de la formation
-                $exigence = $this->diplomesDemandes($data)[$n];
-                if ($exigence === 'non') {
+            ], $this->exigencesParcours($data)['experience'] ? ['annees_experience' => 'nullable|integer|min:0|max:50'] : [],
+            ...array_map(function ($n) use ($data, $annee) {
+                // Bac+2 / Bac+3 : chacun facultatif, mais complet s'il est commencé. La recevabilité (plus haut diplôme
+                // ou voie alternative) est vérifiée ensuite, dans etapeParcours().
+                if (!$this->exigencesParcours($data)['afficher']) {
                     return [];
                 }
-                $requis = $exigence === 'requis';
-                $si = $requis ? 'required|' : "nullable|required_with:type_diplome_bac_$n|";
+                $si = "nullable|required_with:type_diplome_bac_$n|";
                 return [
-                    "type_diplome_bac_$n" => ($requis ? 'required|' : 'nullable|') . 'string|max:100',
+                    "type_diplome_bac_$n" => 'nullable|string|max:100',
                     "filiere_diplome_bac_$n" => $si . 'string|max:100',
                     "etablissement_bac_$n" => $si . 'string|max:100',
                     "annee_diplome_bac_$n" => $si . $annee,
-                    "scan_bac_$n" => $fichier("scan_bac_$n", $requis),
+                    "scan_bac_$n" => (empty($data["scan_bac_$n"]) ? $si : 'nullable|') . self::FICHIER,
                 ];
             }, [2, 3])),
             5 => collect(['stages', 'experiences', 'attestations'])->flatMap(fn ($liste) => [
@@ -258,7 +282,7 @@ class CandidatformController extends Controller
     private function libelles(): array
     {
         return [
-            'nom' => 'nom', 'prenom' => 'prénom', 'CNE' => 'CNE', 'CIN' => 'CIN', 'email' => 'email',
+            'nom' => 'nom', 'prenom' => 'prénom', 'CNE' => 'CNE', 'CIN' => 'CIN', 'email' => 'email', 'annees_experience' => 'années d\'expérience',
             'adresse' => 'adresse', 'ville' => 'ville', 'province' => 'province', 'pays' => 'pays', 'photo' => 'photo',
             'stages.*.periode' => 'période', 'stages.*.secteur_activite' => 'secteur d\'activité', 'stages.*.description' => 'missions',
             'experiences.*.periode' => 'période', 'experiences.*.secteur_activite' => 'secteur d\'activité', 'experiences.*.description' => 'missions',
@@ -289,7 +313,7 @@ class CandidatformController extends Controller
         }
         // Autre niveau d'accès que la formation choisie avant : l'étape « Parcours » est à refaire
         $avant = Formation::find($data['titre_id'] ?? 0);
-        if ($avant && $avant->rangAcces() !== $formation->rangAcces() && ($data['_etape'] ?? 1) > 4) {
+        if ($avant && $avant->conditionAcces() !== $formation->conditionAcces() && ($data['_etape'] ?? 1) > 4) {
             $data['_etape'] = 4;
         }
         $data['titre_id'] = $formation->id;
@@ -317,6 +341,19 @@ class CandidatformController extends Controller
 
     private function etapeParcours(Request $request, array $validated, array $data): array
     {
+        // Un diplôme dont le type est vidé est retiré en entier
+        foreach ([2, 3] as $n) {
+            if (array_key_exists("type_diplome_bac_$n", $validated) && blank($validated["type_diplome_bac_$n"])) {
+                foreach (['filiere_diplome', 'etablissement', 'annee_diplome', 'scan'] as $champ) {
+                    unset($data["{$champ}_bac_$n"], $validated["{$champ}_bac_$n"]);
+                }
+            }
+        }
+
+        // Recevabilité vérifiée avant d'enregistrer les fichiers : plus haut diplôme, ou voie alternative
+        $apres = array_merge($data, array_filter($validated, fn ($v) => !$v instanceof UploadedFile));
+        $this->verifierRecevabilite($apres);
+
         foreach (['scan_bac' => 'bac', 'scan_bac_2' => 'bac_2', 'scan_bac_3' => 'bac_3'] as $champ => $dossier) {
             unset($validated[$champ]);
             if ($request->hasFile($champ)) {
@@ -372,6 +409,7 @@ class CandidatformController extends Controller
         // Dernière vérification (la formation a pu fermer, ou un doublon a pu arriver entre-temps)
         $this->etapeFormation(['titre_id' => $data['titre_id'] ?? 0], $data);
         $this->etapeIdentite(['CNE' => $data['CNE'], 'CIN' => $data['CIN']], $data);
+        $this->verifierRecevabilite($data);
 
         $candidat = Candidat::create([
             'nom' => $data['nom'],
@@ -400,17 +438,15 @@ class CandidatformController extends Controller
             'serie_bac' => $data['serie_bac'],
             'annee_bac' => $data['annee_bac'],
             'scan_bac' => $data['scan_bac'],
+            'annees_experience' => $this->exigencesParcours($data)['experience'] ? ($data['annees_experience'] ?? null) : null,
         ]);
 
-        // Seulement les diplômes demandés pour cette formation (un reste d'une autre formation choisie avant est ignoré)
+        // Diplômes post-bac : ceux que le candidat a renseignés (un Bac+3 seul suffit, pas besoin du Bac+2)
+        $montrer = $this->exigencesParcours($data)['afficher'];
         $diplome = ['candidat_id' => $candidat->id];
-        foreach ($this->diplomesDemandes($data) as $n => $exigence) {
-            foreach (['type_diplome', 'annee_diplome', 'filiere_diplome', 'etablissement'] as $champ) {
-                $diplome["{$champ}_bac_$n"] = $exigence === 'non' ? null : ($data["{$champ}_bac_$n"] ?? null);
-            }
-            $diplome["scan_bac_$n"] = $exigence === 'non' ? null : ($data["scan_bac_$n"] ?? null);
-            if ($exigence === 'requis' && (empty($diplome["type_diplome_bac_$n"]) || empty($diplome["scan_bac_$n"]))) {
-                throw ValidationException::withMessages(['titre_id' => __('Cette formation demande un diplôme Bac+:n : complétez l\'étape « Parcours ».', ['n' => $n])]);
+        foreach ([2, 3] as $n) {
+            foreach (['type_diplome', 'annee_diplome', 'filiere_diplome', 'etablissement', 'scan'] as $champ) {
+                $diplome["{$champ}_bac_$n"] = $montrer ? ($data["{$champ}_bac_$n"] ?? null) : null;
             }
         }
         if (filled($diplome['type_diplome_bac_2']) || filled($diplome['type_diplome_bac_3'])) {

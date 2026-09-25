@@ -78,6 +78,9 @@
           <div><dt>Nationalité</dt><dd>{{ $candidat->nationalite }}</dd></div>
           <div><dt>Province</dt><dd>{{ $candidat->province }}</dd></div>
           <div><dt>Téléphone fixe</dt><dd>{{ $candidat->telephone_fix ?: '—' }}</dd></div>
+          @if ($candidat->annees_experience !== null)
+            <div><dt>Expérience professionnelle</dt><dd>{{ $candidat->annees_experience }} an(s)</dd></div>
+          @endif
           <div style="grid-column: 1 / -1;"><dt>Adresse</dt><dd>{{ $candidat->adresse }}</dd></div>
         </dl>
       </div>

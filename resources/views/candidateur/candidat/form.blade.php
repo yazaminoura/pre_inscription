@@ -22,6 +22,7 @@
     $formatsFichier = __('PDF, JPG ou PNG · 10 Mo max.');
     $dejaEnvoyeTexte = __('Fichier déjà envoyé, vous pouvez le remplacer');
     $anneeObtention = __("Année d'obtention");
+    $lAnneesExperience = __("Nombre d'années d'expérience professionnelle");
 @endphp
 
 @section('content')
@@ -133,29 +134,44 @@
                 </x-champ>
             </div>
 
-            {{-- Diplômes après le bac : selon le niveau d'accès de la formation (aucun, Bac+2, Bac+2 et Bac+3) --}}
-            @if ($diplomes[2] === 'non' && $diplomes[3] === 'non')
+            {{-- Diplômes après le bac : aucun n'est exigé un par un. Compte le plus haut diplôme, ou la voie alternative. --}}
+            @if (!$parcours['afficher'])
                 <div class="d-flex gap-2 align-items-start mt-4 p-3 rounded-3" style="background: var(--brand-50);">
                     <span class="material-symbols-rounded" style="color: var(--brand);">info</span>
                     <span class="small">{{ __('Cette formation recrute après le baccalauréat : aucun diplôme supérieur n\'est demandé.') }}</span>
                 </div>
+            @else
+                <div class="d-flex gap-2 align-items-start mt-4 p-3 rounded-3 {{ $errors->has('type_diplome_bac_3') ? 'border border-danger' : '' }}" style="background: var(--brand-50);">
+                    <span class="material-symbols-rounded" style="color: var(--brand);">rule</span>
+                    <span class="small">
+                        <strong>{{ __("Condition d'accès") }} : {{ $parcours['condition'] }}.</strong><br>
+                        {{ __('Renseignez votre plus haut diplôme : un Bac+3 suffit, le Bac+2 n\'est pas obligatoire si vous avez un Bac+3.') }}
+                    </span>
+                </div>
+
+                @foreach ([3 => __('Licence fondamentale, Licence pro…'), 2 => 'DEUG, DEUST, DUT, BTS, DTS…'] as $n => $exemple)
+                    <div class="fieldset-title">{{ $n === 2 ? __('Diplôme Bac+2') : __('Diplôme Bac+3') }}
+                        <span class="optional">· {{ __("si vous l'avez") }}</span>
+                    </div>
+                    <div class="row g-3">
+                        <x-champ :name="'type_diplome_bac_' . $n" :label="__('Type de diplôme')" :value="$d['type_diplome_bac_' . $n] ?? ''" :placeholder="$exemple" />
+                        <x-champ :name="'filiere_diplome_bac_' . $n" :label="__('Filière')" :value="$d['filiere_diplome_bac_' . $n] ?? ''" :placeholder="__('Ex. : MIP')" />
+                        <x-champ :name="'etablissement_bac_' . $n" :label="__('Établissement')" :value="$d['etablissement_bac_' . $n] ?? ''" />
+                        <x-champ :name="'annee_diplome_bac_' . $n" :label="$anneeObtention" :value="$d['annee_diplome_bac_' . $n] ?? ''" :options="$annees" :placeholder="__('Choisir…')" />
+                        <x-champ :name="'scan_bac_' . $n" :label="$n === 2 ? __('Scan du diplôme Bac+2') : __('Scan du diplôme Bac+3')" type="file" accept=".pdf,.jpg,.jpeg,.png" col="col-12" :aide="$formatsFichier">
+                            @if ($dejaEnvoye('scan_bac_' . $n))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ $dejaEnvoyeTexte }}</span>@endif
+                        </x-champ>
+                    </div>
+                @endforeach
+
+                @if ($parcours['experience'])
+                    <div class="fieldset-title">{{ __('Expérience professionnelle') }}</div>
+                    <div class="row g-3">
+                        <x-champ name="annees_experience" :label="$lAnneesExperience" type="number" min="0" max="50"
+                                 :value="$d['annees_experience'] ?? ''" :aide="__('Utile si vous candidatez avec un diplôme inférieur au niveau demandé. Détaillez vos postes à l\'étape suivante.')" />
+                    </div>
+                @endif
             @endif
-            @foreach ([2 => 'DEUG, DEUST, DUT, BTS, DTS…', 3 => __('Licence fondamentale, Licence pro…')] as $n => $exemple)
-                @continue($diplomes[$n] === 'non')
-                @php $requis = $diplomes[$n] === 'requis'; @endphp
-                <div class="fieldset-title">{{ $n === 2 ? __('Diplôme Bac+2') : __('Diplôme Bac+3') }}
-                    @unless ($requis)<span class="optional">· {{ __('facultatif') }}</span>@endunless
-                </div>
-                <div class="row g-3">
-                    <x-champ :name="'type_diplome_bac_' . $n" :label="__('Type de diplôme')" :value="$d['type_diplome_bac_' . $n] ?? ''" :required="$requis" :placeholder="$exemple" />
-                    <x-champ :name="'filiere_diplome_bac_' . $n" :label="__('Filière')" :value="$d['filiere_diplome_bac_' . $n] ?? ''" :required="$requis" :placeholder="__('Ex. : MIP')" />
-                    <x-champ :name="'etablissement_bac_' . $n" :label="__('Établissement')" :value="$d['etablissement_bac_' . $n] ?? ''" :required="$requis" />
-                    <x-champ :name="'annee_diplome_bac_' . $n" :label="$anneeObtention" :value="$d['annee_diplome_bac_' . $n] ?? ''" :options="$annees" :placeholder="__('Choisir…')" :required="$requis" />
-                    <x-champ :name="'scan_bac_' . $n" :label="$n === 2 ? __('Scan du diplôme Bac+2') : __('Scan du diplôme Bac+3')" type="file" accept=".pdf,.jpg,.jpeg,.png" :required="$requis && !$dejaEnvoye('scan_bac_' . $n)" col="col-12" :aide="$formatsFichier">
-                        @if ($dejaEnvoye('scan_bac_' . $n))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ $dejaEnvoyeTexte }}</span>@endif
-                    </x-champ>
-                </div>
-            @endforeach
         @endif
 
         {{-- 5. Expérience --}}

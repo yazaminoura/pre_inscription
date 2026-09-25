@@ -17,6 +17,8 @@ class StoreFormationRequest extends FormRequest
             'type_formation' => ['required', 'string', \Illuminate\Validation\Rule::in(config('etablissement.types_formation'))],
             'titre' => 'required|string|max:255',
             'niveau_acces' => ['required', \Illuminate\Validation\Rule::in(array_keys(\App\Models\Formation::NIVEAUX))],
+            'alternatif_niveau' => ['nullable', 'required_with:alternatif_experience', \Illuminate\Validation\Rule::in(array_keys(\App\Models\Formation::NIVEAUX_ALTERNATIFS))],
+            'alternatif_experience' => 'nullable|required_with:alternatif_niveau|integer|min:1|max:30',
             'date_debut' => 'required|date',
             'date_fin' => 'required|date|after_or_equal:date_debut',
             'user_id' => 'required|exists:users,id',

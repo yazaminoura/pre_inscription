@@ -43,7 +43,7 @@ class GenererTraductions extends Command
         $fichiers = array_merge(
             glob(resource_path('views/candidateur/*.blade.php')),
             glob(resource_path('views/candidateur/*/*.blade.php')),
-            [resource_path('views/components/champ.blade.php'), app_path('Http/Controllers/CandidatformController.php'), app_path('Http/Controllers/SuiviController.php')]
+            [resource_path('views/components/champ.blade.php'), app_path('Http/Controllers/CandidatformController.php'), app_path('Http/Controllers/SuiviController.php'), app_path('Models/Formation.php')]
         );
         $cles = [];
         foreach ($fichiers as $f) {
