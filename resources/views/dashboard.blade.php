@@ -9,6 +9,13 @@
     <div><strong>Mode débogage activé.</strong> Mettez <code>APP_DEBUG=false</code> dans le fichier <code>.env</code> du serveur, puis <code>php artisan config:cache</code>.</div>
   </div>
 @endif
+{{-- Compte créé par la migration avec le mot de passe par défaut --}}
+@if (\Illuminate\Support\Facades\Hash::check('password', Auth::user()->password))
+  <div class="alert alert-danger d-flex gap-2 align-items-center">
+    <span class="material-symbols-rounded">lock_open</span>
+    <div><strong>Mot de passe par défaut.</strong> Changez-le dans <a href="{{ route('administrateurs.edit', Auth::user()) }}">Administrateurs</a> ou avec <code>php artisan admin:modifier</code>.</div>
+  </div>
+@endif
 <div class="page-head">
   <div>
     <h2>Bonjour {{ strtok(Auth::user()->name, ' ') }} 👋</h2>
