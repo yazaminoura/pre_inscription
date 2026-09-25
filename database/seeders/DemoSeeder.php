@@ -108,9 +108,21 @@ class DemoSeeder extends Seeder
             ['Diallo', 'Mamadou', 'M', 'Dakar', 'Sénégal', 'Sénégalaise', 5, 'en_cours', null],
             ['Traoré', 'Aminata', 'F', 'Bamako', 'Mali', 'Malienne', 1, 'en_attente', null],
             ['Haddad', 'Nour', 'F', 'Tunis', 'Tunisie', 'Tunisienne', 3, 'en_attente', null],
-            ['Martin', 'Lucas', 'M', 'Lyon', 'France', 'Française', 4, 'liste_attente', 'Dossier incomplet : relevé de notes manquant'],
+            ['Martin', 'Lucas', 'M', 'Lyon', 'France', 'Française', 4, 'incomplet', 'Relevé de notes de la Licence (S1 à S6) manquant'],
             ['Berrada', 'Ayoub', 'M', 'Oujda', 'Maroc', 'Marocaine', 2, 'refusee', 'Profil ne correspondant pas aux prérequis'],
             ['Alaoui', 'Sara', 'F', 'Agadir', 'Maroc', 'Marocaine', 5, 'en_attente', null],
+            ['Bennani', 'Mehdi', 'M', 'Tanger', 'Maroc', 'Marocaine', 0, 'en_cours', null],
+            ['Lahlou', 'Zineb', 'F', 'Marrakech', 'Maroc', 'Marocaine', 1, 'acceptee', null],
+            ['Kabbaj', 'Rim', 'F', 'Kénitra', 'Maroc', 'Marocaine', 2, 'incomplet', 'Copie de la carte d\'identité illisible, merci de renvoyer un scan net'],
+            ['Sow', 'Ibrahima', 'M', 'Nouakchott', 'Mauritanie', 'Mauritanienne', 3, 'en_attente', null],
+            ['Fassi Fihri', 'Ghita', 'F', 'Fès', 'Maroc', 'Marocaine', 3, 'acceptee', null],
+            ['Amrani', 'Anas', 'M', 'Tétouan', 'Maroc', 'Marocaine', 4, 'en_attente', null],
+            ['Kone', 'Awa', 'F', 'Abidjan', "Côte d'Ivoire", 'Ivoirienne', 5, 'liste_attente', 'Position 1 sur la liste'],
+            ['Saidi', 'Bilal', 'M', 'Settat', 'Maroc', 'Marocaine', 0, 'refusee', 'Note de mathématiques au bac insuffisante'],
+            ['Belhaj', 'Yasmine', 'F', 'Sfax', 'Tunisie', 'Tunisienne', 1, 'en_cours', null],
+            ['Naciri', 'Adam', 'M', 'El Jadida', 'Maroc', 'Marocaine', 2, 'en_attente', null],
+            ['Mansouri', 'Hiba', 'F', 'Béni Mellal', 'Maroc', 'Marocaine', 4, 'incomplet', 'Attestation de réussite du Bac+3 manquante'],
+            ['Rahmouni', 'Karim', 'M', 'Nador', 'Maroc', 'Marocaine', 5, 'en_attente', null],
         ];
 
         $pdf = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj "
@@ -200,7 +212,8 @@ class DemoSeeder extends Seeder
                 'statut' => $statut,
                 'motif' => $motif,
                 'statut_at' => $statut === 'en_attente' ? null : now(),
-                'created_at' => now()->subDays(12 - $i),
+                // Dépôts étalés sur les 14 derniers jours (courbe du tableau de bord)
+                'created_at' => now()->subDays((count($candidats) - 1 - $i) % 14)->subHours($i % 9),
             ]);
         }
 
