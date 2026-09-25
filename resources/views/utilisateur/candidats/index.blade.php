@@ -1,305 +1,96 @@
 @extends('utilisateur.layouts.app')
+@section('title', 'Candidatures')
 
 @section('content')
-<div class="container-fluid py-4" >
-    <div class="row" >
-        <div class="col-12" >
-           <div class="card my-4">
-                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-                    <div class="border-radius-lg pt-4 pb-3" style="background-color: #1a4b8c; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <h6 class="text-white text-capitalize ps-3">Liste des Candidats</h6>                        
-                    </div>
-                </div>
-                <div class="card-body px-0 pb-2">
-                    <div class="d-flex justify-content-end mx-3 mb-3">
-                        <a href="{{ route('candidats.create') }}" class="btn btn-sm text-white" style="background-color: #1a4b8c;">
-                            <i class="material-symbols-rounded me-1 text-white">add</i>
-                            <span class="text-white">Ajouter un Candidat</span>
-                        </a>
-                    </div>
-                    <div class="d-flex justify-content-end mx-3 mb-3">
-                        <a href="{{ route('formation-stats') }}" class="btn btn-sm text-white" style="background-color: #1a4b8c;">
-                            <i class="material-symbols-rounded me-1 text-white">add</i>
-                            <span class="text-white">Exporter le Candidats</span>
-                        </a>
-                    </div>
-                    @php
-                        $placeholder = 'Rechercher un candidat...';
-                    @endphp
+<div class="page-head">
+  <div>
+    <h2>Candidatures</h2>
+    <p>{{ $compteurs->sum() }} dossier(s){{ $formationId ? ' pour cette formation' : '' }} · cliquez sur une ligne pour ouvrir le dossier.</p>
+  </div>
+  <form method="GET" class="d-flex gap-2 align-items-center">
+    @if ($statut)<input type="hidden" name="statut" value="{{ $statut }}">@endif
+    <select name="formation" class="form-select" style="min-width: 260px;" onchange="this.form.submit()">
+      <option value="">Toutes les formations</option>
+      @foreach ($formations as $f)
+        <option value="{{ $f->id }}" @selected($formationId == $f->id)>{{ $f->type_formation }} · {{ $f->titre }}</option>
+      @endforeach
+    </select>
+    @if ($formationId)
+      <a href="{{ route('export.candidats', $formationId) }}" class="btn btn-soft text-nowrap">
+        <span class="material-symbols-rounded">download</span> Excel
+      </a>
+    @endif
+  </form>
+</div>
 
-                    <!-- Filtre par statut -->
-                    <div class="d-flex flex-wrap gap-2 mx-3 mb-2">
-                        <a href="{{ route('candidats.index') }}" class="btn btn-sm mb-0 {{ $statut ? 'btn-outline-secondary' : 'text-white' }}" @unless($statut) style="background-color: #1a4b8c;" @endunless>
-                            Tous ({{ $compteurs->sum() }})
-                        </a>
-                        @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
-                        <a href="{{ route('candidats.index', ['statut' => $cle]) }}" class="btn btn-sm mb-0 {{ $statut === $cle ? 'text-white' : '' }}"
-                           style="{{ $statut === $cle ? "background-color: $couleur;" : "border: 1px solid $couleur; color: $couleur;" }}">
-                            {{ $libelle }} ({{ $compteurs[$cle] ?? 0 }})
-                        </a>
-                        @endforeach
-                    </div>
-                
-                <div class="card-body px-0 pb-2">
-                    <div class="table-responsive p-3">
-                        <table id="searshTable" class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 align-items-center">Photo & Info</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 align-items-center">Formation</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Statut</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Contact</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CIN & Naissance</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Documents</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Bac</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Bac+2</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Bac+3</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2 ">Stages</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Expériences</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Attestations</th>
-                                    <th class="text-secondary opacity-7">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($candidats as $candidat)
-                                @php
-                                    $diplome = $candidat->diplomes->first();
-                                    $stages = $candidat->stages->take(3);
-                                    $experiences = $candidat->experiences->take(3);
-                                    $attestations = $candidat->attestations->take(3);
-                                @endphp
-                                <tr>
-                                    <!-- Photo & Info -->
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div>
-                                                @if ($candidat->photo)
-                                                <a href="{{ asset('storage/photos/' . basename($candidat->photo)) }}" target="_blank">
-                                                    <img src="{{ asset('storage/photos/' . basename($candidat->photo)) }}" class="avatar avatar-sm me-3 border-radius-lg" alt="photo">
-                                                </a>
-                                                @else
-                                                <img src="../assets/img/team-2.jpg" class="avatar avatar-sm me-3 border-radius-lg" alt="default">
-                                                @endif
-                                            </div>
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm"> {{ $candidat->nom }}{{ $candidat->prenom }}</h6>
-                                                <h6 class="mb-0 text-sm"> {{ $candidat->nom_ar }}{{ $candidat->prenom_ar }}</h6>
-                                                <p class="text-xs text-secondary mb-0">CNE: {{ $candidat->CNE }}</p>
-                                                <p class="text-xs text-secondary mb-0">CIN: {{ $candidat->CIN }}</p>
-                                                <p class="text-xs text-secondary mb-0">
-                                                     Sexe: 
-                                                    @if ($candidat->sexe === 'M')
-                                                        <i class="fas fa-male" style="color: #1a4b8c;"></i> Homme
-                                                    @elseif ($candidat->sexe === 'F')
-                                                        <i class="fas fa-female" style="color: #1a4b8c;"></i> Femme
-                                                    @else
-                                                        {{ $candidat->sexe }}
-                                                    @endif
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    
-                                    <!-- Formation -->
-                                    <td>
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">{{ $candidat->inscriptions->first()->formation->type_formation ?? 'Unknown' }}</h6>
-                                            <p class="text-xs font-weight-bold mb-0">{{ $candidat->inscriptions->first()->formation->titre ?? '' }}</p>
-                                        </div>
-                                    </td>
+<div class="filter-pills mb-3">
+  <a href="{{ route('candidats.index', array_filter(['formation' => $formationId])) }}" class="{{ $statut ? '' : 'active' }}">
+    Toutes <span class="n">{{ $compteurs->sum() }}</span>
+  </a>
+  @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
+    <a href="{{ route('candidats.index', array_filter(['statut' => $cle, 'formation' => $formationId])) }}" class="{{ $statut === $cle ? 'active' : '' }}">
+      {{ $libelle }} <span class="n">{{ $compteurs[$cle] ?? 0 }}</span>
+    </a>
+  @endforeach
+</div>
 
-                                    <!-- Statut -->
-                                    <td style="min-width: 190px;">
-                                        @php $inscription = $candidat->inscriptions->first(); @endphp
-                                        @if ($inscription)
-                                        <span class="badge badge-sm text-white mb-1" style="background-color: {{ $inscription->statut_color }};">{{ $inscription->statut_label }}</span>
-                                        <p class="text-xxs text-secondary mb-1">Réf. {{ $inscription->reference }}</p>
-                                        @if ($inscription->motif)
-                                        <p class="text-xxs text-secondary mb-1 text-truncate" style="max-width: 180px;" title="{{ $inscription->motif }}">Motif : {{ $inscription->motif }}</p>
-                                        @endif
-                                        <form action="{{ route('inscriptions.statut', $inscription) }}" method="POST" class="d-flex flex-column gap-1">
-                                            @csrf
-                                            @method('PATCH')
-                                            <select name="statut" class="form-select form-select-sm border px-2">
-                                                @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
-                                                <option value="{{ $cle }}" @selected($inscription->statut === $cle)>{{ $libelle }}</option>
-                                                @endforeach
-                                            </select>
-                                            <input type="text" name="motif" value="{{ $inscription->motif }}" placeholder="Motif (optionnel)" class="form-control form-control-sm border px-2">
-                                            <button type="submit" class="btn btn-sm text-white mb-0" style="background-color: #1a4b8c;">Enregistrer</button>
-                                        </form>
-                                        @endif
-                                    </td>
-
-                                    <!-- Contact -->
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">
-                                            Mobile: 
-                                            @if($candidat->telephone_mob)
-                                                <a href="tel:{{ htmlspecialchars($candidat->telephone_mob) }}">{{ htmlspecialchars($candidat->telephone_mob) }}</a>
-                                            @else
-                                                Phone not provided
-                                            @endif
-                                        </p>
-                                        <p class="text-xs text-secondary mb-0">
-                                            Fix: 
-                                            @if($candidat->telephone_fix)
-                                                <a href="tel:{{ htmlspecialchars($candidat->telephone_fix) }}">{{ htmlspecialchars($candidat->telephone_fix) }}</a>
-                                            @else
-                                                Phone not provided
-                                            @endif
-                                        </p>
-                                        <p class="text-xs text-secondary mb-0" ><a href="#" onclick="copyEmail('{{ $candidat->email }}')"> Email:</a>
-                                        @if($candidat->email)
-                                        <a href="#"><span class="material-symbols-outlined"  style="font-size: 14px; vertical-align: middle;" onclick="copyEmail('{{ $candidat->email }}')">email</span></a>
-                                        <a href="https://mail.google.com/mail/?view=cm&to={{ $candidat->email }}" target="_blank">{{ $candidat->email }}</a>
-                                        @else
-                                        Email not provided
-                                        @endif
-                                        </p>                                    
-                                        <p class="text-xs text-secondary mb-0">Address:{{ $candidat->adresse }}</p>
-                                        <p class="text-xs text-secondary mb-0">Province:{{ $candidat->province }}</p>
-                                        <p class="text-xs text-secondary mb-0">Ville{{ $candidat->ville }}</p>
-                                        <p class="text-xs text-secondary mb-0">Pays {{ $candidat->pays }}</p>
-                                    </td>
-                                    
-                                    <!-- CIN & Naissance -->
-                                    <td>
-                                        <div class="d-flex flex-column justify-content-center">                                              
-                                            
-                                            <p class="mb-0 text-sm">Né(e) le: {{ $candidat->date_naissance }}</p>
-                                            <p class="text-xs text-secondary mb-0">À: {{ $candidat->ville_naissance }}  {{ $candidat->ville_naissance_ar }}</p>
-                                            <p class="text-xs text-secondary mb-0">Nationalité: {{ $candidat->nationalite }}</p>
-                                            @if ($candidat->scan_cartid)
-                                            <a href="{{ asset('storage/cart/' . basename($candidat->scan_cartid)) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none;  width: 100px; border-radius: 6px;">Voir CIN</a>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    
-                                    <!-- Documents -->
-                                    <td>
-                                        <div class="d-flex flex-wrap">
-                                            @if ($candidat->CV)
-                                            <a href="{{ asset('storage/CV/' . basename($candidat->CV)) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none; margin-bottom: 10px;  width: 100px; border-radius: 6px;">CV</a>
-                                            @endif
-                                            @if ($candidat->demande)
-                                            <a href="{{ asset('storage/demande/' . basename($candidat->demande)) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none;  width: 100px; border-radius: 6px;">Demande</a>
-                                            @endif
-                                            
-                                        </div>
-                                    </td>
-                                    
-                                    <!-- Bac -->
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">Type: {{ $candidat->serie_bac }}</p>
-                                        <p class="text-xs text-secondary mb-0">Année: {{ $candidat->annee_bac }}</p>
-                                        @if ($candidat->scan_bac)
-                                        <a href="{{ asset('storage/bac/' . basename($candidat->scan_bac)) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none;  width: 100px; border-radius: 6px;">Voir Bac</a>
-                                        @endif
-                                    </td>
-                                    
-                                    <!-- Bac+2 -->
-                                    <td>
-                                        @if ($diplome)
-                                        <p class="text-xs font-weight-bold mb-0">Type: {{ $diplome->{'type_diplome_bac_2'} ?? '' }}</p>
-                                        <p class="text-xs text-secondary mb-0">Filière: {{ $diplome->{'filiere_diplome_bac_2'} ?? '' }}</p>
-                                        <p class="text-xs text-secondary mb-0">Étab: {{ $diplome->{'etablissement_bac_2'} ?? '' }}</p>
-                                        <p class="text-xs text-secondary mb-0">Année: {{ $diplome->{'annee_diplome_bac_2'} ?? '' }}</p>
-                                        @if ($diplome->{'scan_bac_2'})
-                                        <a href="{{ asset('storage/bac_2/' . basename($diplome->{'scan_bac_2'})) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none;  width: 100px; border-radius: 6px;">Voir</a>
-                                        @endif
-                                        @else
-                                        <p class="text-xs text-secondary mb-0">Aucun diplôme</p>
-                                        @endif
-                                    </td>
-                                    
-                                    <!-- Bac+3 -->
-                                    <td>
-                                        @if ($diplome)
-                                        <p class="text-xs font-weight-bold mb-0">Type: {{ $diplome->{'type_diplome_bac_3'} ?? '' }}</p>
-                                        <p class="text-xs text-secondary mb-0">Filière: {{ $diplome->{'filiere_diplome_bac_3'} ?? '' }}</p>
-                                        <p class="text-xs text-secondary mb-0">Étab: {{ $diplome->{'etablissement_bac_3'} ?? '' }}</p>
-                                        <p class="text-xs text-secondary mb-0">Année: {{ $diplome->{'annee_diplome_bac_3'} ?? '' }}</p>
-                                        @if ($diplome->{'scan_bac_3'})
-                                        <a href="{{ asset('storage/bac_3/' . basename($diplome->{'scan_bac_3'})) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none;  width: 100px; border-radius: 6px;">Voir</a>
-                                        @endif
-                                        @else
-                                        <p class="text-xs text-secondary mb-0">Aucun diplôme</p>
-                                        @endif
-                                    </td>
-                                    
-                                    <!-- Stages -->
-                                    <td>
-                                        @foreach($stages as $stage)
-                                        <div class="d-inline-block me-2" style="width: 150px; vertical-align: top;">
-                                            <p class="text-xs font-weight-bold mb-0">{{ $stage->fonction }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $stage->etablissement }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $stage->periode }}</p>
-                                            <p class="text-xs text-secondary mb-0 text-truncate" style="max-width: 150px;" title="{{ $stage->description }}">
-                                                {{ Str::limit($stage->description, 20) }}
-                                            </p>
-                                            @if ($stage->attestation)
-                                            <a href="{{ asset('storage/stages/' . basename($stage->attestation)) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none;  width: 100px; border-radius: 6px;">Attestation</a>
-                                            @endif
-                                            
-                                        </div>
-                                        @endforeach
-                                    </td>
-
-                                    <!-- Experiences -->
-                                    <td>
-                                        @foreach($experiences as $experience)
-                                        <div class="d-inline-block me-2" style="width: 150px; vertical-align: top;">
-                                            <p class="text-xs font-weight-bold mb-0">{{ $experience->fonction }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $experience->etablissement }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $experience->periode }}</p>
-                                            <p class="text-xs text-secondary mb-0 text-truncate" style="max-width: 150px;" title="{{ $experience->description }}">
-                                                {{ Str::limit($experience->description, 20) }}
-                                            </p>
-                                            @if ($experience->attestation)
-                                            <a href="{{ asset('storage/experiences/' . basename($experience->attestation)) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none;  width: 100px; border-radius: 6px;">Attestation</a>
-                                            @endif
-                                        </div>
-                                        @endforeach
-                                    </td>
-
-                                    <!-- Attestations -->
-                                    <td>
-                                        @foreach($attestations as $attestation)
-                                        <div class="d-inline-block me-2" style="width: 150px; vertical-align: top;">
-                                            <p class="text-xs font-weight-bold mb-0">{{ $attestation->type_attestation }}</p>
-                                            <p class="text-xs text-secondary mb-0 text-truncate" style="max-width: 150px;" title="{{ $attestation->description }}">
-                                                {{ Str::limit($attestation->description, 20) }}
-                                            </p>
-                                            @if ($attestation->attestation)
-                                            <a href="{{ asset('storage/attestations/' . basename($attestation->attestation)) }}" target="_blank" class="badge badge-sm text-white" style="background-color: #1a4b8c; border: none;  width: 100px; border-radius: 6px;">Voir</a>
-                                            @endif
-                                        </div>
-                                        @endforeach
-                                    </td>
-                                    <!-- Actions -->
-                                 <td class="align-center text-end pe-4">
-                                       <form id="delete-form-{{ $candidat->id }}" 
-                                            action="{{ route('candidats.destroy', $candidat->id) }}" 
-                                            method="POST" 
-                                            class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="button" 
-                                                    onclick="confirmDelete({{ $candidat->id }}, this, 'cette Candidat')" 
-                                                    class="btn btn-link text-danger p-0">
-                                                <i class="material-symbols-rounded">delete</i>
-                                            </button>
-                                        </form>
-                                    </td>
-                            </tr>
-                            @endforeach                                
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="panel">
+  @if ($inscriptions->isEmpty())
+    <div class="empty-state">
+      <span class="material-symbols-rounded">inbox</span>
+      Aucune candidature pour ce filtre.
     </div>
+  @else
+    <div class="table-responsive">
+      <table class="table table-clean js-datatable">
+        <thead>
+          <tr>
+            <th>Candidat</th>
+            <th>Formation</th>
+            <th>Référence</th>
+            <th>Déposée le</th>
+            <th>Statut</th>
+            <th class="no-sort text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($inscriptions as $inscription)
+            @php $candidat = $inscription->candidat; @endphp
+            <tr class="row-link" data-href="{{ route('candidats.show', $candidat) }}">
+              <td>
+                <div class="person">
+                  @include('utilisateur.partials.avatar', ['candidat' => $candidat])
+                  <div>
+                    <div class="person-name">{{ $candidat->nom }} {{ $candidat->prenom }}</div>
+                    <div class="person-sub">{{ $candidat->email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="fw-semibold">{{ $inscription->formation->titre ?? '—' }}</div>
+                <div class="person-sub">{{ $inscription->formation->type_formation ?? '' }}</div>
+              </td>
+              <td class="text-nowrap"><code class="text-body">{{ $inscription->reference }}</code></td>
+              <td data-order="{{ $inscription->created_at?->timestamp }}">{{ $inscription->created_at?->format('d/m/Y') }}</td>
+              <td>@include('utilisateur.partials.statut', ['inscription' => $inscription])</td>
+              <td class="text-end text-nowrap">
+                <a href="{{ route('candidats.show', $candidat) }}" class="btn btn-soft btn-sm">
+                  <span class="material-symbols-rounded">folder_open</span> Dossier
+                </a>
+                <form action="{{ route('candidats.destroy', $candidat) }}" method="POST" class="d-inline">
+                  @csrf
+                  @method('DELETE')
+                  <button type="button" class="btn btn-sm btn-icon btn-outline-danger" title="Supprimer"
+                          onclick="confirmDelete({{ $candidat->id }}, this, 'le dossier de {{ addslashes($candidat->prenom . ' ' . $candidat->nom) }}')">
+                    <span class="material-symbols-rounded">delete</span>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  @endif
 </div>
 @endsection

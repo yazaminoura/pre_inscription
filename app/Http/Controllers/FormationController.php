@@ -12,7 +12,9 @@ class FormationController extends Controller
 {
     public function index()
     {
-        $formations = Formation::all();
+        $formations = Formation::withCount('inscriptions')
+            ->orderByDesc('date_fin')
+            ->get();
         return view('utilisateur.formations.index', compact('formations'));
     }
 

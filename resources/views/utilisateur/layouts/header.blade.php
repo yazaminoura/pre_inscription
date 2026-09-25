@@ -1,43 +1,35 @@
-<nav id="navbarBlur" class="navbar navbar-main navbar-expand-lg px-3 mx-3 shadow-none border-radius-xl" style="background: white; margin-top: 5px; margin-bottom: 15px;" data-scroll="true">
-  <div class="container-fluid py-1 px-3">
-    <nav aria-label="breadcrumb">
-      <button id="toggleSidebarBtn" class="btn btn-link text-dark">
-        <i class="material-symbols-rounded" id="menuIcon">menu</i>
+<header class="admin-topbar">
+  <button type="button" class="menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+    <span class="material-symbols-rounded">menu</span>
+  </button>
+  <h1>@yield('title', 'Espace administration')</h1>
+
+  @auth
+    <div class="dropdown ms-auto">
+      <button class="user-chip dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="user-name">{{ Auth::user()->name }}</span>
+        <span class="avatar-initials">{{ mb_strtoupper(mb_substr(trim(Auth::user()->name), 0, 1)) }}</span>
       </button>
-    </nav>
-    
-    <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
-      <div class="ms-md-auto pe-md-3 d-flex align-items-center"></div>
-      
-      <ul class="navbar-nav d-flex align-items-center justify-content-end">
-        <li class="nav-item d-flex align-items-center">
-          <a href="#" class="nav-link text-body font-weight-bold px-2 d-flex align-items-center" style="color: #344767;" onclick="confirmLogout()">
-            @auth
-              <span>{{ Auth::user()->name }}</span> 
-            @endauth
-            <i class="material-symbols-rounded ms-1" style="font-size: 28px; cursor: pointer; color: #344767;">account_circle</i>
+      <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 12px; min-width: 220px;">
+        <li class="px-3 py-2">
+          <div class="fw-semibold">{{ Auth::user()->name }}</div>
+          <div class="text-muted small">{{ Auth::user()->email }}</div>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item d-flex align-items-center gap-2" href="{{ route('administrateurs.edit', Auth::user()) }}">
+            <span class="material-symbols-rounded">manage_accounts</span> Mon compte
           </a>
-          <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        </li>
+        <li>
+          <form action="{{ route('logout') }}" method="POST">
             @csrf
+            <button type="submit" class="dropdown-item d-flex align-items-center gap-2 text-danger">
+              <span class="material-symbols-rounded">logout</span> Déconnexion
+            </button>
           </form>
         </li>
       </ul>
     </div>
-  </div>
-</nav>
-
-<!-- Logout Confirmation Modal -->
-<div class="modal fade" id="logoutModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="border-radius: 12px;">
-      <div class="modal-body text-center p-4">
-        <i class="material-symbols-rounded text-warning" style="font-size: 48px;">logout</i>
-        <h5 class="mt-3">Êtes-vous sûr de vouloir vous déconnecter?</h5>
-      </div>
-      <div class="modal-footer justify-content-center border-0 pt-0">
-        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal" style="border-radius: 8px;">Annuler</button>
-        <button type="button" class="btn btn-warning px-4 text-white" onclick="performLogout()" style="border-radius: 8px;">Déconnexion</button>
-      </div>
-    </div>
-  </div>
-</div>
+  @endauth
+</header>

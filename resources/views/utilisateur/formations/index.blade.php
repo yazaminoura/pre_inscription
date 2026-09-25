@@ -1,85 +1,77 @@
-@extends('utilisateur.Layouts.app')
-@section('title', 'Les Formations')
+@extends('utilisateur.layouts.app')
+@section('title', 'Formations')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card my-4">
-                <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2">
-                    <div class="border-radius-lg pt-4 pb-3" style="background-color: #1a4b8c; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <h6 class="text-white text-capitalize ps-3">Liste des Formations</h6>
-                    </div>
-                </div>
-                
-                <div class="card-body px-0 pb-2">
-                    <div class="d-flex justify-content-end mx-3 mb-3">
-                        <a href="{{ route('formations.create') }}" class="btn btn-sm text-white" style="background-color: #1a4b8c;">
-                            <i class="material-symbols-rounded me-1">add</i>
-                            <span>Ajouter une formation</span>
-                        </a>
-                    </div>
-                    
-                    @php
-                        $placeholder = 'Rechercher un Formation...'; 
-                    @endphp
-                    <div class="table-responsive p-3">
-                        <table id="searshTable" class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Type</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Titre</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Date Début de Pre Insciption</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Date Fin de Pre Insciption</th>
-                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7">Responsable</th>
-                                    <th class="text-secondary opacity-7 text-end pe-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($formations as $formation)
-                                <tr>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ $formation->type_formation }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ $formation->titre }}</p>
-                                    </td>
-                                    <td>           
-                                        <p class="text-xs font-weight-bold mb-0">{{ $formation->date_debut }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ $formation->date_fin }}</p>
-                                    </td>
-                                   <td>
-                                        <p class="text-xs font-weight-bold mb-0">
-                                            {{ $formation->user->name ?? 'Non défini' }}
-                                        </p>
-                                    </td>
-                                    <td class="align-center text-end pe-4">
-                                         <a href="{{ route('formations.edit', $formation->id) }}" class="btn btn-link text-info p-0">
-                                            <i class="material-symbols-rounded">edit</i>
-                                        </a>
-                                        <form id="delete-form-{{ $formation->id }}" 
-                                            action="{{ route('formations.destroy', $formation->id) }}" 
-                                            method="POST" 
-                                            class="d-inline">
-                                            @csrf
-                                            @method('DELETE')                                            
-                                            <button type="button" 
-                                                onclick="confirmDelete({{ $formation->id }}, this, 'cette formation')" 
-                                                class="btn btn-link text-danger font-weight-bold text-xs p-0" >
-                                                <i class="material-symbols-rounded">delete</i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="page-head">
+  <div>
+    <h2>Formations</h2>
+    <p>Une formation est visible sur le formulaire public entre sa date d'ouverture et sa date de clôture.</p>
+  </div>
+  <a href="{{ route('formations.create') }}" class="btn btn-brand">
+    <span class="material-symbols-rounded">add</span> Nouvelle formation
+  </a>
+</div>
+
+<div class="panel">
+  @if ($formations->isEmpty())
+    <div class="empty-state">
+      <span class="material-symbols-rounded">school</span>
+      Aucune formation. <a href="{{ route('formations.create') }}">Créez la première</a> pour ouvrir les préinscriptions.
     </div>
+  @else
+    <div class="table-responsive">
+      <table class="table table-clean js-datatable">
+        <thead>
+          <tr>
+            <th>Formation</th>
+            <th>Préinscriptions</th>
+            <th>État</th>
+            <th>Candidatures</th>
+            <th class="no-sort text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($formations as $formation)
+            @php
+              $debut = \Carbon\Carbon::parse($formation->date_debut);
+              $fin = \Carbon\Carbon::parse($formation->date_fin);
+              [$etat, $couleur] = today()->lt($debut) ? ['À venir', '#1a73e8'] : (today()->gt($fin) ? ['Clôturée', '#64748b'] : ['Ouverte', '#2e7d32']);
+            @endphp
+            <tr>
+              <td>
+                <div class="d-flex align-items-center gap-3">
+                  <span class="stat-icon" style="width: 38px; height: 38px; background: var(--brand-50); color: var(--brand); font-weight: 800; font-size: .8rem;">{{ $formation->type_formation === 'Master' ? 'M' : 'L' }}</span>
+                  <div>
+                    <div class="fw-semibold">{{ $formation->titre }}</div>
+                    <div class="person-sub">{{ $formation->type_formation }}</div>
+                  </div>
+                </div>
+              </td>
+              <td data-order="{{ $debut->timestamp }}" class="text-nowrap">{{ $debut->format('d/m/Y') }} → {{ $fin->format('d/m/Y') }}</td>
+              <td><span class="status-badge" style="color: {{ $couleur }}; background: {{ $couleur }}1a;">{{ $etat }}</span></td>
+              <td data-order="{{ $formation->inscriptions_count }}">
+                <a href="{{ route('candidats.index', ['formation' => $formation->id]) }}" class="fw-semibold text-decoration-none">
+                  {{ $formation->inscriptions_count }} <span class="material-symbols-rounded">chevron_right</span>
+                </a>
+              </td>
+              <td class="text-end text-nowrap">
+                <a href="{{ route('formations.edit', $formation) }}" class="btn btn-sm btn-icon btn-soft" title="Modifier">
+                  <span class="material-symbols-rounded">edit</span>
+                </a>
+                <form action="{{ route('formations.destroy', $formation) }}" method="POST" class="d-inline">
+                  @csrf
+                  @method('DELETE')
+                  <button type="button" class="btn btn-sm btn-icon btn-outline-danger" title="Supprimer"
+                          onclick="confirmDelete({{ $formation->id }}, this, 'cette formation{{ $formation->inscriptions_count ? ' et ses ' . $formation->inscriptions_count . ' candidature(s)' : '' }}')">
+                    <span class="material-symbols-rounded">delete</span>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  @endif
 </div>
 @endsection

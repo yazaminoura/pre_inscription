@@ -67,8 +67,8 @@ class DemoSeeder extends Seeder
                 $fichiers[$champ] = "$dossier/{$base}_{$champ}.pdf";
                 Storage::disk('public')->put($fichiers[$champ], $pdf);
             }
+            // Pas de fichier photo : l'admin affiche alors les initiales
             $fichiers['photo'] = "photos/{$base}_photo.png";
-            Storage::disk('public')->put($fichiers['photo'], $this->avatar($prenom[0] . $nom[0], $sexe));
             Storage::disk('public')->put("bac_2/{$base}_bac2.pdf", $pdf);
 
             $candidat = Candidat::create($fichiers + [
@@ -140,18 +140,5 @@ class DemoSeeder extends Seeder
                 'created_at' => now()->subDays(12 - $i),
             ]);
         }
-    }
-
-    // Petite photo PNG avec les initiales
-    private function avatar(string $initiales, string $sexe): string
-    {
-        $img = imagecreatetruecolor(200, 200);
-        imagefill($img, 0, 0, $sexe === 'F' ? imagecolorallocate($img, 173, 20, 87) : imagecolorallocate($img, 26, 75, 140));
-        $blanc = imagecolorallocate($img, 255, 255, 255);
-        imagestring($img, 5, 88, 92, strtoupper($initiales), $blanc);
-        ob_start();
-        imagepng($img);
-        imagedestroy($img);
-        return ob_get_clean();
     }
 }

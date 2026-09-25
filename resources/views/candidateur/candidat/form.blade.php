@@ -509,6 +509,9 @@
         max-width: 900px;
         margin: 2rem auto;
         padding: 0 1rem;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: 0 !important;
     }
 
     .form-section {

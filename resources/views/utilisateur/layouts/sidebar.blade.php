@@ -1,73 +1,43 @@
-
-<aside id="sidenav-main" class="sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2 bg-white my-2">
-   <div class="sidenav-header text-center py-4 d-flex flex-column align-items-center justify-content-center">
-    <i class="fas fa-times p-3 cursor-pointer text-dark opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
-    
-    <div class="d-flex flex-column align-items-center">
-  <a href="{{ route('dashboard') }}" style="text-decoration: none;">
-    <img
-      src="{{ asset(config('etablissement.logo')) }}"
-      class="mb-2"
-      style="max-height: 70px; width: auto;"
-      alt="{{ config('etablissement.nom') }}">
-    <p class="font-weight-bold mb-0" style="color: {{ config('etablissement.couleur') }}; font-size: 0.9rem;">
-      Préinscription
-      <span class="text-secondary" style="font-size: 0.8rem;">· {{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }}</span>
-    </p>
+@php
+  $enAttente = \App\Models\Inscription::where('statut', 'en_attente')->count();
+  $menu = [
+      ['route' => 'dashboard', 'match' => 'dashboard', 'icon' => 'space_dashboard', 'label' => 'Tableau de bord'],
+      ['route' => 'candidats.index', 'match' => 'candidats.*', 'icon' => 'folder_shared', 'label' => 'Candidatures', 'count' => $enAttente],
+      ['route' => 'formations.index', 'match' => 'formations.*', 'icon' => 'school', 'label' => 'Formations'],
+      ['route' => 'formation-stats', 'match' => 'formation-stats', 'icon' => 'insights', 'label' => 'Statistiques & exports'],
+  ];
+@endphp
+<aside class="admin-sidebar">
+  <a href="{{ route('dashboard') }}" class="admin-brand">
+    <img src="{{ asset(config('etablissement.logo')) }}" alt="{{ config('etablissement.nom') }}">
+    <span class="brand-name">{{ config('etablissement.nom_court') }} {{ config('etablissement.ville') }}</span>
+    <span class="brand-sub">Préinscription {{ date('Y') }}</span>
   </a>
-</div>
-  </div>
 
-  <hr class="horizontal dark mt-0 mb-2" >
-  <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link text-dark" href="{{ route('administrateurs.index') }}">
-          <i class="material-symbols-rounded opacity-5">admin_panel_settings</i>
-          <span class="nav-link-text ms-1">Administrateurs</span>
-        </a>
-      </li> 
-      <li class="nav-item">
-        <a class="nav-link text-dark " href="{{ route('formations.index') }}">
-          <i class="material-symbols-rounded opacity-5">receipt_long</i>          <span class="nav-link-text ms-1">Formations</span>
-        </a>
-      </li> 
-      <li class="nav-item">
-        <a class="nav-link text-dark  " href="{{ route('candidats.index') }}">
-          <i class="material-symbols-rounded opacity-5">group</i>
-          <span class="nav-link-text ms-1">Candidats</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark " href="{{ route('formation-stats') }}">
-          <i class="material-symbols-rounded opacity-5">bar_chart</i>
-          <span class="nav-link-text ms-1">Statistiques des Formations</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark " href="{{ route('diplomes.index') }}">
-          <i class="material-symbols-rounded opacity-5">school</i>
-          <span class="nav-link-text ms-1">Diplômes</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark " href="{{ route('experiences.index') }}">
-          <i class="material-symbols-rounded opacity-5">work</i>
-          <span class="nav-link-text ms-1">Expériences</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark " href="{{ route('stages.index') }}">
-          <i class="material-symbols-rounded opacity-5">business_center</i>
-          <span class="nav-link-text ms-1">Stages</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark  " href="{{ route('attestations.index') }}">
-          <i class="material-symbols-rounded opacity-5">description</i>
-          <span class="nav-link-text ms-1">Attestations</span>
-        </a>
-      </li>
-    </ul>
+  <nav class="admin-nav">
+    <div class="nav-section">Gestion</div>
+    @foreach ($menu as $item)
+      <a href="{{ route($item['route']) }}" class="{{ request()->routeIs($item['match']) ? 'active' : '' }}">
+        <span class="material-symbols-rounded">{{ $item['icon'] }}</span>
+        {{ $item['label'] }}
+        @if (!empty($item['count']))
+          <span class="count" title="Dossiers en attente">{{ $item['count'] }}</span>
+        @endif
+      </a>
+    @endforeach
+
+    <div class="nav-section">Paramètres</div>
+    <a href="{{ route('administrateurs.index') }}" class="{{ request()->routeIs('administrateurs.*') ? 'active' : '' }}">
+      <span class="material-symbols-rounded">admin_panel_settings</span>
+      Administrateurs
+    </a>
+    <a href="{{ route('candidat.form') }}" target="_blank">
+      <span class="material-symbols-rounded">open_in_new</span>
+      Voir le formulaire public
+    </a>
+  </nav>
+
+  <div class="admin-sidebar-foot">
+    {{ config('etablissement.nom') }}
   </div>
 </aside>

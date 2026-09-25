@@ -1,211 +1,64 @@
 <?php
 namespace App\Http\Controllers;
-use App\Http\Requests\StoreCandidatRequest;
-use App\Http\Requests\UpdateCandidatRequest;
+
 use App\Models\Candidat;
 use App\Models\Formation;
 use App\Models\Inscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Brian2694\Toastr\Facades\Toastr;
 
 class CandidatController extends Controller
 {
     public function index(Request $request)
     {
         $statut = $request->query('statut');
-        $candidats = Candidat::with([
-            'stages',
-            'attestations',
-            'diplomes',
-            'experiences',
-            'inscriptions.formation'
-        ])
-            ->when($statut && isset(Inscription::STATUTS[$statut]), fn ($q) =>
-                $q->whereHas('inscriptions', fn ($i) => $i->where('statut', $statut)))
+        $statut = isset(Inscription::STATUTS[$statut]) ? $statut : null;
+        $formationId = $request->integer('formation') ?: null;
+
+        // Une ligne = une candidature (un candidat peut postuler à plusieurs formations)
+        $inscriptions = Inscription::with(['candidat', 'formation'])
+            ->whereHas('candidat')
+            ->when($statut, fn ($q) => $q->where('statut', $statut))
+            ->when($formationId, fn ($q) => $q->where('formation_id', $formationId))
+            ->latest()
             ->get();
 
-        $compteurs = Inscription::selectRaw('statut, count(*) as total')->groupBy('statut')->pluck('total', 'statut');
+        $compteurs = Inscription::when($formationId, fn ($q) => $q->where('formation_id', $formationId))
+            ->selectRaw('statut, count(*) as total')->groupBy('statut')->pluck('total', 'statut');
+        $formations = Formation::orderBy('type_formation')->orderBy('titre')->get();
 
-        return view('utilisateur.candidats.index', compact('candidats', 'statut', 'compteurs'));
+        return view('utilisateur.candidats.index', compact('inscriptions', 'statut', 'compteurs', 'formations', 'formationId'));
     }
 
-    public function create()
+    public function show(Candidat $candidat)
     {
-        $currentDate = now()->toDateString();
-        $formations = Formation::where('date_debut', '<=', $currentDate)
-            ->where('date_fin', '>=', $currentDate)
-            ->get();
-        return view('utilisateur.candidats.create', compact('formations'));
+        $candidat->load(['inscriptions.formation', 'diplomes', 'stages', 'experiences', 'attestations']);
+
+        return view('utilisateur.candidats.show', compact('candidat'));
     }
 
-    public function store(StoreCandidatRequest $request)
+    public function destroy(Candidat $candidat)
     {
-        $validated = $request->validated();
-        $baseName = strtoupper($validated['CNE']) . strtolower(str_replace(' ', '', $validated['nom'])) . strtolower(str_replace(' ', '', $validated['prenom']));
-        $timestamp = now()->format('YmdHis');
+        // Tous les fichiers du dossier, pas seulement ceux de la fiche candidat
+        $fichiers = collect([$candidat->CV, $candidat->demande, $candidat->scan_cartid, $candidat->photo, $candidat->scan_bac])
+            ->merge($candidat->diplomes->flatMap(fn ($d) => [$d->scan_bac_2, $d->scan_bac_3]))
+            ->merge($candidat->stages->pluck('attestation'))
+            ->merge($candidat->experiences->pluck('attestation'))
+            ->merge($candidat->attestations->pluck('attestation'))
+            ->filter()
+            ->all();
+        Storage::disk('public')->delete($fichiers);
 
-        if ($request->hasFile('CV')) {
-            $CVExtension = $request->file('CV')->getClientOriginalExtension();
-            $CVName = $baseName . '_CV_' . $timestamp . '.' . $CVExtension;
-            $validated['CV'] = $request->file('CV')->storeAs('CV', $CVName, 'public');
-        }
-
-        if ($request->hasFile('demande')) {
-            $demandeExtension = $request->file('demande')->getClientOriginalExtension();
-            $demandeName = $baseName . '_demande_' . $timestamp . '.' . $demandeExtension;
-            $validated['demande'] = $request->file('demande')->storeAs('demande', $demandeName, 'public');
-        }
-
-        if ($request->hasFile('scan_cartid')) {
-            $cinExtension = $request->file('scan_cartid')->getClientOriginalExtension();
-            $cinName = $baseName . '_cin_' . $timestamp . '.' . $cinExtension;
-            $validated['scan_cartid'] = $request->file('scan_cartid')->storeAs('cart', $cinName, 'public');
-        }
-
-        if ($request->hasFile('photo')) {
-            $photoExtension = $request->file('photo')->getClientOriginalExtension();
-            $photoName = $baseName . '_photo_' . $timestamp . '.' . $photoExtension;
-            $validated['photo'] = $request->file('photo')->storeAs('photos', $photoName, 'public');
-        }
-
-        if ($request->hasFile('scan_bac')) {
-            $bacExtension = $request->file('scan_bac')->getClientOriginalExtension();
-            $bacName = $baseName . '_bac_' . $timestamp . '.' . $bacExtension;
-            $validated['scan_bac'] = $request->file('scan_bac')->storeAs('bac', $bacName, 'public');
-        }
-
-        $candidat = Candidat::create($validated);
-
-        Inscription::create([
-            'candidat_id' => $candidat->id,
-            'formation_id' => $validated['formation_id'],
-            'annee' => now(),
-        ]);
-
-        return redirect()->route('diplomes.create')
-            ->with('toastr', [
-                'type' => 'success',
-                'message' => 'Candidat ajouté avec succès'
-            ]);
-    }
-
-    public function edit($id)
-    {
-        $candidat = Candidat::findOrFail($id);
-        $formations = Formation::all();
-        return view('candidats.edit', compact('candidat', 'formations'));
-    }
-
-    public function update(UpdateCandidatRequest $request, $id)
-    {
-        $candidat = Candidat::findOrFail($id);
-        $validated = $request->validated();
-        $baseName = strtoupper($validated['CNE']) . strtolower(str_replace(' ', '', $validated['nom'])) . strtolower(str_replace(' ', '', $validated['prenom']));
-        $timestamp = now()->format('YmdHis');
-
-        if ($request->hasFile('CV')) {
-            if ($candidat->CV && Storage::disk('public')->exists($candidat->CV)) {
-                Storage::disk('public')->delete($candidat->CV);
-            }
-            $CVExtension = $request->file('CV')->getClientOriginalExtension();
-            $CVName = $baseName . '_CV_' . $timestamp . '.' . $CVExtension;
-            $validated['CV'] = $request->file('CV')->storeAs('CV', $CVName, 'public');
-        }
-
-        if ($request->hasFile('demande')) {
-            if ($candidat->demande && Storage::disk('public')->exists($candidat->demande)) {
-                Storage::disk('public')->delete($candidat->demande);
-            }
-            $demandeExtension = $request->file('demande')->getClientOriginalExtension();
-            $demandeName = $baseName . '_demande_' . $timestamp . '.' . $demandeExtension;
-            $validated['demande'] = $request->file('demande')->storeAs('demande', $demandeName, 'public');
-        } else {
-            $validated['demande'] = $candidat->demande ?? null;
-        }
-
-        if ($request->hasFile('scan_cartid')) {
-            if ($candidat->scan_cartid && Storage::disk('public')->exists($candidat->scan_cartid)) {
-                Storage::disk('public')->delete($candidat->scan_cartid);
-            }
-            $cinExtension = $request->file('scan_cartid')->getClientOriginalExtension();
-            $cinName = $baseName . '_cin_' . $timestamp . '.' . $cinExtension;
-            $validated['scan_cartid'] = $request->file('scan_cartid')->storeAs('cart', $cinName, 'public');
-        } else {
-            $validated['scan_cartid'] = $candidat->scan_cartid ?? null;
-        }
-
-        if ($request->hasFile('photo')) {
-            if ($candidat->photo && Storage::disk('public')->exists($candidat->photo)) {
-                Storage::disk('public')->delete($candidat->photo);
-            }
-            $photoExtension = $request->file('photo')->getClientOriginalExtension();
-            $photoName = $baseName . '_photo_' . $timestamp . '.' . $photoExtension;
-            $validated['photo'] = $request->file('photo')->storeAs('photos', $photoName, 'public');
-        } else {
-            $validated['photo'] = $candidat->photo ?? null;
-        }
-
-        if ($request->hasFile('scan_bac')) {
-            if ($candidat->scan_bac && Storage::disk('public')->exists($candidat->scan_bac)) {
-                Storage::disk('public')->delete($candidat->scan_bac);
-            }
-            $bacExtension = $request->file('scan_bac')->getClientOriginalExtension();
-            $bacName = $baseName . '_bac_' . $timestamp . '.' . $bacExtension;
-            $validated['scan_bac'] = $request->file('scan_bac')->storeAs('bac', $bacName, 'public');
-        } else {
-            $validated['scan_bac'] = $candidat->scan_bac ?? null;
-        }
-
-        $candidat->update($validated);
-
-        if ($request->has('formation_id')) {
-            $inscription = Inscription::where('candidat_id', $candidat->id)->first();
-            if ($inscription) {
-                $inscription->update([
-                    'formation_id' => $validated['formation_id'],
-                    'annee' => now(),
-                ]);
-            }
-        }
-
-        return redirect()->route('candidats.index')
-            ->with('toastr', [
-                'type' => 'success',
-                'message' => 'Candidat mis à jour avec succès'
-            ]);
-    }
-
-    public function destroy($id)
-    {
-        $candidat = Candidat::findOrFail($id);
         $candidat->diplomes()->delete();
         $candidat->stages()->delete();
         $candidat->experiences()->delete();
         $candidat->attestations()->delete();
-
-        if ($candidat->CV && Storage::disk('public')->exists($candidat->CV)) {
-            Storage::disk('public')->delete($candidat->CV);
-        }
-        if ($candidat->demande && Storage::disk('public')->exists($candidat->demande)) {
-            Storage::disk('public')->delete($candidat->demande);
-        }
-        if ($candidat->scan_cartid && Storage::disk('public')->exists($candidat->scan_cartid)) {
-            Storage::disk('public')->delete($candidat->scan_cartid);
-        }
-        if ($candidat->photo && Storage::disk('public')->exists($candidat->photo)) {
-            Storage::disk('public')->delete($candidat->photo);
-        }
-        if ($candidat->scan_bac && Storage::disk('public')->exists($candidat->scan_bac)) {
-            Storage::disk('public')->delete($candidat->scan_bac);
-        }
-
         $candidat->delete();
 
         return redirect()->route('candidats.index')
             ->with('toastr', [
                 'type' => 'success',
-                'message' => 'Candidat supprimé avec succès'
+                'message' => 'Dossier supprimé',
             ]);
     }
 }

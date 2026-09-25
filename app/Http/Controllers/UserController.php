@@ -73,6 +73,12 @@ class UserController extends Controller
             'message' => 'Impossible de supprimer cet utilisateur administrateur principal.'
         ]);
     }
+    if ($user->id === auth()->id()) {
+        return redirect()->back()->with('toastr', [
+            'type' => 'error',
+            'message' => 'Vous ne pouvez pas supprimer votre propre compte.'
+        ]);
+    }
     try {
         $user->delete();
         return redirect()->route('administrateurs.index')->with('toastr', [

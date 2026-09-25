@@ -1,238 +1,160 @@
-@extends('utilisateur.Layouts.app')
-
-@section('title', 'Tableau de Bord')
+@extends('utilisateur.layouts.app')
+@section('title', 'Tableau de bord')
 
 @section('content')
-<div class="container-fluid py-4">
-    {{-- Page Header --}}
-    <div class="row mb-4"> {{-- Added mb-4 for spacing below the header --}}
-        <div class="col-lg-12"> {{-- Ensured the header takes full width --}}
-            <h3 class="mb-0 h4 font-weight-bolder" style="color: #1a4b8c">Tableau de Bord</h3>
-            <p class="mb-0" style="margin-bottom: 22px ;color: black "> {{-- Used text-secondary for lighter text color --}}
-                Aperçu des statistiques et activités récentes.
-            </p>
-        </div>
-    </div>
-
-    {{-- Stats Cards --}}
-    <div class="row" style="margin-top: 53px">
-        {{-- Formation Card --}}
-        <div class="col-xl-4 col-sm-6 mb-xl-0 mb-4">
-            <div class="card">
-                <div class="card-header p-3 pt-2"> {{-- Adjusted padding to match screenshot more closely --}}
-                    <div class="icon icon-lg icon-shape bg-gradient-dark shadow-dark text-center border-radius-xl mt-n4 position-absolute"> {{-- Larger icon, absolute positioning, and larger border radius --}}
-                        <i class="material-symbols-rounded opacity-10">school</i>
-                    </div>
-                    <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Formations</p>
-                        <h4 class="mb-0">{{ $stats['total_formations'] ?? 0 }}</h4> {{-- Added null coalescing for safety --}}
-                    </div>
-                </div>
-                <hr class="dark horizontal my-0">
-                <div class="card-footer p-3"> {{-- Adjusted padding --}}
-                    <p class="mb-0 text-sm">
-                        <span class="text-success text-sm font-weight-bolder">+{{ $stats['today_inscriptions'] ?? 0 }}</span> inscriptions aujourd'hui
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Administrateurs Card --}}
-        <div class="col-xl-4 col-sm-6 mb-xl-0 mb-4">
-            <div class="card">
-                <div class="card-header p-3 pt-2">
-                    <div class="icon icon-lg icon-shape bg-gradient-dark shadow-dark text-center border-radius-xl mt-n4 position-absolute">
-                        <i class="material-symbols-rounded opacity-10">admin_panel_settings</i>
-                    </div>
-                    <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Administrateurs</p>
-                        <h4 class="mb-0">{{ $stats['total_admins'] ?? 0 }}</h4>
-                    </div>
-                </div>
-                <hr class="dark horizontal my-0">
-                <div class="card-footer p-3">
-                    <p class="mb-0 text-sm">Administrateurs système</p>
-                </div>
-            </div>
-        </div>
-
-       
-        <div class="col-xl-4 col-sm-6 mb-4">
-            <div class="card">
-                <div class="card-header p-3 pt-2">
-                    <div class="icon icon-lg icon-shape bg-gradient-dark shadow-dark text-center border-radius-xl mt-n4 position-absolute">
-                        <i class="material-symbols-rounded opacity-10">assignment</i>
-                    </div>
-                    <div class="text-end pt-1">
-                        <p class="text-sm mb-0 text-capitalize">Inscriptions</p>
-                        <h4 class="mb-0">{{ $stats['total_inscriptions'] ?? 0 }}</h4>
-                    </div>
-                </div>
-                <hr class="dark horizontal my-0">
-                <div class="card-footer p-3">
-                    @php
-                        $todayInscriptions = $stats['today_inscriptions'] ?? 0;
-                        $lastweekInscriptions = $stats['lastweek_inscriptions'] ?? 0;
-                        $change = 0;
-                        if ($lastweekInscriptions > 0) {
-                            $change = round(($todayInscriptions - $lastweekInscriptions) / $lastweekInscriptions * 100);
-                        }
-                        $isPositive = $change >= 0;
-                    @endphp
-                    <p class="mb-0 text-sm">
-                        <span class="{{ $isPositive ? 'text-success' : 'text-danger' }} text-sm font-weight-bolder">
-                            {{ $isPositive ? '+' : '' }}{{ $change }}%
-                        </span> vs semaine dernière
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Recent Activity Section --}}
-    <div class="row mt-4">
-        {{-- Recent Formations --}}
-        <div class="col-lg-12 col-md-12 mb-4" style="margin-bottom: 93px">
-            <div class="card h-100" >
-                <div class="card-header pb-0 p-3" style="color: #1a4b8c;"> 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0" style="color: #1a4b8c;">Dernières Formations</h6>
-                        <p class="text-sm mb-0">
-                            <i class="fa fa-check text-info" aria-hidden="true"></i>
-                            <span class="font-weight-bold ms-1">{{ $recentFormations->count() ?? 0 }} ajoutées</span> récemment
-                        </p>
-                    </div>
-                </div>
-                <div class="card-body p-3">
-                    <div class="table-responsive">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Titre</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Type</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Inscriptions</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($recentFormations as $formation)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ $formation->titre }}</h6>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-sm bg-gradient-{{ $formation->type_formation == 'Licence' ? 'info' : 'success' }}">
-                                            {{ $formation->type_formation }}
-                                        </span>
-                                    </td>
-                                    <td class="align-middle text-center text-sm">
-                                        <span class="text-xs font-weight-bold">{{ $formation->inscriptions_count ?? 0 }}</span>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">
-                                            {{ \Carbon\Carbon::parse($formation->date_debut)->format('d/m/Y') }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="4" class="text-center">Aucune formation récente trouvée.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Recent Inscriptions --}}
-        <div class="col-lg-12 col-md-12 mb-4" style="margin-top: 53px;">
-            <div class="card h-100">
-                <div class="card-header pb-0 p-3"  style="color:  #1a4b8c;"> 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0"  style="color: #1a4b8c;">Dernières Inscriptions</h6>
-                        <p class="text-sm mb-0">
-                            <i class="fa fa-check text-info" aria-hidden="true"></i>
-                            <span class="font-weight-bold ms-1">{{ $recentInscriptions->count() ?? 0 }} nouvelles</span> inscriptions
-                        </p>
-                    </div>
-                </div>
-                <div class="card-body p-3">
-                    <div class="table-responsive">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Candidat</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Formation</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
-                                    <th class="text-center text-uppercase text-xxs font-weight-bolder opacity-7">Ville</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                               @forelse($recentInscriptions as $inscription)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div>
-                                                <img src="{{ $inscription->candidat?->photo ? asset('storage/'.$inscription->candidat->photo) : asset('assets/img/default-user.png') }}" 
-                                                    class="avatar avatar-sm me-3" 
-                                                    alt="{{ $inscription->candidat?->prenom ?? 'Candidat' }}">
-                                            </div>
-                                            <div class="d-flex flex-column justify-content-center">
-                                    <h6 class="mb-0 text-sm">
-                                        @if($inscription->candidat)
-                                            {{ $inscription->candidat->nom }} {{ $inscription->candidat->prenom }}
-                                        @else
-                                            N/A
-                                        @endif
-                                    </h6>
-                                    <p class="text-xs text-secondary mb-0">
-                                        {{ $inscription->candidat->email ?? 'N/A' }}
-                                    </p>
-                                </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">
-                                            {{ optional($inscription->formation)->titre ?? 'Formation inconnue' }}
-                                        </p>
-                                        <p class="text-xs text-secondary mb-0">
-                                            {{ optional($inscription->formation)->type_formation ?? '' }}
-                                        </p>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">
-                                            {{ $inscription->created_at->format('d/m/Y') }}
-                                        </span>
-                                    </td>
-                                    <td class="align-middle text-center text-sm">
-                                         {{ $inscription->candidat->ville ?? 'N/A' }}
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="4" class="text-center">Aucune inscription récente trouvée.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="page-head">
+  <div>
+    <h2>Bonjour {{ strtok(Auth::user()->name, ' ') }} 👋</h2>
+    <p>Voici l'état des préinscriptions au {{ now()->translatedFormat('d F Y') }}.</p>
+  </div>
+  <a href="{{ route('candidats.index', ['statut' => 'en_attente']) }}" class="btn btn-brand">
+    <span class="material-symbols-rounded">pending_actions</span> Traiter les dossiers en attente
+  </a>
 </div>
 
+{{-- Chiffres clés --}}
+<div class="row g-3 mb-4">
+  @php
+    $cartes = [
+        ['Candidatures', $stats['total'], 'folder_shared', 'var(--brand)', route('candidats.index')],
+        ['À traiter', $stats['a_traiter'], 'pending_actions', '#b7791f', route('candidats.index', ['statut' => 'en_attente'])],
+        ['Cette semaine', $stats['semaine'], 'trending_up', '#1a73e8', null],
+        ['Formations ouvertes', $stats['formations_ouvertes'], 'school', '#2e7d32', route('formations.index')],
+    ];
+  @endphp
+  @foreach ($cartes as [$label, $valeur, $icone, $couleur, $lien])
+    <div class="col-6 col-xl-3">
+      <a @if ($lien) href="{{ $lien }}" @endif class="stat-card">
+        <span class="stat-icon" style="background: color-mix(in srgb, {{ $couleur }} 12%, white); color: {{ $couleur }};">
+          <span class="material-symbols-rounded">{{ $icone }}</span>
+        </span>
+        <span>
+          <span class="stat-value d-block">{{ $valeur }}</span>
+          <span class="stat-label">{{ $label }}</span>
+        </span>
+      </a>
+    </div>
+  @endforeach
+</div>
+
+<div class="row g-4 mb-4">
+  {{-- Évolution --}}
+  <div class="col-xl-8">
+    <div class="panel h-100">
+      <div class="panel-head">
+        <h3><span class="material-symbols-rounded">show_chart</span> Candidatures sur 14 jours</h3>
+        <span class="text-muted small">{{ $stats['aujourdhui'] }} aujourd'hui</span>
+      </div>
+      <div class="panel-body">
+        <canvas id="courbe" height="110"></canvas>
+      </div>
+    </div>
+  </div>
+
+  {{-- Répartition par statut --}}
+  <div class="col-xl-4">
+    <div class="panel h-100">
+      <div class="panel-head"><h3><span class="material-symbols-rounded">donut_small</span> Par statut</h3></div>
+      <div class="panel-body">
+        @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
+          @php $n = $parStatut[$cle] ?? 0; $pct = $stats['total'] ? round($n * 100 / $stats['total']) : 0; @endphp
+          <a href="{{ route('candidats.index', ['statut' => $cle]) }}" class="d-block text-decoration-none text-body mb-3">
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="fw-semibold">{{ $libelle }}</span>
+              <span class="text-muted">{{ $n }} · {{ $pct }} %</span>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar" style="width: {{ $pct }}%; background: {{ $couleur }};"></div>
+            </div>
+          </a>
+        @endforeach
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  {{-- Dernières candidatures --}}
+  <div class="col-xl-7">
+    <div class="panel h-100">
+      <div class="panel-head">
+        <h3><span class="material-symbols-rounded">schedule</span> Dernières candidatures</h3>
+        <a href="{{ route('candidats.index') }}" class="small fw-semibold text-decoration-none">Tout voir</a>
+      </div>
+      @if ($recentes->isEmpty())
+        <div class="empty-state"><span class="material-symbols-rounded">inbox</span>Aucune candidature pour le moment.</div>
+      @else
+        <div class="table-responsive">
+          <table class="table table-clean">
+            <tbody>
+              @foreach ($recentes as $inscription)
+                <tr class="row-link" data-href="{{ route('candidats.show', $inscription->candidat) }}">
+                  <td>
+                    <div class="person">
+                      @include('utilisateur.partials.avatar', ['candidat' => $inscription->candidat, 'size' => 36])
+                      <div>
+                        <div class="person-name">{{ $inscription->candidat->nom }} {{ $inscription->candidat->prenom }}</div>
+                        <div class="person-sub">{{ $inscription->formation->titre ?? '' }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="text-muted small text-nowrap">{{ $inscription->created_at?->diffForHumans() }}</td>
+                  <td class="text-end">@include('utilisateur.partials.statut', ['inscription' => $inscription])</td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      @endif
+    </div>
+  </div>
+
+  {{-- Par formation --}}
+  <div class="col-xl-5">
+    <div class="panel h-100">
+      <div class="panel-head">
+        <h3><span class="material-symbols-rounded">school</span> Par formation</h3>
+        <a href="{{ route('formation-stats') }}" class="small fw-semibold text-decoration-none">Statistiques</a>
+      </div>
+      <div class="panel-body">
+        @forelse ($formations as $f)
+          <a href="{{ route('candidats.index', ['formation' => $f->id]) }}" class="d-flex align-items-center gap-3 text-decoration-none text-body mb-3">
+            <span class="stat-icon" style="width: 38px; height: 38px; background: var(--brand-50); color: var(--brand); font-weight: 800; font-size: .8rem;">{{ $f->type_formation === 'Master' ? 'M' : 'L' }}</span>
+            <span class="flex-grow-1" style="min-width: 0;">
+              <span class="d-block fw-semibold text-truncate">{{ $f->titre }}</span>
+              <span class="person-sub">{{ $f->acceptees_count }} acceptée(s) · {{ $f->en_attente_count }} à traiter</span>
+            </span>
+            <span class="fw-bold">{{ $f->inscriptions_count }}</span>
+          </a>
+        @empty
+          <div class="text-muted small">Aucune formation. <a href="{{ route('formations.create') }}">Créer une formation</a></div>
+        @endforelse
+      </div>
+    </div>
+  </div>
+</div>
+@endsection
+
 @push('scripts')
-<script src="{{ asset('assets/js/plugins/chartjs.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
-    // Charts initialization code would go here
-    // Same as in your original file, if any.
+  (function () {
+    const brand = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim() || '#096a9b';
+    const data = @json($courbe);
+    new Chart(document.getElementById('courbe'), {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.label),
+        datasets: [{ data: data.map(d => d.total), backgroundColor: brand, borderRadius: 6, maxBarThickness: 28 }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#eef2f5' } },
+          x: { grid: { display: false } }
+        }
+      }
+    });
+  })();
 </script>
 @endpush
-@endsection

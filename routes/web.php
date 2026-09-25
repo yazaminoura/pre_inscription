@@ -2,12 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\AttestationController;
-use App\Http\Controllers\DiplomeController;
-use App\Http\Controllers\ExperienceController;
-use App\Http\Controllers\StageController;
 use App\Http\Controllers\CandidatController;
 use App\Http\Controllers\FormationController;
 use App\Http\Controllers\CandidatformController;
@@ -21,30 +16,24 @@ require __DIR__.'/auth.php';
 // Public routes
 Route::get('/', [CandidatformController::class, 'showForm'])->name('candidat.form');
 Route::post('/submit', [CandidatformController::class, 'submitStep'])->name('candidat.submit');
-Route::post('/previous', [CandidatformController::class, 'previousStep'])->name('candidat.previous');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->middleware(['auth', 'verified'])
-        ->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('responsable/administrateurs', UserController::class)
+        ->except('show')
         ->parameters(['administrateurs' => 'user'])
         ->names('administrateurs');
 
-    Route::put('responsable/administrateurs/{user}', [UserController::class, 'update'])->name('administrateurs.update');
-    Route::resource('responsable/formations', FormationController::class);
-    Route::resource('responsable/experiences', ExperienceController::class);
-    Route::resource('responsable/attestations', AttestationController::class);
-    Route::resource('responsable/stages', StageController::class);
-    Route::resource('responsable/candidats', CandidatController::class);
-    Route::resource('responsable/diplomes', DiplomeController::class);
+    Route::resource('responsable/formations', FormationController::class)->except('show');
+
+    // Les diplômes, stages, expériences et attestations font partie du dossier candidat (page show)
+    Route::resource('responsable/candidats', CandidatController::class)->only(['index', 'show', 'destroy']);
+    Route::patch('responsable/inscriptions/{inscription}/statut', [InscriptionController::class, 'updateStatut'])->name('inscriptions.statut');
 
     Route::get('responsable/stats_formations', FormationStats::class)->name('formation-stats');
-    Route::post('responsable/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-
     Route::get('/export-candidats/{id}', [ExportController::class, 'export'])->name('export.candidats');
 
-    Route::patch('responsable/inscriptions/{inscription}/statut', [InscriptionController::class, 'updateStatut'])->name('inscriptions.statut');
+    Route::post('responsable/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });

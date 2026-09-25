@@ -1,188 +1,67 @@
-
-<!-- Existing scripts -->
-<script src="dist/assets/js/core/popper.min.js"></script>
-<script src="dist/assets/js/core/bootstrap.min.js"></script>
-<script src="dist/assets/js/plugins/perfect-scrollbar.min.js"></script>
-<script src="dist/assets/js/plugins/smooth-scrollbar.min.js"></script>
-
-<!-- Add these new script dependencies -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<!-- Material Dashboard JS -->
-<script src="{{ asset('dist/assets/js/material-dashboard.min.js?v=3.2.0') }}"></script>
-
-{{-- toastr --}}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-
-<script>
-    toastr.options = {
-        "closeButton": true,
-        "progressBar": true,
-        "positionClass": "toast-bottom-right",
-        "timeOut": "1500"
-        
-    };
-</script>
-
-
-
-
-<!-- Your custom scripts -->
-<script>
-    // Initialize scrollbar (existing code)
-    var win = navigator.platform.indexOf('Win') > -1;
-    if (win && document.querySelector('#sidenav-scrollbar')) {
-      var options = {
-        damping: '0.5'
-      }
-      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-    }
-
-    // Initialize DataTables with Material Dashboard styling
-   // Global delete confirmation with SweetAlert
-   // Github buttons (existing)
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof GithubButtons !== 'undefined') {
-            GithubButtons.init();
-        }
-    });
-</script>
-{{-- for the searsh  --}}
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-
-<script>
-    $(document).ready(function () {
-        $('#searshTable').DataTable({
-            language: {
-                search: "",
-                searchPlaceholder: "{{ $placeholder ?? 'Rechercher...' }}"
-            },
-            dom: '<"d-flex justify-content-start align-items-center mb-3"f>t',
-        });
-
-        const $searchInput = $('.dataTables_filter input');
-        
-        $searchInput
-            .addClass('form-control ps-3 shadow-sm custom-search')
-            .css({
-                'width': '400px',
-                'border-radius': '12px',
-                'transition': 'all 0.3s ease'
-            });
-
-        $('.dataTables_filter label').contents().filter(function() {
-            return this.nodeType === 3;
-        }).remove();
-    });
-</script>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
 
 <script>
-/**
- * Global delete confirmation
- * @param {number} id - Item ID
- * @param {HTMLElement} button - Clicked button
- * @param {string} [itemName] - Custom item name for confirmation text
- */
-function confirmDelete(id, button, itemName = 'cet élément') {
-    Swal.fire({
-        title: 'Êtes-vous sûr ?',
-        text: `Voulez-vous vraiment supprimer ${itemName} ? Cette action est irréversible !`,
-        icon: 'error',
-        showCancelButton: true,
-        confirmButtonColor:'#d33', 
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: 'Oui, supprimer !',
-        cancelButtonText: 'Annuler'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const form = button.closest('form');
-            button.disabled = true;
-            button.innerHTML = '<i class="material-symbols-rounded">hourglass_top</i>';
-            form.submit();
-        }
-    });
-}
+  function toggleSidebar() {
+    document.getElementById('adminShell').classList.toggle('sidebar-open');
+  }
 
-</script>
+  toastr.options = { closeButton: true, progressBar: true, positionClass: 'toast-bottom-right', timeOut: 3000 };
+  @if (session('toastr'))
+    toastr[@json(session('toastr.type'))](@json(session('toastr.message')));
+  @endif
 
-
-<script>
-document.getElementById('toggleSidebarBtn').addEventListener('click', function() {
-  const sidebar = document.getElementById('sidenav-main');
-  const sidebar2 = document.getElementById('nsidenav-main');
-  sidebar.classList.toggle('d-none'); // Hide/show sidebar
-    sidebar2.classList.toggle('d-none'); // Hide/show sidebar
-
-  
-  // Toggle content width
-  document.getElementById('main-content').classList.toggle('content-full-width');
-});
-</script>
-{{-- for the menu  --}}
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const toggleBtn = document.getElementById('toggleSidebarBtn');
-      const sidebar = document.getElementById('sidenav-main');
-      const overlay = document.querySelector('.sidebar-overlay');
-
-      if (window.innerWidth <= 900) {
-        sidebar.classList.remove('sidebar-visible');
-      }
-
-      function toggleSidebar() {
-        sidebar.classList.toggle('sidebar-visible');
-        overlay.style.display = sidebar.classList.contains('sidebar-visible') ? 'block' : 'none';
-      }
-
-      toggleBtn?.addEventListener('click', toggleSidebar);
-      overlay?.addEventListener('click', toggleSidebar);
-
-      window.addEventListener('resize', function () {
-        if (window.innerWidth > 900) {
-          sidebar.classList.add('sidebar-visible');
-          overlay.style.display = 'none';
-        }
+  // Tableaux avec recherche / tri / pagination : ajouter la classe .js-datatable
+  $(function () {
+    $('.js-datatable').each(function () {
+      $(this).DataTable({
+        pageLength: 25,
+        order: [],
+        columnDefs: [{ targets: 'no-sort', orderable: false }],
+        language: {
+          search: '',
+          searchPlaceholder: 'Rechercher…',
+          lengthMenu: '_MENU_ par page',
+          info: '_START_ à _END_ sur _TOTAL_',
+          infoEmpty: 'Aucun résultat',
+          infoFiltered: '(filtré sur _MAX_)',
+          zeroRecords: 'Aucun résultat',
+          emptyTable: 'Aucune donnée',
+          paginate: { previous: '‹', next: '›' }
+        },
+        dom: '<"d-flex flex-wrap justify-content-between align-items-center"fl>t<"d-flex flex-wrap justify-content-between align-items-center"ip>'
       });
     });
-  </script>
 
-
-
-
-
-
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Confirm logout function
-    window.confirmLogout = function() {
-      const logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
-      logoutModal.show();
-    };
-
-    // Perform logout function
-    window.performLogout = function() {
-      document.getElementById('logout-form').submit();
-    };
-  });
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-{{-- copy le cnadidats email  --}}
-<script>
-function copyEmail(email) {
-    navigator.clipboard.writeText(email).then(() => {
-        alert('Email copied to clipboard!');
-    }).catch(err => {
-        console.error('Failed to copy email:', err);
+    // Ligne cliquable -> ouvre le lien data-href (sauf clic sur un bouton/lien)
+    $(document).on('click', 'tr[data-href]', function (e) {
+      if (!$(e.target).closest('a, button, form, input, select').length) {
+        window.location = $(this).data('href');
+      }
     });
-}
+  });
+
+  /**
+   * Confirmation de suppression commune
+   */
+  function confirmDelete(id, button, itemName = 'cet élément') {
+    Swal.fire({
+      title: 'Supprimer ?',
+      text: `Voulez-vous vraiment supprimer ${itemName} ? Cette action est irréversible.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#c62828',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Oui, supprimer',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        button.disabled = true;
+        button.closest('form').submit();
+      }
+    });
+  }
 </script>

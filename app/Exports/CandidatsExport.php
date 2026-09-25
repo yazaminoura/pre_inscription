@@ -21,9 +21,8 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
     public function __construct($formationId)
     {
         $this->formationId = $formationId;
-        $this->baseUrl = (strpos(config('app.url'), 'localhost') !== false)
-            ? 'http://127.0.0.1:8000/storage/'
-            : 'https://fc.fst-usmba.ac.ma//storage/';
+        // Adresse réelle du site (celle de la requête), pas une URL codée en dur
+        $this->baseUrl = asset('storage') . '/';
     }
 
     public function collection()
