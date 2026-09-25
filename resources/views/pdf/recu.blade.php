@@ -20,14 +20,19 @@
         .titre h1 { margin: 0; font-size: 16px; }
         .titre .ref { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
         h2 { font-size: 11.5px; color: {{ $c }}; text-transform: uppercase; letter-spacing: .5px; border-bottom: 1.5px solid {{ $c }}; padding-bottom: 3px; margin: 14px 0 6px; }
-        .grille td { padding: 4px 6px; border-bottom: 1px solid #e3eaf0; vertical-align: top; }
+        .grille td { padding: 5px 8px; vertical-align: top; }
+        .grille tr:nth-child(odd) td { background: #F8FAFC; }
+        .grille tr:nth-child(even) td { background: #FFFFFF; }
         .grille td.l { width: 28%; color: #6a7b8a; }
-        .liste td { padding: 4px 6px; border-bottom: 1px solid #e3eaf0; vertical-align: top; }
+        .liste td { padding: 5px 8px; vertical-align: top; }
+        .liste tr:nth-child(even) td { background: #F8FAFC; }
         .liste th { text-align: left; font-size: 9.5px; color: #6a7b8a; padding: 4px 6px; background: #f3f6f9; }
-        .photo { width: 78px; height: 96px; border: 1px solid #e3eaf0; }
-        .note { margin-top: 16px; padding: 9px 11px; background: #f3f6f9; border-left: 3px solid {{ $c }}; font-size: 9.5px; color: #3d4d5c; }
+        .photo { width: 78px; height: 96px; border: 1px solid #E2E8F0; border-radius: 6px; padding: 2px; background: #fff; }
+        .note { margin-top: 16px; padding: 10px 12px; background: #F1F5F9; border-radius: 6px; font-size: 9.5px; color: #334155; }
+        .note .i { display: inline-block; width: 14px; height: 14px; line-height: 14px; text-align: center; border-radius: 7px; background: #64748B; color: #fff; font-weight: bold; font-size: 9px; margin-right: 6px; }
+        .ref-pill { display: inline-block; padding: 5px 12px; border-radius: 14px; background: {{ $c }}; color: #fff; font-size: 14px; font-weight: bold; letter-spacing: 1px; }
         .pied { position: fixed; bottom: -8px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #9aa8b4; }
-        .statut { display: inline-block; padding: 2px 8px; border-radius: 8px; font-weight: bold; color: {{ $inscription->statut_color }}; border: 1px solid {{ $inscription->statut_color }}; }
+        .statut { display: inline-block; padding: 3px 10px; border-radius: 10px; font-weight: bold; {{ $inscription->statut_pastille }} }
     </style>
 </head>
 <body>
@@ -39,7 +44,11 @@
                 <div class="sous">{{ collect([config('etablissement.adresse'), config('etablissement.ville'), config('etablissement.pays')])->filter()->implode(', ') }}</div>
                 <div class="sous">{{ collect([config('etablissement.telephone'), config('etablissement.email'), config('etablissement.site')])->filter()->implode(' · ') }}</div>
             </td>
-            <td style="text-align: right; width: 150px;" class="sous">{{ __('Édité le :date', ['date' => now()->format('d/m/Y H:i')]) }}</td>
+            <td style="text-align: right; width: 170px;">
+                <div class="sous" style="margin-bottom: 4px;">{{ __('Référence') }}</div>
+                <span class="ref-pill">{{ $inscription->reference }}</span>
+                <div class="sous" style="margin-top: 5px;">{{ __('Édité le :date', ['date' => now()->format('d/m/Y H:i')]) }}</div>
+            </td>
         </tr>
     </table>
 
@@ -47,7 +56,6 @@
         <table>
             <tr>
                 <td><h1>{{ __('Récapitulatif de préinscription') }}</h1>{{ __($f->type_formation) }} · {{ $f->tr('titre') }}</td>
-                <td style="text-align: right;"><div style="font-size: 9px;">{{ __('Référence') }}</div><div class="ref">{{ $inscription->reference }}</div></td>
             </tr>
         </table>
     </div>
@@ -120,7 +128,7 @@
     </table>
 
     <div class="note">
-        {{ __("Ce document récapitule la préinscription déposée en ligne. Il ne vaut pas admission : la décision de l'établissement est communiquée par email et visible sur la page « Suivre mon dossier ».") }}
+        <span class="i">i</span>{{ __("Ce document récapitule la préinscription déposée en ligne. Il ne vaut pas admission : la décision de l'établissement est communiquée par email et visible sur la page « Suivre mon dossier ».") }}
         <br>{{ __("Je certifie sur l'honneur l'exactitude des informations et des documents fournis.") }}
     </div>
 

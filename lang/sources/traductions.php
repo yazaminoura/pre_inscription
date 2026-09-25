@@ -67,6 +67,7 @@ return [
     'Votre numéro de référence' => ['Your reference number', 'رقم مرجعك'],
     'Copier' => ['Copy', 'نسخ'],
     'Copié !' => ['Copied!', 'تم النسخ!'],
+    'Référence copiée dans le presse-papiers' => ['Reference copied to the clipboard', 'تم نسخ المرجع'],
     'Et maintenant ?' => ['What happens next?', 'وماذا بعد؟'],
     'Candidat' => ['Applicant', 'المترشح'],
 

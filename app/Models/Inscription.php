@@ -61,6 +61,23 @@ class Inscription extends Model
         return self::STATUTS[$this->statut][0] ?? $this->statut;
     }
 
+    // Pastille de statut lisible d'un coup d'œil : [fond, texte] (ex. « En attente » en ambre)
+    public const PASTILLES = [
+        'en_attente' => ['#FEF3C7', '#92400E'],
+        'en_cours' => ['#DBEAFE', '#1E40AF'],
+        'liste_attente' => ['#FFEDD5', '#9A3412'],
+        'acceptee' => ['#DCFCE7', '#166534'],
+        'refusee' => ['#FEE2E2', '#991B1B'],
+    ];
+
+    /** Style CSS en ligne de la pastille de statut. */
+    public function getStatutPastilleAttribute(): string
+    {
+        [$fond, $texte] = self::PASTILLES[$this->statut] ?? ['#F1F5F9', '#334155'];
+
+        return "background: $fond; color: $texte;";
+    }
+
     public function getStatutColorAttribute()
     {
         return self::STATUTS[$this->statut][1] ?? '#6c757d';

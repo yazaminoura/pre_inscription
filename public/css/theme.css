@@ -321,6 +321,20 @@ a:hover { color: var(--brand-dark); }
     color: #fff;
 }
 
+/* Bouton secondaire « contour » : même couleur que le principal, sans fond */
+.btn-outline-brand {
+    background: #fff;
+    border: 1px solid var(--brand);
+    color: var(--brand);
+}
+
+.btn-outline-brand:hover,
+.btn-outline-brand:focus {
+    background: var(--brand-50);
+    border-color: var(--brand);
+    color: var(--brand-dark);
+}
+
 .btn-soft {
     background: var(--brand-50);
     border-color: var(--brand-50);

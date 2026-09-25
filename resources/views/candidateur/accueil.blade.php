@@ -113,8 +113,11 @@
                     <article class="fcard">
                         <div class="fcard-top">
                             <span class="fcard-type">{{ __($formation->type_formation) }}</span>
-                            <span class="fcard-days {{ $jours <= 7 ? 'urgent' : '' }}">
-                                <span class="material-symbols-rounded">schedule</span>
+                            {{-- Date de clôture et jours restants regroupés dans une seule pastille --}}
+                            <span class="fcard-deadline {{ $jours <= 7 ? 'urgent' : '' }}" title="{{ __("Jusqu'au :date", ['date' => \Carbon\Carbon::parse($formation->date_fin)->translatedFormat('d M Y')]) }}">
+                                <span class="material-symbols-rounded">event</span>
+                                {{ \Carbon\Carbon::parse($formation->date_fin)->translatedFormat('d M') }}
+                                <span class="sep">·</span>
                                 {{ $jours === 0 ? __('Dernier jour') : trans_choice(':n jour restant|:n jours restants', $jours, ['n' => $jours]) }}
                             </span>
                         </div>
@@ -126,10 +129,9 @@
                             <li><span class="material-symbols-rounded">workspace_premium</span> {{ $formation->conditionAcces() }}</li>
                             @if ($formation->tr('duree'))<li><span class="material-symbols-rounded">hourglass_top</span> {{ $formation->tr('duree') }}</li>@endif
                             @if ($formation->places)<li><span class="material-symbols-rounded">groups</span> {{ trans_choice(':n place|:n places', $formation->places, ['n' => $formation->places]) }}</li>@endif
-                            <li><span class="material-symbols-rounded">event</span> {{ __("Jusqu'au :date", ['date' => \Carbon\Carbon::parse($formation->date_fin)->translatedFormat('d M Y')]) }}</li>
                         </ul>
                         <div class="fcard-actions">
-                            <a href="{{ route('formation.public', $formation) }}" class="btn btn-soft">{{ __('Détails') }}</a>
+                            <a href="{{ route('formation.public', $formation) }}" class="btn btn-outline-brand">{{ __('Détails') }}</a>
                             <a href="{{ route('candidat.form', ['formation' => $formation->id]) }}" class="btn btn-brand">
                                 {{ __('Postuler') }} <span class="material-symbols-rounded flip">arrow_forward</span>
                             </a>

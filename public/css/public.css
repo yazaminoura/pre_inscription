@@ -585,7 +585,7 @@
     background:
         radial-gradient(circle at 85% 15%, rgba(255, 255, 255, .16), transparent 40%),
         radial-gradient(circle at 10% 110%, rgba(255, 255, 255, .10), transparent 45%),
-        linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+        linear-gradient(135deg, color-mix(in srgb, var(--brand-dark) 85%, #000) 0%, var(--brand) 100%);
     box-shadow: 0 18px 40px rgba(9, 106, 155, .25);
 }
 
@@ -885,6 +885,7 @@
 
 .fcard-top {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     gap: .5rem;
@@ -892,6 +893,7 @@
 }
 
 .fcard-type {
+    white-space: nowrap;
     font-size: .7rem;
     font-weight: 800;
     text-transform: uppercase;
@@ -1028,7 +1030,8 @@
     background: #fff;
     border: 1px solid var(--line);
     border-radius: 16px;
-    padding: 1.5rem;
+    padding: 24px;
+    box-shadow: var(--shadow);
 }
 
 .about-logo {
@@ -1037,8 +1040,7 @@
 }
 
 .about-contact {
-    background: var(--brand-50);
-    border-color: var(--brand-100);
+    background: #fff;
 }
 
 .about-contact h3 {
@@ -1080,6 +1082,36 @@
     color: var(--brand-dark);
 }
 
+/* Pastille « date de clôture · jours restants » des cartes formations */
+.fcard-deadline {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    border-radius: 20px;
+    padding: .2rem .6rem;
+    font-size: .75rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.fcard-deadline .material-symbols-rounded {
+    font-size: 15px;
+    vertical-align: 0;
+}
+
+.fcard-deadline .sep {
+    color: #94a3b8;
+}
+
+.fcard-deadline.urgent {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+}
+
 /* ---------- Page de confirmation ---------- */
 .thanks {
     max-width: 1000px;
@@ -1111,8 +1143,9 @@
 }
 
 .thanks-check {
-    width: 84px;
-    height: 84px;
+    width: 104px;
+    height: 104px;
+    box-shadow: 0 0 0 12px #f0fdf4;
     margin: 0 auto;
     border-radius: 50%;
     background: #e7f4e8;
@@ -1123,8 +1156,8 @@
 }
 
 .thanks-check svg {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     fill: none;
     stroke: var(--ok);
     stroke-width: 4;
@@ -1183,29 +1216,55 @@
 }
 
 .ticket-ref {
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: 800;
     letter-spacing: 2px;
     color: var(--brand-dark);
 }
 
 .ticket-copy {
-    display: inline-flex;
-    align-items: center;
-    gap: .3rem;
-    border: 1px solid var(--brand-100);
-    background: #fff;
-    color: var(--brand);
-    border-radius: 8px;
-    padding: .35rem .7rem;
-    font-weight: 700;
-    font-size: .82rem;
+    padding: .45rem .9rem;
 }
 
-.ticket-copy.ok {
+.ticket-copy.ok,
+.ticket-copy.ok:hover {
     background: var(--ok);
     border-color: var(--ok);
     color: #fff;
+}
+
+.copy-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translate(-50%, 20px);
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .65rem 1rem;
+    border-radius: 10px;
+    background: #14532d;
+    color: #fff;
+    font-weight: 600;
+    font-size: .9rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .2);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 2000;
+}
+
+.copy-toast.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.status-pill {
+    display: inline-block;
+    padding: .25rem .7rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: .8rem;
 }
 
 .thanks-hint {
@@ -1271,10 +1330,11 @@
 .next-steps li::before {
     content: '';
     position: absolute;
-    top: 38px;
-    bottom: 4px;
+    top: 36px;
+    bottom: 0;
     inset-inline-start: 17px;
-    width: 2px;
+    width: 3px;
+    border-radius: 2px;
     background: var(--line);
 }
 

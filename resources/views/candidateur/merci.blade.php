@@ -25,11 +25,12 @@
         <div class="ticket">
             <span class="ticket-label">{{ __('Votre numéro de référence') }}</span>
             <span class="ticket-ref" dir="ltr" id="reference">{{ $reference }}</span>
-            <button type="button" class="ticket-copy" id="copier-reference" data-ok="{{ __('Copié !') }}">
+            <button type="button" class="btn btn-brand ticket-copy" id="copier-reference" data-ok="{{ __('Copié !') }}">
                 <span class="material-symbols-rounded">content_copy</span> <span class="texte">{{ __('Copier') }}</span>
             </button>
         </div>
         <p class="thanks-hint">{{ __("Rappelez cette référence pour tout échange avec l'établissement.") }}</p>
+        <div class="copy-toast" id="toast-copie" role="status" aria-live="polite"><span class="material-symbols-rounded">check_circle</span> {{ __('Référence copiée dans le presse-papiers') }}</div>
     </section>
 
     <div class="thanks-grid">
@@ -55,13 +56,13 @@
                 <dl class="thanks-facts">
                     <div><dt>{{ __('Candidat') }}</dt><dd>{{ $inscription->candidat->prenom }} {{ $inscription->candidat->nom }}</dd></div>
                     <div><dt>{{ __('Déposée le') }}</dt><dd>{{ $inscription->created_at?->translatedFormat('d F Y, H:i') }}</dd></div>
-                    <div><dt>{{ __('Statut') }}</dt><dd><span class="status-badge" style="color: {{ $inscription->statut_color }}; background: {{ $inscription->statut_color }}1a;">{{ __($inscription->statut_label) }}</span></dd></div>
+                    <div><dt>{{ __('Statut') }}</dt><dd><span class="status-pill" style="{{ $inscription->statut_pastille }}">{{ __($inscription->statut_label) }}</span></dd></div>
                 </dl>
                 <div class="d-grid gap-2">
                     <a href="{{ route('candidat.recu', $inscription->reference) }}" class="btn btn-brand justify-content-center py-2" id="lien-recu">
                         <span class="material-symbols-rounded">download</span> {{ __('Télécharger mon récapitulatif (PDF)') }}
                     </a>
-                    <a href="{{ route('suivi', ['reference' => $reference]) }}" class="btn btn-soft justify-content-center">
+                    <a href="{{ route('suivi', ['reference' => $reference]) }}" class="btn btn-outline-brand justify-content-center">
                         <span class="material-symbols-rounded">travel_explore</span> {{ __('Suivre mon dossier') }}
                     </a>
                     <a href="{{ route('accueil') }}" class="btn btn-light justify-content-center">
@@ -80,13 +81,37 @@
     // Copier la référence
     document.getElementById('copier-reference')?.addEventListener('click', function () {
         const bouton = this;
-        navigator.clipboard?.writeText(document.getElementById('reference').textContent.trim()).then(function () {
+        const reference = document.getElementById('reference').textContent.trim();
+
+        function confirmer() {
             const texte = bouton.querySelector('.texte');
             const avant = texte.textContent;
             texte.textContent = bouton.dataset.ok;
             bouton.classList.add('ok');
-            setTimeout(function () { texte.textContent = avant; bouton.classList.remove('ok'); }, 2000);
-        });
+            const toast = document.getElementById('toast-copie');
+            toast.classList.add('visible');
+            setTimeout(function () { texte.textContent = avant; bouton.classList.remove('ok'); toast.classList.remove('visible'); }, 2200);
+        }
+
+        // Méthode de secours quand le presse-papiers moderne est refusé (page non HTTPS, navigateur ancien)
+        function copieDeSecours() {
+            const zone = document.createElement('textarea');
+            zone.value = reference;
+            zone.setAttribute('readonly', '');
+            zone.style.position = 'fixed';
+            zone.style.opacity = '0';
+            document.body.appendChild(zone);
+            zone.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            zone.remove();
+            confirmer();
+        }
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(reference).then(confirmer, copieDeSecours);
+        } else {
+            copieDeSecours();
+        }
     });
 
     @if ($inscription)
