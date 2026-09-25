@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('responsable/etablissement', [EtablissementController::class, 'edit'])->name('etablissement.edit');
     Route::put('responsable/etablissement', [EtablissementController::class, 'update'])->name('etablissement.update');
+    Route::post('responsable/etablissement/email-test', [EtablissementController::class, 'testerEmail'])->middleware('throttle:5,1')->name('etablissement.email-test');
 
     // Les diplômes, stages, expériences et attestations font partie du dossier candidat (page show)
     Route::resource('responsable/candidats', CandidatController::class)->only(['index', 'show', 'destroy']);

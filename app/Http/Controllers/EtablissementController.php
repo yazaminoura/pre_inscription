@@ -56,4 +56,18 @@ class EtablissementController extends Controller
             'message' => 'Informations de l\'établissement enregistrées',
         ]);
     }
+
+    /** Envoie un email de test à l'administrateur connecté. */
+    public function testerEmail(Request $request)
+    {
+        try {
+            \Illuminate\Support\Facades\Mail::to($request->user()->email)->send(new \App\Mail\EmailTest());
+        } catch (\Throwable $e) {
+            return back()->with('email_test', ['ok' => false, 'message' => $e->getMessage()]);
+        }
+
+        return back()->with('email_test', config('mail.default') === 'log'
+            ? ['ok' => false, 'message' => 'L\'envoi est en mode « log » : l\'email a été écrit dans le journal, pas envoyé. Renseignez le serveur SMTP dans le fichier .env.']
+            : ['ok' => true, 'message' => 'Email envoyé à ' . $request->user()->email . '. Vérifiez votre boîte de réception (et les spams).']);
+    }
 }

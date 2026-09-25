@@ -77,10 +77,35 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-brand w-100 justify-content-center py-2">
+      <button type="submit" class="btn btn-brand w-100 justify-content-center py-2 mb-4">
         <span class="material-symbols-rounded">save</span> Enregistrer
       </button>
     </div>
   </div>
 </form>
+
+{{-- En dehors du formulaire principal : un formulaire ne peut pas en contenir un autre --}}
+<div class="row">
+  <div class="col-xl-4 offset-xl-8">
+    <div class="panel">
+      <div class="panel-head"><h3><span class="material-symbols-rounded">mail</span> Emails</h3></div>
+      <div class="panel-body">
+        @if (config('mail.default') === 'log')
+          <div class="alert alert-warning small py-2">Mode <strong>log</strong> : les emails sont écrits dans le journal, pas envoyés aux candidats. Configurez le serveur SMTP dans le fichier <code>.env</code>.</div>
+        @else
+          <p class="small text-muted">Envoi via <strong>{{ config('mail.default') }}</strong> ({{ config('mail.mailers.smtp.host') }}), expéditeur <strong>{{ config('mail.from.address') }}</strong>.</p>
+        @endif
+        @if (session('email_test'))
+          <div class="alert {{ session('email_test.ok') ? 'alert-success' : 'alert-danger' }} small py-2">{{ session('email_test.message') }}</div>
+        @endif
+        <form action="{{ route('etablissement.email-test') }}" method="POST">
+          @csrf
+          <button class="btn btn-soft w-100 justify-content-center">
+            <span class="material-symbols-rounded">send</span> M'envoyer un email de test
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
