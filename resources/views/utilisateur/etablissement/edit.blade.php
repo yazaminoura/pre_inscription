@@ -32,6 +32,11 @@
             <x-champ name="presentation" label="Présentation" type="textarea" :value="$etablissement->presentation" col="col-12" rows="6"
                      placeholder="Quelques lignes sur l'établissement : histoire, points forts, équipements…" aide="Affichée sur la page d'accueil, rubrique « L'établissement »." />
           </div>
+          @include('utilisateur.partials.traductions', ['modele' => $etablissement, 'champs' => [
+            'nom' => ["Nom de l'établissement", 'text'],
+            'slogan' => ['Accroche', 'text'],
+            'presentation' => ['Présentation', 'textarea'],
+          ]])
         </div>
       </div>
 

@@ -203,5 +203,7 @@ class DemoSeeder extends Seeder
                 'created_at' => now()->subDays(12 - $i),
             ]);
         }
+
+        $this->call(DemoTraductionsSeeder::class);
     }
 }

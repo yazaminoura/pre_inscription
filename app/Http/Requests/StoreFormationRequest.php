@@ -24,7 +24,10 @@ class StoreFormationRequest extends FormRequest
             'places' => 'nullable|integer|min:1|max:10000',
             'conditions_acces' => 'nullable|string|max:3000',
             'modalites_selection' => 'nullable|string|max:3000',
-            'debouches' => 'nullable|string|max:3000'
+            'debouches' => 'nullable|string|max:3000',
+            'traductions' => 'nullable|array',
+            'traductions.*' => 'nullable|array',
+            'traductions.*.*' => 'nullable|string|max:3000'
         ];
     }
 

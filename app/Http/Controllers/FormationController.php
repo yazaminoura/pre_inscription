@@ -26,7 +26,7 @@ class FormationController extends Controller
     
     public function store(StoreFormationRequest $request)
     {
-        Formation::create($request->validated());
+        Formation::create($this->donnees($request));
     
         return redirect()->route('formations.index')
         ->with('toastr', [
@@ -46,7 +46,7 @@ class FormationController extends Controller
     public function update(UpdateFormationRequest $request, $id)
     {
         $formation = Formation::findOrFail($id);
-        $formation->update($request->validated());
+        $formation->update($this->donnees($request));
 
         return redirect()->route('formations.index')
         ->with('toastr', [
@@ -65,5 +65,14 @@ class FormationController extends Controller
             'type' => 'success',
             'message' => 'Formation supprimée avec succès'
         ]);
+    }
+
+    /** Données validées, traductions nettoyées (langues et champs prévus, sans valeurs vides). */
+    private function donnees($request): array
+    {
+        $donnees = $request->validated();
+        $donnees['traductions'] = Formation::nettoyerTraductions($donnees['traductions'] ?? null);
+
+        return $donnees;
     }
 }

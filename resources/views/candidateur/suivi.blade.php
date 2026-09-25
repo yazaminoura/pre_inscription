@@ -33,7 +33,7 @@
                 <div class="form-card-head d-flex flex-wrap justify-content-between align-items-start gap-2">
                     <div>
                         <p class="m-0">{{ __('Dossier') }} <span dir="ltr">{{ $inscription->reference }}</span></p>
-                        <h2>{{ $inscription->formation->titre }}</h2>
+                        <h2>{{ $inscription->formation->tr('titre') }}</h2>
                         <p class="m-0">{{ __($inscription->formation->type_formation) }} · {{ $inscription->candidat->prenom }} {{ $inscription->candidat->nom }}</p>
                     </div>
                     <span class="status-badge" style="font-size: .95rem; color: {{ $inscription->statut_color }}; background: {{ $inscription->statut_color }}1a;">{{ __($inscription->statut_label) }}</span>

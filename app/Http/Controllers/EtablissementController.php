@@ -29,6 +29,9 @@ class EtablissementController extends Controller
             'couleur' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'logo' => 'nullable|image|mimes:png,jpg,jpeg,webp,svg|max:2048',
             'retirer_logo' => 'nullable|boolean',
+            'traductions' => 'nullable|array',
+            'traductions.*' => 'nullable|array',
+            'traductions.*.*' => 'nullable|string|max:5000',
         ], [], [
             'nom' => 'nom de l\'établissement', 'site' => 'site web', 'couleur' => 'couleur', 'logo' => 'logo',
         ]);
@@ -48,6 +51,7 @@ class EtablissementController extends Controller
             unset($validated['logo']);
         }
         unset($validated['retirer_logo']);
+        $validated['traductions'] = Etablissement::nettoyerTraductions($validated['traductions'] ?? null);
 
         $etablissement->fill($validated)->save();
 

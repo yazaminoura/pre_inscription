@@ -56,7 +56,7 @@
     @if ($step > 1 && $formationChoisie)
         <div class="d-flex align-items-center gap-2 mb-3 small text-muted">
             <span class="material-symbols-rounded" style="color: var(--brand);">school</span>
-            {{ __('Préinscription') }} : <strong class="text-body">{{ __($formationChoisie->type_formation) }} · {{ $formationChoisie->titre }}</strong>
+            {{ __('Préinscription') }} : <strong class="text-body">{{ __($formationChoisie->type_formation) }} · {{ $formationChoisie->tr('titre') }}</strong>
             <a href="{{ route('candidat.form', ['step' => 1]) }}" class="ms-1">{{ __('modifier') }}</a>
         </div>
     @endif
@@ -80,7 +80,7 @@
                     @foreach ($liste as $f)
                         <label class="choice">
                             <input type="radio" name="titre_id" value="{{ $f->id }}" class="form-check-input" @checked((int) old('titre_id', $d['titre_id'] ?? 0) === $f->id) required>
-                            <span class="choice-title">{{ $f->titre }}</span>
+                            <span class="choice-title">{{ $f->tr('titre') }}</span>
                             <span class="choice-sub">{{ __('Clôture le :date', ['date' => \Carbon\Carbon::parse($f->date_fin)->format('d/m/Y')]) }}</span>
                         </label>
                     @endforeach
@@ -195,7 +195,7 @@
             <div class="recap">
                 <div class="recap-box">
                     <h4>{{ __('Formation') }} <a href="{{ route('candidat.form', ['step' => 1]) }}">{{ __('Modifier') }}</a></h4>
-                    <p><strong>{{ $formationChoisie->titre ?? '—' }}</strong><br>{{ __($formationChoisie->type_formation ?? '') }}</p>
+                    <p><strong>{{ $formationChoisie?->tr('titre') ?? '—' }}</strong><br>{{ __($formationChoisie->type_formation ?? '') }}</p>
                 </div>
                 <div class="recap-box">
                     <h4>{{ __('Identité') }} <a href="{{ route('candidat.form', ['step' => 2]) }}">{{ __('Modifier') }}</a></h4>

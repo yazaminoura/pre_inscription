@@ -1,5 +1,5 @@
 @extends('candidateur.layout.index')
-@section('title', $formation->titre)
+@section('title', $formation->tr('titre'))
 
 @php
     // Texte saisi « une idée par ligne » -> liste
@@ -7,9 +7,9 @@
     $debut = \Carbon\Carbon::parse($formation->date_debut);
     $fin = \Carbon\Carbon::parse($formation->date_fin);
     $jours = (int) today()->diffInDays($fin, false);
-    $conditions = $lignes($formation->conditions_acces);
-    $modalites = $lignes($formation->modalites_selection);
-    $debouches = $lignes($formation->debouches);
+    $conditions = $lignes($formation->tr('conditions_acces'));
+    $modalites = $lignes($formation->tr('modalites_selection'));
+    $debouches = $lignes($formation->tr('debouches'));
 @endphp
 
 @section('content')
@@ -21,10 +21,10 @@
     <div class="col-lg-8">
         <div class="fiche-head mb-4">
             <span class="formation-type">{{ __($formation->type_formation) }}</span>
-            <h1>{{ $formation->titre }}</h1>
+            <h1>{{ $formation->tr('titre') }}</h1>
             <div class="fiche-facts">
-                @if ($formation->duree)
-                    <span><span class="material-symbols-rounded">schedule</span> {{ $formation->duree }}</span>
+                @if ($formation->tr('duree'))
+                    <span><span class="material-symbols-rounded">schedule</span> {{ $formation->tr('duree') }}</span>
                 @endif
                 @if ($formation->places)
                     <span><span class="material-symbols-rounded">groups</span> {{ trans_choice(':n place|:n places', $formation->places, ['n' => $formation->places]) }}</span>
@@ -39,8 +39,8 @@
         <div class="panel mb-4">
             <div class="panel-head"><h3><span class="material-symbols-rounded">info</span> {{ __('Présentation') }}</h3></div>
             <div class="panel-body fiche-texte">
-                @if ($formation->description)
-                    {!! nl2br(e($formation->description)) !!}
+                @if ($formation->tr('description'))
+                    {!! nl2br(e($formation->tr('description'))) !!}
                 @else
                     <span class="text-muted">{{ __('La présentation détaillée de cette formation sera bientôt disponible.') }}</span>
                 @endif
@@ -127,7 +127,7 @@
                     @foreach ($autres as $a)
                         <a href="{{ route('formation.public', $a) }}" class="doc-link">
                             <span class="material-symbols-rounded flip">chevron_right</span>
-                            <span><span class="d-block">{{ $a->titre }}</span><span class="person-sub">{{ __($a->type_formation) }}</span></span>
+                            <span><span class="d-block">{{ $a->tr('titre') }}</span><span class="person-sub">{{ __($a->type_formation) }}</span></span>
                         </a>
                     @endforeach
                 </div>

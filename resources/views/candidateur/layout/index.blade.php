@@ -36,9 +36,14 @@
                 <button class="lang-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ __('Langue') }}">
                     <span class="material-symbols-rounded">translate</span> {{ strtoupper(app()->getLocale()) }}
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                <ul class="dropdown-menu dropdown-menu-end lang-menu">
                     @foreach (\App\Http\Middleware\DefinirLangue::LANGUES as $code => $nom)
-                        <li><a class="dropdown-item {{ app()->getLocale() === $code ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}" lang="{{ $code }}">{{ $nom }}</a></li>
+                        <li>
+                            <a class="dropdown-item {{ app()->getLocale() === $code ? 'active' : '' }}" href="{{ request()->fullUrlWithQuery(['lang' => $code]) }}" lang="{{ $code }}">
+                                <span class="code">{{ strtoupper($code) }}</span> {{ $nom }}
+                                @if (app()->getLocale() === $code)<span class="material-symbols-rounded check">check</span>@endif
+                            </a>
+                        </li>
                     @endforeach
                 </ul>
             </div>

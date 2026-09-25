@@ -7,7 +7,7 @@
     <h1 class="h3 fw-bold" style="color: var(--ok);">{{ __('Préinscription enregistrée') }}</h1>
     @if ($inscription)
         <p class="mb-1">{{ __(':nom, votre dossier pour', ['nom' => $inscription->candidat->prenom . ' ' . $inscription->candidat->nom]) }}</p>
-        <p class="fw-bold mb-3">{{ __($inscription->formation->type_formation) }} · {{ $inscription->formation->titre }}</p>
+        <p class="fw-bold mb-3">{{ __($inscription->formation->type_formation) }} · {{ $inscription->formation->tr('titre') }}</p>
     @endif
     <p class="text-muted mb-1">{{ __('Conservez votre numéro de référence :') }}</p>
     <div class="merci-ref" dir="ltr">{{ $inscription->reference ?? session('inscription_ok') }}</div>

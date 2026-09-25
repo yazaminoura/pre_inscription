@@ -33,13 +33,13 @@
             <div class="col-md-6 col-lg-4">
                 <div class="formation-card">
                     <span class="formation-type">{{ __($formation->type_formation) }}</span>
-                    <h3><a href="{{ route('formation.public', $formation) }}" class="text-reset text-decoration-none">{{ $formation->titre }}</a></h3>
-                    @if ($formation->description)
-                        <p>{{ $formation->description }}</p>
+                    <h3><a href="{{ route('formation.public', $formation) }}" class="text-reset text-decoration-none">{{ $formation->tr('titre') }}</a></h3>
+                    @if ($formation->tr('description'))
+                        <p>{{ $formation->tr('description') }}</p>
                     @endif
-                    @if ($formation->duree || $formation->places)
+                    @if ($formation->tr('duree') || $formation->places)
                         <div class="facts">
-                            @if ($formation->duree)<span><span class="material-symbols-rounded">schedule</span> {{ $formation->duree }}</span>@endif
+                            @if ($formation->tr('duree'))<span><span class="material-symbols-rounded">schedule</span> {{ $formation->tr('duree') }}</span>@endif
                             @if ($formation->places)<span><span class="material-symbols-rounded">groups</span> {{ trans_choice(':n place|:n places', $formation->places, ['n' => $formation->places]) }}</span>@endif
                         </div>
                     @endif
@@ -80,7 +80,7 @@
                     @foreach ($aVenir as $formation)
                         <tr>
                             <td><span class="formation-type">{{ __($formation->type_formation) }}</span></td>
-                            <td class="fw-semibold"><a href="{{ route('formation.public', $formation) }}" class="text-reset">{{ $formation->titre }}</a></td>
+                            <td class="fw-semibold"><a href="{{ route('formation.public', $formation) }}" class="text-reset">{{ $formation->tr('titre') }}</a></td>
                             <td class="text-muted text-end text-nowrap">{{ __('Ouverture le :date', ['date' => \Carbon\Carbon::parse($formation->date_debut)->translatedFormat('d M Y')]) }}</td>
                         </tr>
                     @endforeach

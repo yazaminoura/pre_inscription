@@ -11,9 +11,23 @@ use Illuminate\Support\Facades\Schema;
  */
 class Etablissement extends Model
 {
+    use Concerns\Traduisible;
+
+    public const CHAMPS_TRADUISIBLES = ['nom', 'slogan', 'presentation'];
+
     protected $table = 'etablissement';
 
     protected $guarded = ['id'];
+
+    /** Remplace nom / accroche / présentation de la config par leur traduction dans la langue courante. */
+    public static function traduireLaConfig(string $langue): void
+    {
+        foreach (config("etablissement.traductions.$langue", []) as $champ => $valeur) {
+            if (in_array($champ, self::CHAMPS_TRADUISIBLES, true) && filled($valeur)) {
+                config(["etablissement.$champ" => $valeur]);
+            }
+        }
+    }
 
     public static function actuel(): self
     {
@@ -41,6 +55,7 @@ class Etablissement extends Model
         if (isset($valeurs['logo'])) {
             $valeurs['logo'] = 'storage/' . $valeurs['logo'];
         }
+        $valeurs['traductions'] = $ligne->traductions ?? [];
 
         config(['etablissement' => array_merge(config('etablissement', []), $valeurs)]);
     }

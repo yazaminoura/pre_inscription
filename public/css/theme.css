@@ -358,6 +358,20 @@ a:hover { color: var(--brand-dark); }
     color: #3d4d5c;
 }
 
+.nav-pills .nav-link {
+    border: 1px solid var(--line);
+    color: #3d4d5c;
+    font-weight: 600;
+    border-radius: 9px;
+    padding: .35rem .8rem;
+}
+
+.nav-pills .nav-link.active {
+    background: var(--brand-50);
+    border-color: var(--brand-100);
+    color: var(--brand);
+}
+
 /* Cartes chiffres */
 .stat-card {
     background: var(--surface);

@@ -27,6 +27,9 @@ class DefinirLangue
         app()->setLocale(isset(self::LANGUES[$langue]) ? $langue : 'fr');
         \Carbon\Carbon::setLocale(app()->getLocale());
 
+        // Nom, accroche et présentation de l'établissement dans la langue choisie (si traduits dans l'admin)
+        \App\Models\Etablissement::traduireLaConfig(app()->getLocale());
+
         return $next($request);
     }
 }

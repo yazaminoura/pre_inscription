@@ -50,6 +50,15 @@
            placeholder="Métiers visés, poursuite d'études…" aide="Un débouché par ligne." />
 </div>
 
+@include('utilisateur.partials.traductions', ['modele' => $formation, 'champs' => [
+  'titre' => ['Intitulé', 'text'],
+  'duree' => ['Durée', 'text'],
+  'description' => ['Description', 'textarea'],
+  'conditions_acces' => ["Conditions d'accès", 'textarea'],
+  'modalites_selection' => ['Modalités de sélection', 'textarea'],
+  'debouches' => ['Débouchés', 'textarea'],
+]])
+
 <div class="d-flex gap-2 justify-content-end mt-4">
   <a href="{{ route('formations.index') }}" class="btn btn-light">Annuler</a>
   <button type="submit" class="btn btn-brand">
