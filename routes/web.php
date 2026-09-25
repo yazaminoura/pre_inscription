@@ -12,19 +12,22 @@ use App\Http\Controllers\EtablissementController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InscriptionController;
 use App\Http\Controllers\SuiviController;
+use App\Http\Middleware\DefinirLangue;
 use App\Livewire\FormationStats;
 
 require __DIR__.'/auth.php';
 
-// Public routes
-Route::get('/', [CandidatformController::class, 'accueil'])->name('accueil');
-Route::get('/formations/{formation}', [CandidatformController::class, 'formation'])->name('formation.public');
-Route::get('/suivi', [SuiviController::class, 'formulaire'])->name('suivi');
-Route::post('/suivi', [SuiviController::class, 'consulter'])->middleware('throttle:10,1')->name('suivi.consulter');
-Route::get('/preinscription', [CandidatformController::class, 'showForm'])->name('candidat.form');
-Route::post('/preinscription', [CandidatformController::class, 'submitStep'])->name('candidat.submit');
-Route::get('/preinscription/merci', [CandidatformController::class, 'merci'])->name('candidat.merci');
-Route::post('/preinscription/recommencer', [CandidatformController::class, 'recommencer'])->name('candidat.recommencer');
+// Public routes (français / anglais / arabe)
+Route::middleware(DefinirLangue::class)->group(function () {
+    Route::get('/', [CandidatformController::class, 'accueil'])->name('accueil');
+    Route::get('/formations/{formation}', [CandidatformController::class, 'formation'])->name('formation.public');
+    Route::get('/suivi', [SuiviController::class, 'formulaire'])->name('suivi');
+    Route::post('/suivi', [SuiviController::class, 'consulter'])->middleware('throttle:10,1')->name('suivi.consulter');
+    Route::get('/preinscription', [CandidatformController::class, 'showForm'])->name('candidat.form');
+    Route::post('/preinscription', [CandidatformController::class, 'submitStep'])->name('candidat.submit');
+    Route::get('/preinscription/merci', [CandidatformController::class, 'merci'])->name('candidat.merci');
+    Route::post('/preinscription/recommencer', [CandidatformController::class, 'recommencer'])->name('candidat.recommencer');
+});
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {

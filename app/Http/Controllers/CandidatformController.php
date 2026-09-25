@@ -93,7 +93,7 @@ class CandidatformController extends Controller
             return redirect()->route('candidat.form', ['step' => $this->etapeAtteinte($data)]);
         }
 
-        $validated = $request->validate($this->regles($step, $data), [], $this->libelles());
+        $validated = $request->validate($this->regles($step, $data), [], array_map('__', $this->libelles()));
 
         $data = match ($step) {
             1 => $this->etapeFormation($validated, $data),
@@ -118,7 +118,7 @@ class CandidatformController extends Controller
         } catch (\Throwable $e) {
             Log::error('Erreur lors de l\'enregistrement de la préinscription : ' . $e->getMessage());
             return redirect()->route('candidat.form', ['step' => 6])
-                ->with('error', 'Une erreur est survenue lors de l\'enregistrement. Veuillez réessayer.');
+                ->with('error', __("Une erreur est survenue lors de l'enregistrement. Veuillez réessayer."));
         }
 
         $this->envoyerConfirmation($inscription);
@@ -237,6 +237,12 @@ class CandidatformController extends Controller
     private function libelles(): array
     {
         return [
+            'nom' => 'nom', 'prenom' => 'prénom', 'CNE' => 'CNE', 'CIN' => 'CIN', 'email' => 'email',
+            'adresse' => 'adresse', 'ville' => 'ville', 'province' => 'province', 'pays' => 'pays', 'photo' => 'photo',
+            'stages.*.periode' => 'période', 'stages.*.secteur_activite' => 'secteur d\'activité', 'stages.*.description' => 'missions',
+            'experiences.*.periode' => 'période', 'experiences.*.secteur_activite' => 'secteur d\'activité', 'experiences.*.description' => 'missions',
+            'attestations.*.description' => 'précision', 'stages.*.attestation' => 'justificatif',
+            'experiences.*.attestation' => 'justificatif', 'attestations.*.attestation' => 'justificatif',
             'titre_id' => 'formation', 'nom_ar' => 'nom (arabe)', 'prenom_ar' => 'prénom (arabe)',
             'date_naissance' => 'date de naissance', 'sex' => 'sexe', 'nationalite' => 'nationalité',
             'ville_naissance' => 'ville de naissance', 'pay_naissance' => 'pays de naissance',
@@ -258,7 +264,7 @@ class CandidatformController extends Controller
     {
         $formation = $this->formationsOuvertes()->firstWhere('id', (int) $validated['titre_id']);
         if (!$formation) {
-            throw ValidationException::withMessages(['titre_id' => 'Cette formation n\'est pas ouverte aux préinscriptions.']);
+            throw ValidationException::withMessages(['titre_id' => __("Cette formation n'est pas ouverte aux préinscriptions.")]);
         }
         $data['titre_id'] = $formation->id;
         $data['type_formation'] = $formation->type_formation;
@@ -276,7 +282,7 @@ class CandidatformController extends Controller
             ->value('reference');
         if ($dejaInscrit) {
             throw ValidationException::withMessages([
-                'CNE' => "Une préinscription existe déjà pour ce CNE dans cette formation (réf. $dejaInscrit).",
+                'CNE' => __('Une préinscription existe déjà pour ce CNE dans cette formation (réf. :ref).', ['ref' => $dejaInscrit]),
             ]);
         }
 

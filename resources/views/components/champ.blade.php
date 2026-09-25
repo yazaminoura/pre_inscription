@@ -20,7 +20,7 @@
     <label for="{{ $id }}" class="form-label">{{ $label }} @if ($required)<span class="req">*</span>@endif</label>
     @if ($options !== null)
         <select name="{{ $name }}" id="{{ $id }}" class="form-select @error($cleErreur) is-invalid @enderror" @if ($required) required @endif {{ $attributes }}>
-            <option value="">{{ $placeholder ?: 'Choisir…' }}</option>
+            <option value="">{{ $placeholder ?: __('Choisir…') }}</option>
             @foreach ($options as $cle => $libelle)
                 <option value="{{ $cle }}" @selected((string) $valeur === (string) $cle)>{{ $libelle }}</option>
             @endforeach

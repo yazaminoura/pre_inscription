@@ -1,5 +1,5 @@
 @extends('candidateur.layout.index')
-@section('title', $etapes[$step])
+@section('title', __($etapes[$step]))
 
 @php
     $annees = collect(range(now()->year, 1990))->mapWithKeys(fn ($a) => [$a => $a])->all();
@@ -7,18 +7,21 @@
     // Fichier déjà envoyé : on l'indique et le champ devient facultatif
     $dejaEnvoye = fn ($cle) => !empty($d[$cle]);
     $titres = [
-        1 => ['Quelle formation ?', 'Choisissez la formation à laquelle vous souhaitez vous préinscrire.'],
-        2 => ['Identité', 'Tels qu\'ils figurent sur votre pièce d\'identité.'],
-        3 => ['Coordonnées', 'Pour vous contacter au sujet de votre dossier.'],
-        4 => ['Parcours académique', 'Votre baccalauréat et vos diplômes après le bac.'],
-        5 => ['Expérience', 'Stages, expériences professionnelles et attestations. Tout est facultatif.'],
-        6 => ['Documents & envoi', 'Joignez vos pièces, vérifiez le récapitulatif puis envoyez.'],
+        1 => [__('Quelle formation ?'), __('Choisissez la formation à laquelle vous souhaitez vous préinscrire.')],
+        2 => [__('Identité'), __("Tels qu'ils figurent sur votre pièce d'identité.")],
+        3 => [__('Coordonnées'), __('Pour vous contacter au sujet de votre dossier.')],
+        4 => [__('Parcours académique'), __('Votre baccalauréat et vos diplômes après le bac.')],
+        5 => [__('Expérience'), __('Stages, expériences professionnelles et attestations. Tout est facultatif.')],
+        6 => [__('Documents & envoi'), __('Joignez vos pièces, vérifiez le récapitulatif puis envoyez.')],
     ];
     $listes = [
-        'stages' => ['Stages', 'Ajouter un stage', 'stages'],
-        'experiences' => ['Expériences professionnelles', 'Ajouter une expérience', 'experiences'],
-        'attestations' => ['Attestations (langues, certifications, bénévolat…)', 'Ajouter une attestation', 'attestations'],
+        'stages' => [__('Stages'), __('Ajouter un stage')],
+        'experiences' => [__('Expériences professionnelles'), __('Ajouter une expérience')],
+        'attestations' => [__('Attestations (langues, certifications, bénévolat…)'), __('Ajouter une attestation')],
     ];
+    $formatsFichier = __('PDF, JPG ou PNG · 10 Mo max.');
+    $dejaEnvoyeTexte = __('Fichier déjà envoyé, vous pouvez le remplacer');
+    $anneeObtention = __("Année d'obtention");
 @endphp
 
 @section('content')
@@ -34,7 +37,7 @@
                     <span class="stepper-inner">
                 @endif
                     <span class="stepper-dot">@if ($n < $step)<span class="material-symbols-rounded">check</span>@else{{ $n }}@endif</span>
-                    <span class="stepper-label d-block">{{ $etape }}</span>
+                    <span class="stepper-label d-block">{{ __($etape) }}</span>
                 @if ($accessible && $n !== $step)</a>@else</span>@endif
             </li>
         @endforeach
@@ -46,15 +49,15 @@
     @if ($errors->any())
         <div class="alert alert-danger d-flex gap-2 align-items-start">
             <span class="material-symbols-rounded">error</span>
-            <div>Merci de corriger {{ $errors->count() > 1 ? 'les ' . $errors->count() . ' champs signalés' : 'le champ signalé' }} ci-dessous.</div>
+            <div>{{ trans_choice('Merci de corriger le champ signalé ci-dessous.|Merci de corriger les :n champs signalés ci-dessous.', $errors->count(), ['n' => $errors->count()]) }}</div>
         </div>
     @endif
 
     @if ($step > 1 && $formationChoisie)
         <div class="d-flex align-items-center gap-2 mb-3 small text-muted">
             <span class="material-symbols-rounded" style="color: var(--brand);">school</span>
-            Préinscription : <strong class="text-body">{{ $formationChoisie->type_formation }} · {{ $formationChoisie->titre }}</strong>
-            <a href="{{ route('candidat.form', ['step' => 1]) }}" class="ms-1">modifier</a>
+            {{ __('Préinscription') }} : <strong class="text-body">{{ __($formationChoisie->type_formation) }} · {{ $formationChoisie->titre }}</strong>
+            <a href="{{ route('candidat.form', ['step' => 1]) }}" class="ms-1">{{ __('modifier') }}</a>
         </div>
     @endif
 
@@ -72,18 +75,18 @@
         {{-- 1. Formation --}}
         @if ($step === 1)
             @forelse ($formations->groupBy('type_formation') as $type => $liste)
-                <div class="fieldset-title">{{ $type }}</div>
+                <div class="fieldset-title">{{ __($type) }}</div>
                 <div class="choice-grid mb-2">
                     @foreach ($liste as $f)
                         <label class="choice">
                             <input type="radio" name="titre_id" value="{{ $f->id }}" class="form-check-input" @checked((int) old('titre_id', $d['titre_id'] ?? 0) === $f->id) required>
                             <span class="choice-title">{{ $f->titre }}</span>
-                            <span class="choice-sub">Clôture le {{ \Carbon\Carbon::parse($f->date_fin)->format('d/m/Y') }}</span>
+                            <span class="choice-sub">{{ __('Clôture le :date', ['date' => \Carbon\Carbon::parse($f->date_fin)->format('d/m/Y')]) }}</span>
                         </label>
                     @endforeach
                 </div>
             @empty
-                <div class="empty-state"><span class="material-symbols-rounded">event_busy</span>Aucune formation n'est ouverte pour le moment.</div>
+                <div class="empty-state"><span class="material-symbols-rounded">event_busy</span>{{ __("Aucune formation n'est ouverte pour le moment.") }}</div>
             @endforelse
             @error('titre_id')<div class="text-danger small mt-2">{{ $message }}</div>@enderror
         @endif
@@ -91,79 +94,79 @@
         {{-- 2. Identité --}}
         @if ($step === 2)
             <div class="row g-3">
-                <x-champ name="nom" label="Nom" :value="$d['nom'] ?? ''" required autocomplete="family-name" />
-                <x-champ name="prenom" label="Prénom" :value="$d['prenom'] ?? ''" required autocomplete="given-name" />
-                <x-champ name="nom_ar" label="الاسم العائلي" :value="$d['nom_ar'] ?? ''" dir="rtl" aide="بالعربية (اختياري)" />
-                <x-champ name="prenom_ar" label="الاسم الشخصي" :value="$d['prenom_ar'] ?? ''" dir="rtl" aide="بالعربية (اختياري)" />
-                <x-champ name="CNE" label="CNE / Code Massar" :value="$d['CNE'] ?? ''" required />
-                <x-champ name="CIN" label="CIN ou n° de passeport" :value="$d['CIN'] ?? ''" required />
-                <x-champ name="date_naissance" label="Date de naissance" type="date" :value="$d['date_naissance'] ?? ''" required />
-                <x-champ name="sex" label="Sexe" :value="$d['sex'] ?? ''" :options="['Homme' => 'Homme', 'Femme' => 'Femme']" required />
-                <x-champ name="ville_naissance" label="Ville de naissance" :value="$d['ville_naissance'] ?? ''" required />
-                <x-champ name="pay_naissance" label="Pays de naissance" :value="$d['pay_naissance'] ?? 'Maroc'" required />
-                <x-champ name="nationalite" label="Nationalité" :value="$d['nationalite'] ?? 'Marocaine'" required />
-                <x-champ name="ville_naissance_ar" label="مدينة الازدياد" :value="$d['ville_naissance_ar'] ?? ''" dir="rtl" aide="بالعربية (اختياري)" />
+                <x-champ name="nom" :label="__('Nom')" :value="$d['nom'] ?? ''" required autocomplete="family-name" />
+                <x-champ name="prenom" :label="__('Prénom')" :value="$d['prenom'] ?? ''" required autocomplete="given-name" />
+                <x-champ name="nom_ar" label="الاسم العائلي" :value="$d['nom_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" />
+                <x-champ name="prenom_ar" label="الاسم الشخصي" :value="$d['prenom_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" />
+                <x-champ name="CNE" :label="__('CNE / Code Massar')" :value="$d['CNE'] ?? ''" required />
+                <x-champ name="CIN" :label="__('CIN ou n° de passeport')" :value="$d['CIN'] ?? ''" required />
+                <x-champ name="date_naissance" :label="__('Date de naissance')" type="date" :value="$d['date_naissance'] ?? ''" required />
+                <x-champ name="sex" :label="__('Sexe')" :value="$d['sex'] ?? ''" :options="['Homme' => __('Homme'), 'Femme' => __('Femme')]" :placeholder="__('Choisir…')" required />
+                <x-champ name="ville_naissance" :label="__('Ville de naissance')" :value="$d['ville_naissance'] ?? ''" required />
+                <x-champ name="pay_naissance" :label="__('Pays de naissance')" :value="$d['pay_naissance'] ?? ''" required />
+                <x-champ name="nationalite" :label="__('Nationalité')" :value="$d['nationalite'] ?? ''" required />
+                <x-champ name="ville_naissance_ar" label="مدينة الازدياد" :value="$d['ville_naissance_ar'] ?? ''" dir="rtl" :aide="__('En arabe · facultatif')" />
             </div>
         @endif
 
         {{-- 3. Coordonnées --}}
         @if ($step === 3)
             <div class="row g-3">
-                <x-champ name="email" label="Email" type="email" :value="$d['email'] ?? ''" required autocomplete="email" aide="Votre référence et les nouvelles de votre dossier arriveront ici." />
-                <x-champ name="telephone_mob" label="Téléphone mobile" type="tel" :value="$d['telephone_mob'] ?? ''" required placeholder="+212 6 12 34 56 78" autocomplete="tel" />
-                <x-champ name="adresse" label="Adresse" :value="$d['adresse'] ?? ''" required col="col-12" autocomplete="street-address" />
-                <x-champ name="ville" label="Ville" :value="$d['ville'] ?? ''" required />
-                <x-champ name="province" label="Province / région" :value="$d['province'] ?? ''" required />
-                <x-champ name="pays" label="Pays de résidence" :value="$d['pays'] ?? 'Maroc'" required />
-                <x-champ name="telephone_fix" label="Téléphone fixe" type="tel" :value="$d['telephone_fix'] ?? ''" aide="Facultatif" />
+                <x-champ name="email" :label="__('Email')" type="email" :value="$d['email'] ?? ''" required autocomplete="email" :aide="__('Votre référence et les nouvelles de votre dossier arriveront ici.')" />
+                <x-champ name="telephone_mob" :label="__('Téléphone mobile')" type="tel" :value="$d['telephone_mob'] ?? ''" required placeholder="+212 6 12 34 56 78" autocomplete="tel" dir="ltr" />
+                <x-champ name="adresse" :label="__('Adresse')" :value="$d['adresse'] ?? ''" required col="col-12" autocomplete="street-address" />
+                <x-champ name="ville" :label="__('Ville')" :value="$d['ville'] ?? ''" required />
+                <x-champ name="province" :label="__('Province / région')" :value="$d['province'] ?? ''" required />
+                <x-champ name="pays" :label="__('Pays de résidence')" :value="$d['pays'] ?? ''" required />
+                <x-champ name="telephone_fix" :label="__('Téléphone fixe')" type="tel" :value="$d['telephone_fix'] ?? ''" :aide="__('Facultatif')" dir="ltr" />
             </div>
         @endif
 
         {{-- 4. Parcours --}}
         @if ($step === 4)
-            <div class="fieldset-title">Baccalauréat</div>
+            <div class="fieldset-title">{{ __('Baccalauréat') }}</div>
             <div class="row g-3">
-                <x-champ name="serie_bac" label="Série" :value="$d['serie_bac'] ?? ''" required placeholder="Ex. : Sciences Mathématiques A" />
-                <x-champ name="annee_bac" label="Année d'obtention" :value="$d['annee_bac'] ?? ''" :options="$annees" required />
-                <x-champ name="scan_bac" label="Scan du baccalauréat" type="file" accept=".pdf,.jpg,.jpeg,.png" :required="!$dejaEnvoye('scan_bac')" col="col-12" aide="PDF, JPG ou PNG · 10 Mo max.">
-                    @if ($dejaEnvoye('scan_bac'))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> Fichier déjà envoyé, vous pouvez le remplacer</span>@endif
+                <x-champ name="serie_bac" :label="__('Série')" :value="$d['serie_bac'] ?? ''" required :placeholder="__('Ex. : Sciences Mathématiques A')" />
+                <x-champ name="annee_bac" :label="$anneeObtention" :value="$d['annee_bac'] ?? ''" :options="$annees" :placeholder="__('Choisir…')" required />
+                <x-champ name="scan_bac" :label="__('Scan du baccalauréat')" type="file" accept=".pdf,.jpg,.jpeg,.png" :required="!$dejaEnvoye('scan_bac')" col="col-12" :aide="$formatsFichier">
+                    @if ($dejaEnvoye('scan_bac'))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ $dejaEnvoyeTexte }}</span>@endif
                 </x-champ>
             </div>
 
-            <div class="fieldset-title">Diplôme Bac+2</div>
+            <div class="fieldset-title">{{ __('Diplôme Bac+2') }}</div>
             <div class="row g-3">
-                <x-champ name="type_diplome_bac_2" label="Type de diplôme" :value="$d['type_diplome_bac_2'] ?? ''" required placeholder="DEUG, DEUST, DUT, BTS, DTS…" />
-                <x-champ name="filiere_diplome_bac_2" label="Filière" :value="$d['filiere_diplome_bac_2'] ?? ''" required placeholder="Ex. : MIP" />
-                <x-champ name="etablissement_bac_2" label="Établissement" :value="$d['etablissement_bac_2'] ?? ''" required />
-                <x-champ name="annee_diplome_bac_2" label="Année d'obtention" :value="$d['annee_diplome_bac_2'] ?? ''" :options="$annees" required />
-                <x-champ name="scan_bac_2" label="Scan du diplôme Bac+2" type="file" accept=".pdf,.jpg,.jpeg,.png" :required="!$dejaEnvoye('scan_bac_2')" col="col-12" aide="PDF, JPG ou PNG · 10 Mo max.">
-                    @if ($dejaEnvoye('scan_bac_2'))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> Fichier déjà envoyé, vous pouvez le remplacer</span>@endif
+                <x-champ name="type_diplome_bac_2" :label="__('Type de diplôme')" :value="$d['type_diplome_bac_2'] ?? ''" required placeholder="DEUG, DEUST, DUT, BTS, DTS…" />
+                <x-champ name="filiere_diplome_bac_2" :label="__('Filière')" :value="$d['filiere_diplome_bac_2'] ?? ''" required :placeholder="__('Ex. : MIP')" />
+                <x-champ name="etablissement_bac_2" :label="__('Établissement')" :value="$d['etablissement_bac_2'] ?? ''" required />
+                <x-champ name="annee_diplome_bac_2" :label="$anneeObtention" :value="$d['annee_diplome_bac_2'] ?? ''" :options="$annees" :placeholder="__('Choisir…')" required />
+                <x-champ name="scan_bac_2" :label="__('Scan du diplôme Bac+2')" type="file" accept=".pdf,.jpg,.jpeg,.png" :required="!$dejaEnvoye('scan_bac_2')" col="col-12" :aide="$formatsFichier">
+                    @if ($dejaEnvoye('scan_bac_2'))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ $dejaEnvoyeTexte }}</span>@endif
                 </x-champ>
             </div>
 
-            <div class="fieldset-title">Diplôme Bac+3 <span class="optional">· facultatif, obligatoire pour un Master</span></div>
+            <div class="fieldset-title">{{ __('Diplôme Bac+3') }} <span class="optional">· {{ __('facultatif, obligatoire pour un Master') }}</span></div>
             <div class="row g-3">
-                <x-champ name="type_diplome_bac_3" label="Type de diplôme" :value="$d['type_diplome_bac_3'] ?? ''" placeholder="Licence fondamentale, Licence pro…" />
-                <x-champ name="filiere_diplome_bac_3" label="Filière" :value="$d['filiere_diplome_bac_3'] ?? ''" />
-                <x-champ name="etablissement_bac_3" label="Établissement" :value="$d['etablissement_bac_3'] ?? ''" />
-                <x-champ name="annee_diplome_bac_3" label="Année d'obtention" :value="$d['annee_diplome_bac_3'] ?? ''" :options="$annees" />
-                <x-champ name="scan_bac_3" label="Scan du diplôme Bac+3" type="file" accept=".pdf,.jpg,.jpeg,.png" col="col-12" aide="PDF, JPG ou PNG · 10 Mo max.">
-                    @if ($dejaEnvoye('scan_bac_3'))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> Fichier déjà envoyé, vous pouvez le remplacer</span>@endif
+                <x-champ name="type_diplome_bac_3" :label="__('Type de diplôme')" :value="$d['type_diplome_bac_3'] ?? ''" :placeholder="__('Licence fondamentale, Licence pro…')" />
+                <x-champ name="filiere_diplome_bac_3" :label="__('Filière')" :value="$d['filiere_diplome_bac_3'] ?? ''" />
+                <x-champ name="etablissement_bac_3" :label="__('Établissement')" :value="$d['etablissement_bac_3'] ?? ''" />
+                <x-champ name="annee_diplome_bac_3" :label="$anneeObtention" :value="$d['annee_diplome_bac_3'] ?? ''" :options="$annees" :placeholder="__('Choisir…')" />
+                <x-champ name="scan_bac_3" :label="__('Scan du diplôme Bac+3')" type="file" accept=".pdf,.jpg,.jpeg,.png" col="col-12" :aide="$formatsFichier">
+                    @if ($dejaEnvoye('scan_bac_3'))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ $dejaEnvoyeTexte }}</span>@endif
                 </x-champ>
             </div>
         @endif
 
         {{-- 5. Expérience --}}
         @if ($step === 5)
-            @foreach ($listes as $liste => [$titreListe, $bouton, $dossier])
+            @foreach ($listes as $liste => [$titreListe, $bouton])
                 @php $entrees = old($liste, $d[$liste] ?? []); @endphp
-                <div class="fieldset-title">{{ $titreListe }} <span class="optional">· 3 maximum</span></div>
+                <div class="fieldset-title">{{ $titreListe }} <span class="optional">· {{ __('3 maximum') }}</span></div>
                 <div class="repeat-list" data-liste="{{ $liste }}">
                     @foreach ($entrees as $i => $e)
                         @include('candidateur.candidat._entree', ['liste' => $liste, 'i' => $i, 'e' => $e])
                     @endforeach
                 </div>
-                <p class="repeat-empty" @if (count($entrees)) hidden @endif>Aucun élément ajouté.</p>
+                <p class="repeat-empty" @if (count($entrees)) hidden @endif>{{ __('Aucun élément ajouté.') }}</p>
                 <button type="button" class="btn btn-soft btn-sm mb-2 add-item" data-liste="{{ $liste }}">
                     <span class="material-symbols-rounded">add</span> {{ $bouton }}
                 </button>
@@ -177,46 +180,46 @@
         @if ($step === 6)
             <div class="row g-3">
                 @foreach ([
-                    'CV' => ['Curriculum vitae (CV)', '.pdf,.jpg,.jpeg,.png', 'PDF, JPG ou PNG · 10 Mo max.'],
-                    'demande' => ['Lettre de demande', '.pdf,.jpg,.jpeg,.png', 'PDF, JPG ou PNG · 10 Mo max.'],
-                    'scan_cartid' => ['Pièce d\'identité (CIN ou passeport)', '.pdf,.jpg,.jpeg,.png', 'Recto-verso · PDF, JPG ou PNG.'],
-                    'photo' => ['Photo d\'identité', '.jpg,.jpeg,.png', 'JPG ou PNG · 5 Mo max.'],
+                    'CV' => [__('Curriculum vitae (CV)'), '.pdf,.jpg,.jpeg,.png', $formatsFichier],
+                    'demande' => [__('Lettre de demande'), '.pdf,.jpg,.jpeg,.png', $formatsFichier],
+                    'scan_cartid' => [__("Pièce d'identité (CIN ou passeport)"), '.pdf,.jpg,.jpeg,.png', __('Recto-verso · PDF, JPG ou PNG.')],
+                    'photo' => [__("Photo d'identité"), '.jpg,.jpeg,.png', __('JPG ou PNG · 5 Mo max.')],
                 ] as $champ => [$libelle, $accept, $aide])
                     <x-champ :name="$champ" :label="$libelle" type="file" :accept="$accept" :required="!$dejaEnvoye($champ)" :aide="$aide">
-                        @if ($dejaEnvoye($champ))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> Déjà envoyé</span>@endif
+                        @if ($dejaEnvoye($champ))<span class="file-kept"><span class="material-symbols-rounded">check_circle</span> {{ __('Déjà envoyé') }}</span>@endif
                     </x-champ>
                 @endforeach
             </div>
 
-            <div class="fieldset-title mt-4">Récapitulatif</div>
+            <div class="fieldset-title mt-4">{{ __('Récapitulatif') }}</div>
             <div class="recap">
                 <div class="recap-box">
-                    <h4>Formation <a href="{{ route('candidat.form', ['step' => 1]) }}">Modifier</a></h4>
-                    <p><strong>{{ $formationChoisie->titre ?? '—' }}</strong><br>{{ $formationChoisie->type_formation ?? '' }}</p>
+                    <h4>{{ __('Formation') }} <a href="{{ route('candidat.form', ['step' => 1]) }}">{{ __('Modifier') }}</a></h4>
+                    <p><strong>{{ $formationChoisie->titre ?? '—' }}</strong><br>{{ __($formationChoisie->type_formation ?? '') }}</p>
                 </div>
                 <div class="recap-box">
-                    <h4>Identité <a href="{{ route('candidat.form', ['step' => 2]) }}">Modifier</a></h4>
-                    <p><strong>{{ $d['nom'] ?? '' }} {{ $d['prenom'] ?? '' }}</strong><br>CNE {{ $d['CNE'] ?? '' }} · CIN {{ $d['CIN'] ?? '' }}<br>Né(e) le {{ !empty($d['date_naissance']) ? \Carbon\Carbon::parse($d['date_naissance'])->format('d/m/Y') : '' }}</p>
+                    <h4>{{ __('Identité') }} <a href="{{ route('candidat.form', ['step' => 2]) }}">{{ __('Modifier') }}</a></h4>
+                    <p><strong>{{ $d['nom'] ?? '' }} {{ $d['prenom'] ?? '' }}</strong><br>CNE {{ $d['CNE'] ?? '' }} · CIN {{ $d['CIN'] ?? '' }}<br>{{ !empty($d['date_naissance']) ? \Carbon\Carbon::parse($d['date_naissance'])->format('d/m/Y') : '' }}</p>
                 </div>
                 <div class="recap-box">
-                    <h4>Coordonnées <a href="{{ route('candidat.form', ['step' => 3]) }}">Modifier</a></h4>
-                    <p>{{ $d['email'] ?? '' }}<br>{{ $d['telephone_mob'] ?? '' }}<br>{{ $d['ville'] ?? '' }}, {{ $d['pays'] ?? '' }}</p>
+                    <h4>{{ __('Coordonnées') }} <a href="{{ route('candidat.form', ['step' => 3]) }}">{{ __('Modifier') }}</a></h4>
+                    <p>{{ $d['email'] ?? '' }}<br><span dir="ltr">{{ $d['telephone_mob'] ?? '' }}</span><br>{{ $d['ville'] ?? '' }}, {{ $d['pays'] ?? '' }}</p>
                 </div>
                 <div class="recap-box">
-                    <h4>Parcours <a href="{{ route('candidat.form', ['step' => 4]) }}">Modifier</a></h4>
-                    <p>Bac {{ $d['serie_bac'] ?? '' }} ({{ $d['annee_bac'] ?? '' }})<br>{{ $d['type_diplome_bac_2'] ?? '' }} {{ $d['filiere_diplome_bac_2'] ?? '' }}
+                    <h4>{{ __('Parcours') }} <a href="{{ route('candidat.form', ['step' => 4]) }}">{{ __('Modifier') }}</a></h4>
+                    <p>{{ __('Bac') }} {{ $d['serie_bac'] ?? '' }} ({{ $d['annee_bac'] ?? '' }})<br>{{ $d['type_diplome_bac_2'] ?? '' }} {{ $d['filiere_diplome_bac_2'] ?? '' }}
                         @if (!empty($d['type_diplome_bac_3']))<br>{{ $d['type_diplome_bac_3'] }} {{ $d['filiere_diplome_bac_3'] ?? '' }}@endif</p>
                 </div>
                 <div class="recap-box">
-                    <h4>Expérience <a href="{{ route('candidat.form', ['step' => 5]) }}">Modifier</a></h4>
-                    <p>{{ count($d['stages'] ?? []) }} stage(s) · {{ count($d['experiences'] ?? []) }} expérience(s) · {{ count($d['attestations'] ?? []) }} attestation(s)</p>
+                    <h4>{{ __('Expérience') }} <a href="{{ route('candidat.form', ['step' => 5]) }}">{{ __('Modifier') }}</a></h4>
+                    <p>{{ __(':s stage(s) · :e expérience(s) · :a attestation(s)', ['s' => count($d['stages'] ?? []), 'e' => count($d['experiences'] ?? []), 'a' => count($d['attestations'] ?? [])]) }}</p>
                 </div>
             </div>
 
-            <div class="form-check p-3 rounded-3" style="background: var(--bg); padding-left: 2.6rem !important;">
+            <div class="form-check p-3 rounded-3" style="background: var(--bg); padding-inline-start: 2.6rem !important;">
                 <input class="form-check-input @error('certifie') is-invalid @enderror" type="checkbox" name="certifie" id="certifie" value="1" required>
                 <label class="form-check-label" for="certifie">
-                    Je certifie sur l'honneur l'exactitude des informations et des documents fournis.
+                    {{ __("Je certifie sur l'honneur l'exactitude des informations et des documents fournis.") }}
                 </label>
                 @error('certifie')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
             </div>
@@ -226,19 +229,19 @@
         <div class="form-card-foot">
             @if ($step > 1)
                 <a href="{{ route('candidat.form', ['step' => $step - 1]) }}" class="btn btn-light">
-                    <span class="material-symbols-rounded">arrow_back</span> Précédent
+                    <span class="material-symbols-rounded flip">arrow_back</span> {{ __('Précédent') }}
                 </a>
             @else
                 <a href="{{ route('accueil') }}" class="btn btn-light">
-                    <span class="material-symbols-rounded">arrow_back</span> Formations
+                    <span class="material-symbols-rounded flip">arrow_back</span> {{ __('Formations') }}
                 </a>
             @endif
 
             @if ($step < 6)
-                <button type="submit" class="btn btn-brand">Suivant <span class="material-symbols-rounded">arrow_forward</span></button>
+                <button type="submit" class="btn btn-brand">{{ __('Suivant') }} <span class="material-symbols-rounded flip">arrow_forward</span></button>
             @else
                 <button type="submit" class="btn btn-brand" style="background: var(--ok); border-color: var(--ok);">
-                    <span class="material-symbols-rounded">send</span> Envoyer ma préinscription
+                    <span class="material-symbols-rounded flip">send</span> {{ __('Envoyer ma préinscription') }}
                 </button>
             @endif
         </div>

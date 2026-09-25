@@ -19,7 +19,7 @@ class SuiviController extends Controller
         $validated = $request->validate([
             'reference' => 'required|string|max:20',
             'email' => 'required|email|max:100',
-        ], [], ['reference' => 'référence']);
+        ], [], ['reference' => __('référence'), 'email' => __('email')]);
 
         $inscription = Inscription::with(['formation', 'candidat', 'historique'])
             ->where('reference', strtoupper(trim($validated['reference'])))
@@ -28,7 +28,7 @@ class SuiviController extends Controller
 
         if (!$inscription) {
             // Même message que la référence ou l'email soit faux : on ne révèle pas lequel
-            return back()->withInput()->withErrors(['reference' => 'Aucun dossier ne correspond à cette référence et cet email.']);
+            return back()->withInput()->withErrors(['reference' => __('Aucun dossier ne correspond à cette référence et cet email.')]);
         }
 
         return view('candidateur.suivi', [

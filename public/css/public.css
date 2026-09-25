@@ -91,6 +91,84 @@
     color: var(--brand);
 }
 
+.lang-btn {
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    padding: .35rem .6rem;
+    font-weight: 700;
+    font-size: .8rem;
+    color: #3d4d5c;
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+.lang-btn .material-symbols-rounded {
+    font-size: 18px;
+    vertical-align: 0;
+}
+
+.public-nav {
+    margin-inline-start: auto;
+}
+
+/* ---------- Arabe (droite à gauche) ---------- */
+[dir="rtl"] body,
+[dir="rtl"] .btn,
+[dir="rtl"] .form-control,
+[dir="rtl"] .form-select {
+    font-family: 'Noto Kufi Arabic', 'Inter', system-ui, sans-serif;
+}
+
+[dir="rtl"] .public-brand > span {
+    border-left: 0;
+    padding-left: 0;
+    border-right: 2px solid var(--line);
+    padding-right: .9rem;
+}
+
+[dir="rtl"] .stepper li::before {
+    left: auto;
+    right: -50%;
+}
+
+[dir="rtl"] .choice {
+    padding: .9rem 2.8rem .9rem 1rem;
+}
+
+[dir="rtl"] .choice input {
+    left: auto;
+    right: 1rem;
+}
+
+[dir="rtl"] .repeat-item .remove-item {
+    right: auto;
+    left: .6rem;
+}
+
+[dir="rtl"] .timeline-item {
+    border-left: 0;
+    border-right: 3px solid var(--brand-100);
+    padding: 0 1rem 1rem 0;
+}
+
+[dir="rtl"] .timeline-item::before {
+    left: auto;
+    right: -7px;
+}
+
+[dir="rtl"] .hero::after {
+    right: auto;
+    left: -60px;
+}
+
+/* Les icônes « flèche » pointent dans le sens de lecture */
+[dir="rtl"] .flip {
+    display: inline-block;
+    transform: scaleX(-1);
+}
+
 .public-main {
     flex: 1;
     width: 100%;
