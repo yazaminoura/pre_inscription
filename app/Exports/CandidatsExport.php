@@ -3,11 +3,13 @@
 namespace App\Exports;
 
 use App\Models\Candidat;
+use App\Models\Inscription;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
@@ -49,10 +51,20 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
         return '';
     };
 
+    // La candidature à CETTE formation (un candidat peut en avoir plusieurs)
+    $inscription = $candidat->inscriptions->firstWhere('formation_id', $this->formationId);
+
     return [
         // Personal Information
         $candidat->id,
-        $candidat->inscriptions->first()->formation->type_formation .' (' . $candidat->inscriptions->first()->formation->titre .')',
+        $inscription->formation->type_formation .' (' . $inscription->formation->titre .')',
+
+        // Candidature
+        $inscription->reference,
+        $inscription->statut_label,
+        $inscription->motif ?? '',
+        $inscription->created_at?->format('Y-m-d H:i'),
+
         $candidat->nom,
         $candidat->prenom,
         $candidat->nom_ar,
@@ -166,7 +178,7 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
         $sector = "Secteur d'activité";
         return [
             // Personal Information Headers
-            'ID', 'Type De Formation', 'Nom', 'Prénom', 'الاسم العائلي', 'الاسم الشخصي', 'CNE', 'CIN', 'Email', 'Date de naissance',
+            'ID', 'Type De Formation', 'Référence', 'Statut', 'Motif / précision', 'Date de dépôt', 'Nom', 'Prénom', 'الاسم العائلي', 'الاسم الشخصي', 'CNE', 'CIN', 'Email', 'Date de naissance',
             'Ville naissance', 'مدينة الولادة', 'Province', 'Pays naissance', 'Nationalité', 'Sexe', 'Téléphone mobile',
             'Téléphone fixe', 'Adresse', 'Ville', 'Pays',
 
@@ -201,8 +213,11 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
 
     public function styles($sheet)
     {
+        $derniere = $sheet->getHighestColumn();
+        $lignes = $sheet->getHighestRow();
+
         // Header styling
-        $sheet->getStyle('A1:CE1')->applyFromArray([
+        $sheet->getStyle('A1:' . $derniere . '1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['argb' => Color::COLOR_WHITE],
@@ -219,7 +234,7 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
         ]);
     
         // Cell borders
-        $sheet->getStyle('A1:CE' . $sheet->getHighestRow())->applyFromArray([
+        $sheet->getStyle('A1:' . $derniere . $lignes)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -227,24 +242,34 @@ class CandidatsExport implements FromCollection, WithMapping, WithHeadings, With
                 ],
             ],
         ]);
-        $columns = [
-            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 
-            'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG', 'AH', 'AI', 'AJ', 'AK', 'AL', 'AM', 'AN', 
-            'AO', 'AP', 'AQ', 'AR', 'AS', 'AT', 'AU', 'AV', 'AW', 'AX', 'AY', 'AZ', 'BA', 'BB', 'BC', 'BD', 'BE', 'BF', 
-            'BG', 'BH', 'BI', 'BJ', 'BK', 'BL', 'BM', 'BN', 'BO', 'BP', 'BQ', 'BR', 'BS', 'BT', 'BU', 'BV', 'BW', 'BX', 
-            'BY', 'BZ', 'CA', 'CB', 'CC', 'CD', 'CE'
-        ];
-    
         // Auto-size the columns to fit their content
-        foreach ($columns as $column) {
-            $sheet->getColumnDimension($column)->setAutoSize(true);
+        foreach (range(1, Coordinate::columnIndexFromString($derniere)) as $n) {
+            $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($n))->setAutoSize(true);
+        }
+
+        // Statut (colonne D) aux couleurs de l'administration
+        $couleurs = collect(Inscription::STATUTS)->mapWithKeys(fn ($s, $cle) => [$s[0] => Inscription::PASTILLES[$cle] ?? null]);
+        for ($ligne = 2; $ligne <= $lignes; $ligne++) {
+            [$fond, $texte] = $couleurs[$sheet->getCell('D' . $ligne)->getValue()] ?? [null, null];
+            if ($fond) {
+                $sheet->getStyle('D' . $ligne)->applyFromArray([
+                    'font' => ['bold' => true, 'color' => ['argb' => 'FF' . ltrim($texte, '#')]],
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF' . ltrim($fond, '#')]],
+                ]);
+            }
+        }
+
+        // Colonnes en arabe alignées à droite, de droite à gauche
+        foreach (['I', 'J', 'P'] as $colonne) {
+            $sheet->getStyle($colonne . '1:' . $colonne . $lignes)->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_RIGHT)->setReadOrder(Alignment::READORDER_RTL);
         }
     }
 
     public function columnFormats(): array
     {
         return [
-            'J' => 'yyyy-mm-dd', // Date format for birth date
+            'N' => 'yyyy-mm-dd', // Date format for birth date
         ];
     }
 }
