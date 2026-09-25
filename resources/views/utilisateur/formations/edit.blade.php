@@ -8,7 +8,7 @@
   </a>
 </div>
 
-<div class="panel" style="max-width: 760px;">
+<div class="panel" style="max-width: 880px;">
   <div class="panel-head"><h3><span class="material-symbols-rounded">edit</span> {{ $formation->titre }}</h3></div>
   <div class="panel-body">
     <form action="{{ route('formations.update', $formation) }}" method="POST">

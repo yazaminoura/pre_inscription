@@ -14,8 +14,11 @@ use App\Livewire\FormationStats;
 require __DIR__.'/auth.php';
 
 // Public routes
-Route::get('/', [CandidatformController::class, 'showForm'])->name('candidat.form');
-Route::post('/submit', [CandidatformController::class, 'submitStep'])->name('candidat.submit');
+Route::get('/', [CandidatformController::class, 'accueil'])->name('accueil');
+Route::get('/preinscription', [CandidatformController::class, 'showForm'])->name('candidat.form');
+Route::post('/preinscription', [CandidatformController::class, 'submitStep'])->name('candidat.submit');
+Route::get('/preinscription/merci', [CandidatformController::class, 'merci'])->name('candidat.merci');
+Route::post('/preinscription/recommencer', [CandidatformController::class, 'recommencer'])->name('candidat.recommencer');
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {

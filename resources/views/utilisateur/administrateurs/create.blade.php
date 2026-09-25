@@ -8,18 +8,18 @@
   </a>
 </div>
 
-<div class="panel" style="max-width: 640px;">
+<div class="panel" style="max-width: 880px;">
   <div class="panel-head"><h3><span class="material-symbols-rounded">person_add</span> Nouvel administrateur</h3></div>
   <div class="panel-body">
     <form action="{{ route('administrateurs.store') }}" method="POST">
       @csrf
       <div class="row g-3">
-        <div class="col-12">
+        <div class="col-md-6">
           <label for="name" class="form-label">Nom et prénom <span class="text-danger">*</span></label>
           <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
           @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
         </div>
-        <div class="col-12">
+        <div class="col-md-6">
           <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
           <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
           @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror

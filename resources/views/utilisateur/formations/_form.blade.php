@@ -3,7 +3,7 @@
 <input type="hidden" name="user_id" value="{{ $formation->user_id ?? auth()->id() }}">
 
 <div class="row g-3">
-  <div class="col-md-4">
+  <div class="col-md-6">
     <label for="type_formation" class="form-label">Type <span class="text-danger">*</span></label>
     <select name="type_formation" id="type_formation" class="form-select @error('type_formation') is-invalid @enderror" required>
       <option value="">Choisir…</option>
@@ -14,7 +14,7 @@
     @error('type_formation')<div class="invalid-feedback">{{ $message }}</div>@enderror
   </div>
 
-  <div class="col-md-8">
+  <div class="col-md-6">
     <label for="titre" class="form-label">Intitulé <span class="text-danger">*</span></label>
     <input type="text" name="titre" id="titre" class="form-control @error('titre') is-invalid @enderror"
            value="{{ old('titre', $formation->titre ?? '') }}" placeholder="Ex. : Master Génie Logiciel" required>

@@ -49,6 +49,6 @@
 </form>
 
 <p class="text-center small text-muted mt-4 mb-0">
-    Vous êtes candidat ? <a href="{{ route('candidat.form') }}" class="fw-semibold text-decoration-none">Déposer une préinscription</a>
+    Vous êtes candidat ? <a href="{{ route('accueil') }}" class="fw-semibold text-decoration-none">Déposer une préinscription</a>
 </p>
 @endsection

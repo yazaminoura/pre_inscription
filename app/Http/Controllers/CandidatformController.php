@@ -2,624 +2,434 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Formation;
-use App\Models\Candidat;
-use App\Models\Stage;
-use App\Models\Attestation;
-use App\Models\Experience;
-use App\Models\Diplome;
-use App\Models\Inscription;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
 use App\Mail\InscriptionConfirmation;
+use App\Models\Attestation;
+use App\Models\Candidat;
+use App\Models\Diplome;
+use App\Models\Experience;
+use App\Models\Formation;
+use App\Models\Inscription;
+use App\Models\Stage;
+use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-
-use Dompdf\Options;
-
+use Illuminate\Validation\ValidationException;
 
 class CandidatformController extends Controller
 {
+    // Ordre des étapes : du plus général au plus détaillé, les pièces jointes à la fin.
+    public const ETAPES = [
+        1 => 'Formation',
+        2 => 'Identité',
+        3 => 'Coordonnées',
+        4 => 'Parcours',
+        5 => 'Expérience',
+        6 => 'Documents',
+    ];
+
+    private const FICHIER = 'file|mimes:pdf,jpg,jpeg,png|max:10240';
+    private const MAX_ENTREES = 3; // stages / expériences / attestations
+
+    /** Page d'accueil : les formations ouvertes. */
+    public function accueil()
+    {
+        $formations = $this->formationsOuvertes()->groupBy('type_formation');
+        $aVenir = Formation::whereDate('date_debut', '>', today())->orderBy('date_debut')->get();
+
+        return view('candidateur.accueil', compact('formations', 'aVenir'));
+    }
+
     public function showForm(Request $request)
     {
-        $step = $request->query('step', 1);
-        $now = now();
-        $formData = session('form_data', []);
+        $data = session('form_data', []);
 
-        // Validate step progression
-        if ($step > 1 && empty($formData['type_formation']) && empty($formData['titre_id']) && empty($formData['nom'])) {
-            return redirect()->route('candidat.form')->with('error', 'Veuillez compléter les informations personnelles (étape 1) avant de continuer.');
-        }
-        if ($step > 2 && empty($formData['serie_bac']) && empty($formData['annee_bac']) && empty($formData['scan_bac'])) {
-            return redirect()->route('candidat.form')->with('error', 'Veuillez compléter les informations du baccalauréat (étape 2) avant de continuer.');
-        }
-        if ($step > 3 && empty($formData['diplomes'][0]['type_diplome_bac_2'] ?? null)) {
-            return redirect()->route('candidat.form')->with('error', 'Veuillez compléter les informations des diplômes (étape 3) avant de continuer.');
-        }
-        if ($step > 4 && !isset($formData['stages']) && !array_filter($formData['stages'] ?? [])) {
-            return redirect()->route('candidat.form')->with('error', 'Veuillez compléter les informations des stages (étape 4) avant de continuer.');
-        }
-        if ($step > 5 && !isset($formData['attestations']) && !array_filter($formData['attestations'] ?? [])) {
-            return redirect()->route('candidat.form')->with('error', 'Veuillez compléter les informations des attestations (étape 5) avant de continuer.');
+        // Arrivée depuis la page d'accueil avec une formation choisie
+        if ($request->filled('formation')) {
+            $formation = $this->formationsOuvertes()->firstWhere('id', $request->integer('formation'));
+            if ($formation) {
+                $data['titre_id'] = $formation->id;
+                session(['form_data' => $data]);
+            }
+            return redirect()->route('candidat.form', ['step' => 1]);
         }
 
-        // Get only active formations
-        $titres = Formation::where('date_debut', '<=', $now)
-                           ->where('date_fin', '>=', $now)
-                           ->get();
+        $step = max(1, min(6, (int) $request->query('step', 1)));
+        $atteinte = $this->etapeAtteinte($data);
+        if ($step > $atteinte) {
+            return redirect()->route('candidat.form', ['step' => $atteinte]);
+        }
 
-        // Extract unique types from active formations
-        $types_formation = $titres->pluck('type_formation')->unique()->toArray();
+        $formations = $this->formationsOuvertes();
+        $formationChoisie = $formations->firstWhere('id', $data['titre_id'] ?? null);
 
-        $data = $formData;
-
-        return view('candidateur.candidat.form', compact('step', 'titres', 'types_formation', 'data'));
+        return view('candidateur.candidat.form', [
+            'step' => $step,
+            'etapes' => self::ETAPES,
+            'formations' => $formations,
+            'formationChoisie' => $formationChoisie,
+            'data' => $data,
+        ]);
     }
 
     public function submitStep(Request $request)
     {
-        $step = $request->input('step', 1);
-        $formData = session('form_data', []);
+        $step = max(1, min(6, (int) $request->input('step', 1)));
+        $data = session('form_data', []);
 
-        Log::info('Fichiers dans la requête (Étape ' . $step . '):', $request->allFiles());
-
-        // Règles de validation pour chaque étape
-        $rules = $this->getValidationRules($step);
-
-        // Valider la requête
-        $validated = $request->validate($rules);
-
-        // Validation côté serveur supplémentaire pour l'étape 1
-        if ($step == 1) {
-            $formation = Formation::findOrFail($validated['titre_id']);
-            if ($formation->type_formation !== $validated['type_formation']) {
-                return redirect()->route('candidat.form', ['step' => 1])
-                    ->withErrors(['titre_id' => 'Le titre de formation sélectionné ne correspond pas au type de formation choisi.'])
-                    ->withInput();
-            }
-
-            $dejaInscrit = Inscription::where('formation_id', $formation->id)
-                ->whereHas('candidat', fn ($q) => $q->where('CNE', $validated['CNE']))
-                ->value('reference');
-            if ($dejaInscrit) {
-                return redirect()->route('candidat.form', ['step' => 1])
-                    ->withErrors(['CNE' => "Une préinscription existe déjà pour ce CNE dans cette formation (réf. $dejaInscrit)."])
-                    ->withInput();
-            }
+        if ($step > $this->etapeAtteinte($data)) {
+            return redirect()->route('candidat.form', ['step' => $this->etapeAtteinte($data)]);
         }
 
-        // Traiter les téléchargements de fichiers
-        $filePaths = $this->handleFileUploads($request, $step);
+        $validated = $request->validate($this->regles($step, $data), [], $this->libelles());
 
-        // Supprimer les champs de fichiers de $validated
-        $validated = array_filter($validated, function ($value) {
-            return !($value instanceof \Illuminate\Http\UploadedFile);
-        });
+        $data = match ($step) {
+            1 => $this->etapeFormation($validated, $data),
+            2 => $this->etapeIdentite($validated, $data),
+            3 => array_merge($data, $validated),
+            4 => $this->etapeParcours($request, $validated, $data),
+            5 => $this->etapeExperience($request, $data),
+            6 => $this->etapeDocuments($request, $data),
+        };
+        $data['_etape'] = max($data['_etape'] ?? 1, $step + 1);
+        session(['form_data' => $data]);
 
-        // Fusionner les données validées
-        $formData = array_merge($formData, $validated);
-
-        // Gérer les tableaux et préserver les données existantes
-        $formData['diplomes'] = $request->has('diplomes') ? array_map(function ($diplome) {
-            if (isset($diplome['scan_bac_3']) && $diplome['scan_bac_3'] instanceof \Illuminate\Http\UploadedFile) {
-                unset($diplome['scan_bac_3']);
-            }
-            return $diplome;
-        }, $request->input('diplomes', [])) : ($formData['diplomes'] ?? []);
-
-        $formData['stages'] = $request->has('stages') ? array_map(function ($stage) {
-            if (isset($stage['attestation']) && $stage['attestation'] instanceof \Illuminate\Http\UploadedFile) {
-                unset($stage['attestation']);
-            }
-            return $stage;
-        }, $request->input('stages', [])) : ($formData['stages'] ?? []);
-
-        $formData['experiences'] = $request->has('experiences') ? array_map(function ($experience) {
-            if (isset($experience['attestation']) && $experience['attestation'] instanceof \Illuminate\Http\UploadedFile) {
-                unset($experience['attestation']);
-            }
-            return $experience;
-        }, $request->input('experiences', [])) : ($formData['experiences'] ?? []);
-
-        // Fusionner les chemins de fichiers
-        if (!empty($filePaths)) {
-            foreach ($filePaths as $key => $value) {
-                if (is_array($value)) {
-                    $formData[$key] = array_map(function ($item, $fileItem) {
-                        return array_merge($item, array_filter($fileItem, fn($v) => !is_null($v)));
-                    }, $formData[$key] ?? [], $value);
-                } else {
-                    $formData[$key] = $value;
-                }
-            }
-        }
-
-        // Stocker les données dans la session
-        $request->session()->put('form_data', $formData);
-
-        // Passer à l'étape suivante ou sauvegarder
         if ($step < 6) {
             return redirect()->route('candidat.form', ['step' => $step + 1]);
-        } else {
-            try {
-                // Tout ou rien : pas de candidat à moitié enregistré si une étape échoue
-                $inscription = DB::transaction(fn () => $this->saveCandidat($formData));
-                $request->session()->forget('form_data');
-
-                return redirect()->route('candidat.form')
-                    ->with('inscription_ok', $inscription->reference)
-                    ->with('toast', [
-                        'message' => 'Votre préinscription est enregistrée. Référence : ' . $inscription->reference,
-                    ]);
-            } catch (\Illuminate\Validation\ValidationException $e) {
-                Log::error('Validation error in final submission: ' . $e->getMessage());
-                return redirect()->route('candidat.form', ['step' => 1])
-                    ->withErrors($e->validator)
-                    ->withInput();
-            } catch (\Exception $e) {
-                Log::error('Error in final submission: ' . $e->getMessage());
-                return redirect()->route('candidat.form', ['step' => 1])
-                    ->with('error', 'Une erreur est survenue. Veuillez réessayer.')
-                    ->withInput();
-            }
         }
+
+        try {
+            // Tout ou rien : pas de candidat à moitié enregistré si une étape échoue
+            $inscription = DB::transaction(fn () => $this->enregistrer($data));
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            Log::error('Erreur lors de l\'enregistrement de la préinscription : ' . $e->getMessage());
+            return redirect()->route('candidat.form', ['step' => 6])
+                ->with('error', 'Une erreur est survenue lors de l\'enregistrement. Veuillez réessayer.');
+        }
+
+        $this->envoyerConfirmation($inscription);
+        session()->forget('form_data');
+
+        return redirect()->route('candidat.merci')->with('inscription_ok', $inscription->reference);
     }
 
-    private function getValidationRules($step)
+    public function merci()
     {
-        $rules = [];
+        $reference = session('inscription_ok');
+        if (!$reference) {
+            return redirect()->route('accueil');
+        }
+        $inscription = Inscription::with('formation', 'candidat')->where('reference', $reference)->first();
 
-        if ($step == 1) {
-            $rules = [
-                'type_formation' => 'required|string|in:' . implode(',', Formation::distinct()->pluck('type_formation')->toArray()),
-                'titre_id' => 'required|exists:formations,id',
-                'CNE' => 'required|string|max:20',
+        return view('candidateur.merci', compact('inscription'));
+    }
+
+    /** Recommencer : vide le brouillon en cours. */
+    public function recommencer()
+    {
+        session()->forget('form_data');
+
+        return redirect()->route('accueil');
+    }
+
+    // ------------------------------------------------------------------
+
+    private function formationsOuvertes()
+    {
+        return Formation::whereDate('date_debut', '<=', today())
+            ->whereDate('date_fin', '>=', today())
+            ->orderBy('type_formation')
+            ->orderBy('titre')
+            ->get();
+    }
+
+    /** Dernière étape à laquelle le candidat a le droit d'accéder. */
+    private function etapeAtteinte(array $data): int
+    {
+        return min(6, max(1, (int) ($data['_etape'] ?? 1)));
+    }
+
+    private function regles(int $step, array $data): array
+    {
+        // Un fichier déjà envoyé n'est plus obligatoire quand on revient sur l'étape
+        $fichier = fn (string $cle, bool $obligatoire = true) =>
+            ($obligatoire && empty($data[$cle]) ? 'required|' : 'nullable|') . self::FICHIER;
+        $annee = 'integer|min:1970|max:' . now()->year;
+
+        return match ($step) {
+            1 => [
+                'titre_id' => 'required|integer',
+            ],
+            2 => [
                 'nom' => 'required|string|max:50',
                 'prenom' => 'required|string|max:50',
                 'nom_ar' => 'nullable|string|max:50',
                 'prenom_ar' => 'nullable|string|max:50',
+                'CNE' => 'required|string|max:20',
                 'CIN' => 'required|string|max:20',
-                'date_naissance' => 'required|date',
+                'date_naissance' => 'required|date|before:-15 years',
+                'sex' => 'required|in:Homme,Femme',
+                'nationalite' => 'required|string|max:50',
                 'ville_naissance' => 'required|string|max:50',
                 'ville_naissance_ar' => 'nullable|string|max:50',
-                'province' => 'required|string|max:50',
                 'pay_naissance' => 'required|string|max:50',
-                'nationalite' => 'required|string|max:50',
-                'sex' => 'required|in:Homme,Femme',
-                'telephone_mob' => ['required', 'regex:/^\+?\d{8,15}$/'],
-                'telephone_fix' => ['nullable', 'regex:/^(\+212|0)([5-7])\d{8}$/'],
-                'adresse' => 'required|string|max:255',
+            ],
+            3 => [
                 'email' => 'required|email:rfc|max:100',
+                'telephone_mob' => ['required', 'regex:/^\+?[0-9 ]{8,17}$/'],
+                'telephone_fix' => ['nullable', 'regex:/^\+?[0-9 ]{8,17}$/'],
+                'adresse' => 'required|string|max:255',
                 'ville' => 'required|string|max:50',
+                'province' => 'required|string|max:50',
                 'pays' => 'required|string|max:50',
-                'CV' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'demande' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'scan_cartid' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-                'photo' => 'required|file|mimes:jpg,jpeg,png|max:10240',
-            ];
-        } elseif ($step == 2) {
-            $rules = [
+            ],
+            4 => [
                 'serie_bac' => 'required|string|max:50',
-                'annee_bac' => 'required',
-                'scan_bac' => 'required|file|mimes:pdf,jpg,jpeg,png|max:10240',
-            ];
-        } elseif ($step == 3) {
-            $rules = [
-                'diplomes' => 'required|array',
-                'diplomes.0.type_diplome_bac_2' => 'required|string|max:100',
-                'diplomes.0.annee_diplome_bac_2' => 'required',
-                'diplomes.0.filiere_diplome_bac_2' => 'required|string|max:100',
-                'diplomes.0.etablissement_bac_2' => 'required|string|max:100',
-                'diplomes.0.scan_bac_2' => 'required|file|mimes:jpg,jpeg,png,pdf|max:10240',
-                'diplomes.0.type_diplome_bac_3' => 'nullable|string|max:100',
-                'diplomes.0.annee_diplome_bac_3' => 'nullable',
-                'diplomes.0.filiere_diplome_bac_3' => 'nullable|string|max:100',
-                'diplomes.0.etablissement_bac_3' => 'nullable|string|max:100',
-                'diplomes.0.scan_bac_3' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
-            ];
-        } elseif ($step == 4) {
-            $rules = [
-                'stages' => 'nullable|array|max:3',
-                'stages.*.fonction' => 'nullable|string',
-                'stages.*.periode' => 'nullable|string',
-                'stages.*.attestation' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-                'stages.*.etablissement' => 'nullable|string',
-                'stages.*.secteur_activite' => 'nullable|string',
-                'stages.*.description' => 'nullable|string',
-            ];
-        } elseif ($step == 5) {
-            $rules = [
-                'attestations' => 'nullable|array|max:3',
-                'attestations.*.attestation' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-                'attestations.*.type_attestation' => 'nullable|string',
-                'attestations.*.description' => 'nullable|string',
-            ];
-        } elseif ($step == 6) {
-            $rules = [
-                'experiences' => 'nullable|array|max:3',
-                'experiences.*.fonction' => 'nullable|string',
-                'experiences.*.secteur_activite' => 'nullable|string',
-                'experiences.*.periode' => 'nullable|string',
-                'experiences.*.attestation' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-                'experiences.*.etablissement' => 'nullable|string',
-                'experiences.*.description' => 'nullable|string',
-            ];
-        }
-
-        return $rules;
+                'annee_bac' => "required|$annee",
+                'scan_bac' => $fichier('scan_bac'),
+                'type_diplome_bac_2' => 'required|string|max:100',
+                'filiere_diplome_bac_2' => 'required|string|max:100',
+                'etablissement_bac_2' => 'required|string|max:100',
+                'annee_diplome_bac_2' => "required|$annee",
+                'scan_bac_2' => $fichier('scan_bac_2'),
+                'type_diplome_bac_3' => 'nullable|string|max:100',
+                'filiere_diplome_bac_3' => 'nullable|required_with:type_diplome_bac_3|string|max:100',
+                'etablissement_bac_3' => 'nullable|required_with:type_diplome_bac_3|string|max:100',
+                'annee_diplome_bac_3' => "nullable|required_with:type_diplome_bac_3|$annee",
+                'scan_bac_3' => $fichier('scan_bac_3', false),
+            ],
+            5 => collect(['stages', 'experiences', 'attestations'])->flatMap(fn ($liste) => [
+                $liste => 'nullable|array|max:' . self::MAX_ENTREES,
+                "$liste.*.attestation" => 'nullable|' . self::FICHIER,
+                "$liste.*.description" => 'nullable|string|max:255',
+            ] + ($liste === 'attestations' ? [
+                "$liste.*.type_attestation" => 'required|string|max:100',
+            ] : [
+                "$liste.*.fonction" => 'required|string|max:100',
+                "$liste.*.etablissement" => 'required|string|max:100',
+                "$liste.*.periode" => 'nullable|string|max:100',
+                "$liste.*.secteur_activite" => 'nullable|string|max:100',
+            ]))->all(),
+            6 => [
+                'CV' => $fichier('CV'),
+                'demande' => $fichier('demande'),
+                'scan_cartid' => $fichier('scan_cartid'),
+                'photo' => ($data['photo'] ?? null ? 'nullable' : 'required') . '|file|mimes:jpg,jpeg,png|max:5120',
+                'certifie' => 'accepted',
+            ],
+        };
     }
 
-    private function handleFileUploads(Request $request, $step)
+    private function libelles(): array
     {
-        $filePaths = [];
-        $formData = session('form_data', []);
-        $candidatName = isset($formData['CNE']) ? strtoupper($formData['CNE']) . 
-                        strtolower(str_replace(' ', '', $formData['nom'])) . 
-                        strtolower(str_replace(' ', '', $formData['prenom'])) : 'unknown';
-
-        if ($step == 1) {
-            $timestamp = now()->format('YmdHis');
-            
-            if ($request->hasFile('CV')) {
-                $file = $request->file('CV');
-                $extension = $file->getClientOriginalExtension();
-                $filename = $candidatName . '_CV_' . $timestamp . '.' . $extension;
-                $filePaths['CV'] = $file->storeAs('CV', $filename, 'public');
-            }
-            
-            if ($request->hasFile('demande')) {
-                $file = $request->file('demande');
-                $extension = $file->getClientOriginalExtension();
-                $filename = $candidatName . '_demande_' . $timestamp . '.' . $extension;
-                $filePaths['demande'] = $file->storeAs('demande', $filename, 'public');
-            }
-            
-            if ($request->hasFile('scan_cartid')) {
-                $file = $request->file('scan_cartid');
-                $extension = $file->getClientOriginalExtension();
-                $filename = $candidatName . '_cin_' . $timestamp . '.' . $extension;
-                $filePaths['scan_cartid'] = $file->storeAs('cart', $filename, 'public');
-            }
-            
-            if ($request->hasFile('photo')) {
-                $file = $request->file('photo');
-                $extension = $file->getClientOriginalExtension();
-                $filename = $candidatName . '_photo_' . $timestamp . '.' . $extension;
-                $filePaths['photo'] = $file->storeAs('photos', $filename, 'public');
-            }
-            
-        } elseif ($step == 2) {
-            if ($request->hasFile('scan_bac')) {
-                $file = $request->file('scan_bac');
-                $extension = $file->getClientOriginalExtension();
-                $timestamp = now()->format('YmdHis');
-                $filename = $candidatName . '_bac_' . $timestamp . '.' . $extension;
-                $filePaths['scan_bac'] = $file->storeAs('bac', $filename, 'public');
-            }
-            
-        } elseif ($step == 3) {
-            $filePaths['diplomes'] = $request->input('diplomes', []);
-            foreach ($filePaths['diplomes'] as $index => $diplome) {
-                if ($request->hasFile("diplomes.$index.scan_bac_2")) {
-                    $file = $request->file("diplomes.$index.scan_bac_2");
-                    $extension = $file->getClientOriginalExtension();
-                    $timestamp = now()->format('YmdHis');
-                    $filename = $candidatName . '_bac_2_' . ($index + 1) . '_' . $timestamp . '.' . $extension;
-                    $filePaths['diplomes'][$index]['scan_bac_2'] = $file->storeAs('bac_2', $filename, 'public');
-                }
-                if ($request->hasFile("diplomes.$index.scan_bac_3")) {
-                    $file = $request->file("diplomes.$index.scan_bac_3");
-                    $extension = $file->getClientOriginalExtension();
-                    $timestamp = now()->format('YmdHis');
-                    $filename = $candidatName . '_bac_3_' . ($index + 1) . '_' . $timestamp . '.' . $extension;
-                    $filePaths['diplomes'][$index]['scan_bac_3'] = $file->storeAs('bac_3', $filename, 'public');
-                }
-            }
-            
-        } elseif ($step == 4) {
-            $filePaths['stages'] = $request->input('stages', []);
-            foreach ($filePaths['stages'] as $index => $stage) {
-                if ($request->hasFile("stages.$index.attestation")) {
-                    $file = $request->file("stages.$index.attestation");
-                    $extension = $file->getClientOriginalExtension();
-                    $timestamp = now()->format('YmdHis');
-                    $filename = $candidatName . '_stage_' . ($index + 1) . '_' . $timestamp . '.' . $extension;
-                    $filePaths['stages'][$index]['attestation'] = $file->storeAs('stages', $filename, 'public');
-                }
-            }
-            
-        } elseif ($step == 5) {
-            $filePaths['attestations'] = $request->input('attestations', []);
-            foreach ($filePaths['attestations'] as $index => $attestation) {
-                if ($request->hasFile("attestations.$index.attestation")) {
-                    $file = $request->file("attestations.$index.attestation");
-                    $extension = $file->getClientOriginalExtension();
-                    $timestamp = now()->format('YmdHis');
-                    $filename = $candidatName . '_attestation_' . ($index + 1) . '_' . $timestamp . '.' . $extension;
-                    $filePaths['attestations'][$index]['attestation'] = $file->storeAs('attestations', $filename, 'public');
-                }
-            }
-            
-        } elseif ($step == 6) {
-            $filePaths['experiences'] = $request->input('experiences', []);
-            foreach ($filePaths['experiences'] as $index => $experience) {
-                if ($request->hasFile("experiences.$index.attestation")) {
-                    $file = $request->file("experiences.$index.attestation");
-                    $extension = $file->getClientOriginalExtension();
-                    $timestamp = now()->format('YmdHis');
-                    $filename = $candidatName . '_experience_' . ($index + 1) . '_' . $timestamp . '.' . $extension;
-                    $filePaths['experiences'][$index]['attestation'] = $file->storeAs('experiences', $filename, 'public');
-                }
-            }
-        }
-
-        return $filePaths;
+        return [
+            'titre_id' => 'formation', 'nom_ar' => 'nom (arabe)', 'prenom_ar' => 'prénom (arabe)',
+            'date_naissance' => 'date de naissance', 'sex' => 'sexe', 'nationalite' => 'nationalité',
+            'ville_naissance' => 'ville de naissance', 'pay_naissance' => 'pays de naissance',
+            'telephone_mob' => 'téléphone mobile', 'telephone_fix' => 'téléphone fixe',
+            'serie_bac' => 'série du bac', 'annee_bac' => 'année du bac', 'scan_bac' => 'scan du bac',
+            'type_diplome_bac_2' => 'type de diplôme Bac+2', 'filiere_diplome_bac_2' => 'filière Bac+2',
+            'etablissement_bac_2' => 'établissement Bac+2', 'annee_diplome_bac_2' => 'année Bac+2', 'scan_bac_2' => 'scan du diplôme Bac+2',
+            'type_diplome_bac_3' => 'type de diplôme Bac+3', 'filiere_diplome_bac_3' => 'filière Bac+3',
+            'etablissement_bac_3' => 'établissement Bac+3', 'annee_diplome_bac_3' => 'année Bac+3', 'scan_bac_3' => 'scan du diplôme Bac+3',
+            'stages.*.fonction' => 'intitulé du stage', 'stages.*.etablissement' => 'organisme du stage',
+            'experiences.*.fonction' => 'poste', 'experiences.*.etablissement' => 'employeur',
+            'attestations.*.type_attestation' => 'type d\'attestation',
+            'CV' => 'CV', 'demande' => 'lettre de demande', 'scan_cartid' => 'pièce d\'identité',
+            'certifie' => 'attestation sur l\'honneur',
+        ];
     }
 
-    private function saveCandidat(array $formData)
+    private function etapeFormation(array $validated, array $data): array
     {
-        // Valider les champs de base
-        $validator = Validator::make($formData, [
-            'email' => 'required|email:rfc',
-            'CNE' => 'required|string',
-        ]);
+        $formation = $this->formationsOuvertes()->firstWhere('id', (int) $validated['titre_id']);
+        if (!$formation) {
+            throw ValidationException::withMessages(['titre_id' => 'Cette formation n\'est pas ouverte aux préinscriptions.']);
+        }
+        $data['titre_id'] = $formation->id;
+        $data['type_formation'] = $formation->type_formation;
 
-        if ($validator->fails()) {
-            throw new \Illuminate\Validation\ValidationException($validator);
+        return $data;
+    }
+
+    private function etapeIdentite(array $validated, array $data): array
+    {
+        $validated['CNE'] = strtoupper(trim($validated['CNE']));
+        $validated['CIN'] = strtoupper(trim($validated['CIN']));
+
+        $dejaInscrit = Inscription::where('formation_id', $data['titre_id'] ?? 0)
+            ->whereHas('candidat', fn ($q) => $q->where('CNE', $validated['CNE']))
+            ->value('reference');
+        if ($dejaInscrit) {
+            throw ValidationException::withMessages([
+                'CNE' => "Une préinscription existe déjà pour ce CNE dans cette formation (réf. $dejaInscrit).",
+            ]);
         }
 
-        $formation = Formation::findOrFail($formData['titre_id']);
+        return array_merge($data, $validated);
+    }
+
+    private function etapeParcours(Request $request, array $validated, array $data): array
+    {
+        foreach (['scan_bac' => 'bac', 'scan_bac_2' => 'bac_2', 'scan_bac_3' => 'bac_3'] as $champ => $dossier) {
+            unset($validated[$champ]);
+            if ($request->hasFile($champ)) {
+                $data[$champ] = $this->stocker($request->file($champ), $dossier, $data, $champ);
+            }
+        }
+
+        return array_merge($data, $validated);
+    }
+
+    private function etapeExperience(Request $request, array $data): array
+    {
+        foreach (['stages' => 'stages', 'experiences' => 'experiences', 'attestations' => 'attestations'] as $liste => $dossier) {
+            // Chemins de fichiers déjà envoyés pour cette liste : seuls ceux-là peuvent être repris
+            $connus = collect($data[$liste] ?? [])->pluck('attestation')->filter()->all();
+            $entrees = [];
+            foreach ($request->input($liste, []) as $index => $entree) {
+                $fichier = $request->file("$liste.$index.attestation");
+                $ancien = $entree['attestation_actuelle'] ?? null;
+                unset($entree['attestation_actuelle']);
+                $entree['attestation'] = $fichier
+                    ? $this->stocker($fichier, $dossier, $data, $liste . '_' . (count($entrees) + 1))
+                    : (in_array($ancien, $connus, true) ? $ancien : null);
+                $entrees[] = $entree;
+            }
+            $data[$liste] = array_slice($entrees, 0, self::MAX_ENTREES);
+        }
+
+        return $data;
+    }
+
+    private function etapeDocuments(Request $request, array $data): array
+    {
+        foreach (['CV' => 'CV', 'demande' => 'demande', 'scan_cartid' => 'cart', 'photo' => 'photos'] as $champ => $dossier) {
+            if ($request->hasFile($champ)) {
+                $data[$champ] = $this->stocker($request->file($champ), $dossier, $data, $champ);
+            }
+        }
+
+        return $data;
+    }
+
+    private function stocker(UploadedFile $fichier, string $dossier, array $data, string $type): string
+    {
+        $base = strtoupper($data['CNE'] ?? 'X') . '_' . preg_replace('/[^a-z]/', '', strtolower($data['nom'] ?? 'candidat'));
+        $nom = $base . '_' . $type . '_' . now()->format('YmdHis') . '_' . substr(bin2hex(random_bytes(3)), 0, 6);
+
+        return $fichier->storeAs($dossier, $nom . '.' . strtolower($fichier->getClientOriginalExtension()), 'public');
+    }
+
+    private function enregistrer(array $data): Inscription
+    {
+        // Dernière vérification (la formation a pu fermer, ou un doublon a pu arriver entre-temps)
+        $this->etapeFormation(['titre_id' => $data['titre_id'] ?? 0], $data);
+        $this->etapeIdentite(['CNE' => $data['CNE'], 'CIN' => $data['CIN']], $data);
+
         $candidat = Candidat::create([
-            'nom' => $formData['nom'],
-            'prenom' => $formData['prenom'],
-            'nom_ar' => $formData['nom_ar'] ?? '',
-            'prenom_ar' => $formData['prenom_ar'] ?? '',
-            'CNE' => $formData['CNE'],
-            'email' => $formData['email'],
-            'CIN' => $formData['CIN'],
-            'date_naissance' => $formData['date_naissance'],
-            'ville_naissance' => $formData['ville_naissance'],
-            'ville_naissance_ar' => $formData['ville_naissance_ar'] ?? '',
-            'province' => $formData['province'],
-            'pay_naissance' => $formData['pay_naissance'],
-            'nationalite' => $formData['nationalite'],
-            'sexe' => $formData['sex'] === 'Femme' ? 'F' : 'M',
-            'telephone_mob' => $formData['telephone_mob'],
-            'telephone_fix' => $formData['telephone_fix'] ?? null,
-            'adresse' => $formData['adresse'],
-            'ville' => $formData['ville'],
-            'pays' => $formData['pays'],
-            'CV' => $formData['CV'],
-            'demande' => $formData['demande'],
-            'scan_cartid' => $formData['scan_cartid'],
-            'photo' => $formData['photo'],
-            'serie_bac' => $formData['serie_bac'],
-            'annee_bac' => $formData['annee_bac'],
-            'scan_bac' => $formData['scan_bac'],
+            'nom' => $data['nom'],
+            'prenom' => $data['prenom'],
+            'nom_ar' => $data['nom_ar'] ?? '',
+            'prenom_ar' => $data['prenom_ar'] ?? '',
+            'CNE' => $data['CNE'],
+            'CIN' => $data['CIN'],
+            'email' => $data['email'],
+            'date_naissance' => $data['date_naissance'],
+            'ville_naissance' => $data['ville_naissance'],
+            'ville_naissance_ar' => $data['ville_naissance_ar'] ?? '',
+            'province' => $data['province'],
+            'pay_naissance' => $data['pay_naissance'],
+            'nationalite' => $data['nationalite'],
+            'sexe' => $data['sex'] === 'Femme' ? 'F' : 'M',
+            'telephone_mob' => $data['telephone_mob'],
+            'telephone_fix' => $data['telephone_fix'] ?? null,
+            'adresse' => $data['adresse'],
+            'ville' => $data['ville'],
+            'pays' => $data['pays'],
+            'CV' => $data['CV'],
+            'demande' => $data['demande'],
+            'scan_cartid' => $data['scan_cartid'],
+            'photo' => $data['photo'],
+            'serie_bac' => $data['serie_bac'],
+            'annee_bac' => $data['annee_bac'],
+            'scan_bac' => $data['scan_bac'],
         ]);
 
-        Log::info('Données complètes du formulaire dans saveCandidat:', $formData);
-        $inscription = Inscription::create([
-            'formation_id' => $formData['titre_id'],
+        Diplome::create([
+            'candidat_id' => $candidat->id,
+            'type_diplome_bac_2' => $data['type_diplome_bac_2'],
+            'annee_diplome_bac_2' => $data['annee_diplome_bac_2'],
+            'filiere_diplome_bac_2' => $data['filiere_diplome_bac_2'],
+            'etablissement_bac_2' => $data['etablissement_bac_2'],
+            'scan_bac_2' => $data['scan_bac_2'],
+            'type_diplome_bac_3' => $data['type_diplome_bac_3'] ?? null,
+            'annee_diplome_bac_3' => $data['annee_diplome_bac_3'] ?? null,
+            'filiere_diplome_bac_3' => $data['filiere_diplome_bac_3'] ?? null,
+            'etablissement_bac_3' => $data['etablissement_bac_3'] ?? null,
+            'scan_bac_3' => $data['scan_bac_3'] ?? null,
+        ]);
+
+        $champs = [
+            'stages' => ['fonction', 'etablissement', 'periode', 'secteur_activite', 'description', 'attestation'],
+            'experiences' => ['fonction', 'etablissement', 'periode', 'secteur_activite', 'description', 'attestation'],
+            'attestations' => ['type_attestation', 'description', 'attestation'],
+        ];
+        $modeles = ['stages' => Stage::class, 'experiences' => Experience::class, 'attestations' => Attestation::class];
+        foreach ($champs as $liste => $cles) {
+            foreach ($data[$liste] ?? [] as $entree) {
+                $modeles[$liste]::create(['candidat_id' => $candidat->id] + collect($cles)->mapWithKeys(fn ($c) => [$c => $entree[$c] ?? null])->all());
+            }
+        }
+
+        return Inscription::create([
+            'formation_id' => $data['titre_id'],
             'candidat_id' => $candidat->id,
             'annee' => now()->format('Y-m-d'),
-        
         ]);
-       $candidatName = $candidat->prenom . ' ' . $candidat->nom;
-        $candidatEmail = $candidat->email;
-        $personalInfo = [
-            'nom' => $formData['nom'],
-            'prenom' => $formData['prenom'],
-            'CNE' => $formData['CNE'],
-            'CIN' => $formData['CIN'],
-            'email' => $formData['email'],
-            'telephone' => $formData['telephone_mob'],
-            'date_naissance' => $formData['date_naissance'],
-            'ville_naissance' => $formData['ville_naissance'],
-            'nationalite' => $formData['nationalite'],
-            'sex' => $formData['sex'],
-            'adresse' => $formData['adresse'],
-            'ville' => $formData['ville'],
-            'pays' => $formData['pays'],
-        ];
+    }
 
-        $diplomas = [];
-        $diplomas[] = [
-            'type' => 'Baccalauréat',
-            'filiere' => $formData['serie_bac'],
-            'annee' => $formData['annee_bac'],
-            'etablissement' => 'Non spécifié',
-        ];
+    private function envoyerConfirmation(Inscription $inscription): void
+    {
+        $inscription->load('candidat.diplomes', 'candidat.stages', 'candidat.experiences', 'candidat.attestations', 'formation');
+        $c = $inscription->candidat;
+        $d = $c->diplomes->first();
 
-
-
-
-
-        if (!empty($formData['diplomes']) && is_array($formData['diplomes'])) {
-            $mergedDiplome = [];
-            foreach ($formData['diplomes'] as $diplome) {
-                $mergedDiplome = array_merge($mergedDiplome, array_filter($diplome, fn($value) => !is_null($value) && trim($value) !== ''));
-            }
-
-            if (!isset($mergedDiplome['type_diplome_bac_2']) || empty(trim($mergedDiplome['type_diplome_bac_2'])) ||
-                !isset($mergedDiplome['annee_diplome_bac_2']) || empty(trim($mergedDiplome['annee_diplome_bac_2'])) ||
-                !isset($mergedDiplome['filiere_diplome_bac_2']) || empty(trim($mergedDiplome['filiere_diplome_bac_2'])) ||
-                !isset($mergedDiplome['etablissement_bac_2']) || empty(trim($mergedDiplome['etablissement_bac_2'])) ||
-                !isset($mergedDiplome['scan_bac_2']) || empty(trim($mergedDiplome['scan_bac_2']))) {
-                Log::error('Les informations obligatoires du Bac+2 sont manquantes.', $mergedDiplome);
-                throw new \Exception('Les informations obligatoires du Bac+2 sont incomplètes.');
-            }
-            $diplomas[] = [
-                'type' => $mergedDiplome['type_diplome_bac_2'],
-                'filiere' => $mergedDiplome['filiere_diplome_bac_2'],
-                'annee' => $mergedDiplome['annee_diplome_bac_2'],
-                'etablissement' => $mergedDiplome['etablissement_bac_2'],
-            ];
-            Log::info('Données du diplôme avant enregistrement', $mergedDiplome);
-            try {
-                $diplomeEntry = Diplome::create([
-                    'candidat_id' => $candidat->id,
-                    'type_diplome_bac_2' => $mergedDiplome['type_diplome_bac_2'],
-                    'annee_diplome_bac_2' => $mergedDiplome['annee_diplome_bac_2'],
-                    'filiere_diplome_bac_2' => $mergedDiplome['filiere_diplome_bac_2'],
-                    'etablissement_bac_2' => $mergedDiplome['etablissement_bac_2'],
-                    'scan_bac_2' => $mergedDiplome['scan_bac_2'],
-                    'type_diplome_bac_3' => $mergedDiplome['type_diplome_bac_3'] ?? null,
-                    'annee_diplome_bac_3' => $mergedDiplome['annee_diplome_bac_3'] ?? null,
-                    'filiere_diplome_bac_3' => $mergedDiplome['filiere_diplome_bac_3'] ?? null,
-                    'etablissement_bac_3' => $mergedDiplome['etablissement_bac_3'] ?? null,
-                    'scan_bac_3' => $mergedDiplome['scan_bac_3'] ?? null,
-                ]);
-                Log::info('Le diplôme a été enregistré avec succès', $diplomeEntry->toArray());
-            } catch (\Exception $e) {
-                Log::error("Erreur lors de l'enregistrement du diplôme", [
-                    'diplome' => $mergedDiplome,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                throw $e;
-            }
-        } else {
-            Log::error('Aucune donnée de diplômes trouvée dans formData');
-            throw new \Exception('Aucune donnée de diplômes');
-        }
-
-        if (!empty($formData['stages']) && is_array($formData['stages'])) {
-            foreach (array_slice($formData['stages'], 0, 3) as $stage) {
-                Log::info('Données du stage:', $stage);
-                Stage::create([
-                    'candidat_id' => $candidat->id,
-                    'fonction' => $stage['fonction'] ?? null,
-                    'periode' => $stage['periode'] ?? null,
-                    'attestation' => $stage['attestation'] ?? null,
-                    'etablissement' => $stage['etablissement'] ?? null,
-                    'description' => $stage['description'] ?? null,
-                    'secteur_activite' => $stage['secteur_activite'] ?? null,
-                ]);
-            }
-        } else {
-            Log::info('Aucune donnée de stages fournie dans formData');
-        }
-
- // Initialisation des champs facultatifs à des tableaux vides si non définis
-        $stages = isset($formData['stages']) && is_array($formData['stages']) ? $formData['stages'] : [];
-        $attestations = isset($formData['attestations']) && is_array($formData['attestations']) ? $formData['attestations'] : [];
-        $experiences = isset($formData['experiences']) && is_array($formData['experiences']) ? $formData['experiences'] : [];
-
-        Log::info('Données avant envoi email:', [
-            'stages' => $stages,
-            'attestations' => $attestations,
-            'experiences' => $experiences,
-        ]);
-
-
-
-
-
-
-
-
-        if (!empty($formData['attestations']) && is_array($formData['attestations'])) {
-            foreach (array_slice($formData['attestations'], 0, 3) as $attestation) {
-                Log::info('Données de l\'attestation:', $attestation);
-                Attestation::create([
-                    'candidat_id' => $candidat->id,
-                    'type_attestation' => $attestation['type_attestation'] ?? null,
-                    'description' => $attestation['description'] ?? null,
-                    'attestation' => $attestation['attestation'] ?? null,
-                ]);
-            }
-        } else {
-            Log::info('Aucune donnée d\'attestations fournie dans formData');
-        }
-
-        if (!empty($formData['experiences']) && is_array($formData['experiences'])) {
-            foreach (array_slice($formData['experiences'], 0, 3) as $experience) {
-                Log::info('Données de l\'expérience:', $experience);
-                Experience::create([
-                    'candidat_id' => $candidat->id,
-                    'fonction' => $experience['fonction'] ?? null,
-                    'secteur_activite' => $experience['secteur_activite'] ?? null,
-                    'periode' => $experience['periode'] ?? null,
-                    'etablissement' => $experience['etablissement'] ?? null,
-                    'description' => $experience['description'] ?? null,
-                    'attestation' => $experience['attestation'] ?? null,
-                ]);
-            }
-        } else {
-            Log::info('Aucune donnée d\'expériences fournie dans formData');
-        }
-
-    
-        // Préparer les données pour l'e-mail
-        $candidat = (object) [
-            'email' => $personalInfo['email'],
-            'nom' => $personalInfo['nom'] ?? '',
-            'prenom' => $personalInfo['prenom'] ?? '',
-        ];
-        $candidatName = trim($candidat->nom . ' ' . $candidat->prenom);
-        $candidatEmail = $candidat->email;
-
-        // Préparer les données de formation
-        $formation = Formation::find($formData['titre_id']);
-        $formationData = [
-            'type_formation' => $formData['type_formation'],
-            'titre' => $formation ? $formation->titre : '',
-            'date_debut' => $formation ? $formation->date_debut : '',
-            'date_fin' => $formation ? $formation->date_fin : '',
-        ];
-
-        // Préparer les données des stages pour l'email
-        $stagesForEmail = [];
-        if (!empty($stages)) {
-            foreach ($stages as $stage) {
-                if (!empty(array_filter($stage))) {
-                    $stagesForEmail[] = $stage;
-                }
+        $diplomes = [['type' => 'Baccalauréat', 'filiere' => $c->serie_bac, 'annee' => $c->annee_bac, 'etablissement' => '—']];
+        if ($d) {
+            $diplomes[] = ['type' => $d->type_diplome_bac_2, 'filiere' => $d->filiere_diplome_bac_2, 'annee' => $d->annee_diplome_bac_2, 'etablissement' => $d->etablissement_bac_2];
+            if ($d->type_diplome_bac_3) {
+                $diplomes[] = ['type' => $d->type_diplome_bac_3, 'filiere' => $d->filiere_diplome_bac_3, 'annee' => $d->annee_diplome_bac_3, 'etablissement' => $d->etablissement_bac_3];
             }
         }
 
-        // Préparer les données des expériences pour l'email
-        $experiencesForEmail = [];
-        if (!empty($experiences)) {
-            foreach ($experiences as $experience) {
-                if (!empty(array_filter($experience))) {
-                    $experiencesForEmail[] = $experience;
-                }
-            }
-        }
-
-        // Préparer les données des attestations pour l'email
-        $attestationsForEmail = [];
-        if (!empty($attestations)) {
-            foreach ($attestations as $attestation) {
-                if (!empty(array_filter($attestation))) {
-                    $attestationsForEmail[] = $attestation;
-                }
-            }
-        }
-
-        // Envoyer l'e-mail
         try {
-            Log::info('Envoi de l\'email', ['email' => $candidat->email]);
-            Mail::to($candidat->email)->send(new InscriptionConfirmation(
-                $candidatName,
-                $candidatEmail,
-                $personalInfo,
-                $formationData,
-                $diplomas,
-                $stagesForEmail,
-                $experiencesForEmail,
-                $attestationsForEmail
+            Mail::to($c->email)->send(new InscriptionConfirmation(
+                trim($c->nom . ' ' . $c->prenom),
+                $c->email,
+                [
+                    'nom' => $c->nom, 'prenom' => $c->prenom, 'CNE' => $c->CNE, 'CIN' => $c->CIN,
+                    'email' => $c->email, 'telephone' => $c->telephone_mob, 'date_naissance' => $c->date_naissance,
+                    'ville_naissance' => $c->ville_naissance, 'nationalite' => $c->nationalite,
+                    'sex' => $c->sexe === 'F' ? 'Femme' : 'Homme', 'adresse' => $c->adresse, 'ville' => $c->ville, 'pays' => $c->pays,
+                ],
+                [
+                    'type_formation' => $inscription->formation->type_formation,
+                    'titre' => $inscription->formation->titre,
+                    'date_debut' => $inscription->formation->date_debut,
+                    'date_fin' => $inscription->formation->date_fin,
+                ],
+                $diplomes,
+                $c->stages->toArray(),
+                $c->experiences->toArray(),
+                $c->attestations->toArray()
             ));
-            Log::info('Email envoyé avec succès', ['email' => $candidat->email]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // L'inscription est valable même si l'email ne part pas
-            Log::error('Erreur lors de l\'envoi de l\'email : ' . $e->getMessage());
+            Log::error('Erreur lors de l\'envoi de l\'email de confirmation : ' . $e->getMessage());
         }
-
-        return $inscription;
     }
 }

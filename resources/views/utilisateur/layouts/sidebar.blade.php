@@ -31,9 +31,9 @@
       <span class="material-symbols-rounded">admin_panel_settings</span>
       Administrateurs
     </a>
-    <a href="{{ route('candidat.form') }}" target="_blank">
+    <a href="{{ route('accueil') }}" target="_blank">
       <span class="material-symbols-rounded">open_in_new</span>
-      Voir le formulaire public
+      Voir le site public
     </a>
   </nav>
 
