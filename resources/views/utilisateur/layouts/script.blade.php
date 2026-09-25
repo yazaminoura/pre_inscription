@@ -64,4 +64,18 @@
       }
     });
   }
+
+  // Barre d'enregistrement : s'allume dès qu'un champ change, et prévient avant de quitter sans enregistrer
+  document.querySelectorAll('[data-barre-enregistrer]').forEach((barre) => {
+    const form = barre.closest('form');
+    if (!form) return;
+    let modifie = false;
+    const marquer = () => { modifie = true; barre.classList.add('modifie'); };
+    form.addEventListener('input', marquer);
+    form.addEventListener('change', marquer);
+    form.addEventListener('submit', () => { modifie = false; });
+    window.addEventListener('beforeunload', (e) => {
+      if (modifie) { e.preventDefault(); e.returnValue = ''; }
+    });
+  });
 </script>

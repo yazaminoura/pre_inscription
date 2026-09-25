@@ -61,6 +61,10 @@ Aucun compte n'est fourni par défaut. Créez le vôtre (le mot de passe vous es
 ```bash
 php artisan admin:creer
 ```
+Changer l'email ou le mot de passe d'un compte (même sans l'ancien mot de passe) :
+```bash
+php artisan admin:modifier
+```
 
 ## 📁 Structure du projet
 - **Page d'accueil** : http://localhost:8000/ (Formulaire candidats)

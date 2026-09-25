@@ -52,10 +52,7 @@
           </div>
         </div>
       </div>
-      <div class="d-flex gap-2 justify-content-end mt-4">
-        <a href="{{ route('administrateurs.index') }}" class="btn btn-light">Annuler</a>
-        <button type="submit" class="btn btn-brand"><span class="material-symbols-rounded">save</span> Enregistrer</button>
-      </div>
+      <x-barre-enregistrer :annuler="route('administrateurs.index')" />
     </form>
   </div>
 </div>

@@ -81,12 +81,10 @@
           @error('couleur')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
       </div>
-
-      <button type="submit" class="btn btn-brand w-100 justify-content-center py-2 mb-4">
-        <span class="material-symbols-rounded">save</span> Enregistrer
-      </button>
     </div>
   </div>
+
+  <x-barre-enregistrer />
 </form>
 
 {{-- En dehors du formulaire principal : un formulaire ne peut pas en contenir un autre --}}

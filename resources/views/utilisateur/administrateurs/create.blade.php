@@ -34,10 +34,7 @@
           <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" required>
         </div>
       </div>
-      <div class="d-flex gap-2 justify-content-end mt-4">
-        <a href="{{ route('administrateurs.index') }}" class="btn btn-light">Annuler</a>
-        <button type="submit" class="btn btn-brand"><span class="material-symbols-rounded">save</span> Créer le compte</button>
-      </div>
+      <x-barre-enregistrer :annuler="route('administrateurs.index')" libelle="Créer le compte" />
     </form>
   </div>
 </div>
