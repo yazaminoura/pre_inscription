@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Pièces de préinscriptions abandonnées (nécessite « php artisan schedule:run » chaque minute via cron / planificateur)
+        $schedule->command('dossiers:nettoyer')->dailyAt('03:00');
     }
 
     /**
