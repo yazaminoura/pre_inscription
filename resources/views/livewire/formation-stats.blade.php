@@ -14,11 +14,11 @@
     @endforeach
   </div>
 
-  <div class="row g-3">
+  <div class="row g-3 align-items-start">
     @forelse ($formations as $formation)
       @php $repartition = $parStatut[$formation->id] ?? collect(); $total = $formation->inscriptions_count; @endphp
       <div class="col-lg-6">
-        <div class="panel h-100">
+        <div class="panel">
           <div class="panel-body">
             <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
               <div style="min-width: 0;">
@@ -31,27 +31,7 @@
               </div>
             </div>
 
-            <div class="progress progress-thin mb-3" style="height: 12px;">
-              @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
-                @php $n = $repartition[$cle] ?? 0; @endphp
-                @if ($n)
-                  <div class="progress-bar" style="width: {{ $n * 100 / $total }}%; background: {{ $couleur }}; border-radius: 0;" title="{{ $libelle }} : {{ $n }}"></div>
-                @endif
-              @endforeach
-            </div>
-
-            {{-- Compteurs par statut : une tuile chacun, cliquable vers la liste filtrée --}}
-            <div class="statut-grille mb-3">
-              @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
-                @php $n = $repartition[$cle] ?? 0; @endphp
-                <a href="{{ route('candidats.index', ['formation' => $formation->id, 'statut' => $cle]) }}" class="statut-tuile {{ $n ? '' : 'vide' }}">
-                  <span class="statut-tuile-n">{{ $n }}</span>
-                  <span class="statut-tuile-libelle"><span class="statut-point" style="background: {{ $couleur }};"></span>{{ $libelle }}</span>
-                </a>
-              @endforeach
-            </div>
-
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center">
               <a href="{{ route('candidats.index', ['formation' => $formation->id]) }}" class="btn btn-sm btn-light">
                 <span class="material-symbols-rounded">list</span> Candidatures
               </a>
@@ -60,6 +40,23 @@
                   <span class="material-symbols-rounded">download</span> Export Excel
                 </a>
               @endif
+              {{-- Affiche / masque le détail par statut --}}
+              <button type="button" class="btn-detail ms-auto" aria-expanded="false" aria-controls="detail-{{ $formation->id }}"
+                      title="Détail par statut" aria-label="Détail par statut"
+                      onclick="const ouvert = this.getAttribute('aria-expanded') === 'true'; this.setAttribute('aria-expanded', !ouvert); document.getElementById('detail-{{ $formation->id }}').hidden = ouvert;">
+                <span class="material-symbols-rounded">expand_more</span>
+              </button>
+            </div>
+
+            {{-- Compteurs par statut : une tuile chacun, cliquable vers la liste filtrée --}}
+            <div class="statut-grille mt-3" id="detail-{{ $formation->id }}" hidden>
+              @foreach (\App\Models\Inscription::STATUTS as $cle => [$libelle, $couleur])
+                @php $n = $repartition[$cle] ?? 0; @endphp
+                <a href="{{ route('candidats.index', ['formation' => $formation->id, 'statut' => $cle]) }}" class="statut-tuile {{ $n ? '' : 'vide' }}">
+                  <span class="statut-tuile-n">{{ $n }}</span>
+                  <span class="statut-tuile-libelle"><span class="statut-point" style="background: {{ $couleur }};"></span>{{ $libelle }}</span>
+                </a>
+              @endforeach
             </div>
           </div>
         </div>

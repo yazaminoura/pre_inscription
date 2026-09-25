@@ -970,3 +970,23 @@ table.dataTable.no-footer {
 @media (max-width: 575.98px) {
     .statut-grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+.statut-grille[hidden] { display: none; }
+
+/* Bouton icône qui déplie le détail par statut */
+.btn-detail {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+}
+.btn-detail:hover { border-color: var(--brand-100); background: var(--brand-50); color: var(--brand); }
+.btn-detail .material-symbols-rounded { transition: transform .2s; }
+.btn-detail[aria-expanded="true"] { background: var(--brand-50); border-color: var(--brand-100); color: var(--brand); }
+.btn-detail[aria-expanded="true"] .material-symbols-rounded { transform: rotate(180deg); }
