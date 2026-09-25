@@ -1,4 +1,4 @@
-#  Installation Rapide – Système de Préinscription FST
+#  Installation Rapide – Système de Préinscription
 
 ## Installation Manuelle
 
@@ -23,7 +23,7 @@ cp .env.example .env
 # Générer la clé de l’application
 php artisan key:generate
 
-# Créer la base de données (ex. : preinscription_fsdm)
+# Créer la base de données (ex. : preinscription)
 
 # Lancer les migrations
 php artisan migrate
@@ -44,15 +44,22 @@ Accès : **http://localhost:8000**
 
 ---
 
-## 🔐 Compte Admin (par défaut)
-- Email : `adminfst20252@fsdm.ma`
-- Mot de passe : `fst11231123`
+## 🔐 Compte Admin
+Aucun compte n'est fourni par défaut. Créez le vôtre (le mot de passe vous est demandé) :
+```bash
+php artisan admin:creer
+```
 
 ---
 
 ## 📁 Pages Importantes
 - Formulaire Candidats : `/`
 - Interface Admin : `/dashboard`
+
+---
+
+## 🚀 Mise en production et sauvegardes
+Voir `GUIDE_INSTALLATION.md` : `APP_DEBUG=false`, tâches planifiées et sauvegarde quotidienne.
 
 ---
 
@@ -76,4 +83,4 @@ npm run build
 ---
 
 ## 💬 Besoin d’aide ?
-Consultez le fichier `README.md` ou contactez le support.
+Consultez le fichier `GUIDE_INSTALLATION.md`.

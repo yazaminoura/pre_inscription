@@ -243,6 +243,19 @@ return [
     "Contacter l'établissement" => ['Contact the institution', 'التواصل مع المؤسسة'],
     'Aucun dossier ne correspond à cette référence et cet email.' => ['No application matches this reference and email.', 'لا يوجد أي ملف يطابق هذا المرجع وهذا البريد الإلكتروني.'],
 
+    // Pages d'erreur
+    "Retour à l'accueil" => ['Back to home', 'العودة إلى الصفحة الرئيسية'],
+    'Accès refusé' => ['Access denied', 'الدخول مرفوض'],
+    "Vous n'avez pas l'autorisation d'ouvrir cette page." => ['You are not allowed to open this page.', 'ليس لديك إذن لفتح هذه الصفحة.'],
+    'Page expirée' => ['Page expired', 'انتهت صلاحية الصفحة'],
+    'La page est restée ouverte trop longtemps. Revenez en arrière, actualisez la page puis renvoyez le formulaire.' => ['The page was left open too long. Go back, refresh the page and submit the form again.', 'بقيت الصفحة مفتوحة لمدة طويلة. ارجع إلى الخلف، حدّث الصفحة ثم أعد إرسال الاستمارة.'],
+    'Trop de tentatives' => ['Too many attempts', 'محاولات كثيرة جدًا'],
+    'Merci de patienter une minute avant de réessayer.' => ['Please wait a minute before trying again.', 'المرجو الانتظار دقيقة قبل إعادة المحاولة.'],
+    'Une erreur est survenue' => ['Something went wrong', 'حدث خطأ'],
+    'Le problème a été enregistré. Merci de réessayer dans quelques instants.' => ['The problem has been logged. Please try again in a few moments.', 'تم تسجيل المشكلة. المرجو إعادة المحاولة بعد لحظات.'],
+    'Site en maintenance' => ['Site under maintenance', 'الموقع قيد الصيانة'],
+    'Le site est en cours de mise à jour. Merci de revenir dans quelques minutes.' => ['The site is being updated. Please come back in a few minutes.', 'الموقع قيد التحديث. المرجو العودة بعد بضع دقائق.'],
+
     // Statuts et messages
     'En attente' => ['Pending', 'في الانتظار'],
     "En cours d'étude" => ['Under review', 'قيد الدراسة'],

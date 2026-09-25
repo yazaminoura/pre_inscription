@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         // Pièces de préinscriptions abandonnées (nécessite « php artisan schedule:run » chaque minute via cron / planificateur)
         $schedule->command('dossiers:nettoyer')->dailyAt('03:00');
+        $schedule->command('sauvegarde:creer')->dailyAt('02:00');
     }
 
     /**

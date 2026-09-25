@@ -2,6 +2,13 @@
 @section('title', 'Tableau de bord')
 
 @section('content')
+{{-- APP_DEBUG oublié sur un serveur en ligne : les erreurs montreraient le code et les réglages aux visiteurs --}}
+@if (config('app.debug') && !in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1']))
+  <div class="alert alert-danger d-flex gap-2 align-items-center">
+    <span class="material-symbols-rounded">warning</span>
+    <div><strong>Mode débogage activé.</strong> Mettez <code>APP_DEBUG=false</code> dans le fichier <code>.env</code> du serveur, puis <code>php artisan config:cache</code>.</div>
+  </div>
+@endif
 <div class="page-head">
   <div>
     <h2>Bonjour {{ strtok(Auth::user()->name, ' ') }} 👋</h2>
