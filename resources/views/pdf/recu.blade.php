@@ -11,7 +11,6 @@
         // toBase() : une liste de stages vide resterait une collection Eloquent et merge() planterait
         $experiences = $candidat->stages->toBase()->map(fn ($s) => [__('Stage'), $s])
             ->merge($candidat->experiences->toBase()->map(fn ($e) => [__('Expérience'), $e]));
-        [$fondStatut, $texteStatut] = \App\Models\Inscription::PASTILLES[$inscription->statut] ?? ['#F1F5F9', '#334155'];
         $adresseEtab = collect([config('etablissement.adresse'), config('etablissement.ville'), config('etablissement.pays')])->filter()->implode(', ');
         $contactEtab = collect([config('etablissement.telephone'), config('etablissement.email'), config('etablissement.site')])->filter()->implode('   ·   ');
     @endphp
@@ -48,7 +47,6 @@
         .tab tr:last-child td { border-bottom: 0; }
         .ok { color: #166534; font-weight: bold; }
         .non { color: #94a3b8; }
-        .statut { display: inline-block; padding: 3px 11px; border-radius: 10px; font-weight: bold; background: {{ $fondStatut }}; color: {{ $texteStatut }}; }
 
         .note { margin-top: 4px; padding: 9px 12px; border-left: 3px solid {{ $c }}; background: #f8fafc; font-size: 8.5px; color: #475569; }
 
@@ -174,47 +172,28 @@
         </div>
     @endif
 
-    {{-- Pièces jointes + suivi, côte à côte --}}
-    <table>
-        <tr>
-            <td style="width: 58%; vertical-align: top; padding-right: 6px;">
-                <div class="bloc">
-                    <div class="bloc-titre">{{ __('Pièces jointes') }}</div>
-                    <div class="bloc-corps">
-                        <table class="tab">
-                            @foreach (collect([
-                                [__('Curriculum vitae (CV)'), $candidat->CV],
-                                [__('Lettre de demande'), $candidat->demande],
-                                [__("Pièce d'identité"), $candidat->scan_cartid],
-                                [__("Photo d'identité"), $candidat->photo],
-                                [__('Scan du baccalauréat'), $candidat->scan_bac],
-                                [__('Diplômes'), $d?->scan_bac_2 || $d?->scan_bac_3],
-                            ])->chunk(2) as $paire)
-                                <tr>
-                                    @foreach ($paire as [$piece, $fournie])
-                                        <td>{{ $piece }}</td><td style="width: 8%; text-align: right;" class="{{ $fournie ? 'ok' : 'non' }}">{{ $oui($fournie) }}</td>
-                                    @endforeach
-                                </tr>
-                            @endforeach
-                        </table>
-                    </div>
-                </div>
-            </td>
-            <td style="vertical-align: top; padding-left: 6px;">
-                <div class="bloc">
-                    <div class="bloc-titre">{{ __('Suivi') }}</div>
-                    <div class="bloc-corps">
-                        <div style="color: #64748b; font-size: 8.5px;">{{ __('Statut') }}</div>
-                        <div style="margin: 3px 0 9px;"><span class="statut">{{ __($inscription->statut_label) }}</span></div>
-                        <div style="color: #64748b; font-size: 8.5px;">{{ __('Déposée le') }}</div>
-                        <div style="font-weight: bold; margin: 2px 0 9px;">{{ $inscription->created_at?->format('d/m/Y H:i') }}</div>
-                        <div style="color: #64748b; font-size: 8.5px;">{{ __('Suivre mon dossier') }}</div>
-                        <div style="font-size: 8px; margin-top: 2px; color: {{ $c }};">{{ route('suivi', ['reference' => $inscription->reference]) }}</div>
-                    </div>
-                </div>
-            </td>
-        </tr>
-    </table>
+    {{-- Pièces jointes --}}
+    <div class="bloc">
+        <div class="bloc-titre">{{ __('Pièces jointes') }}</div>
+        <div class="bloc-corps">
+            <table class="tab">
+                @foreach (collect([
+                    [__('Curriculum vitae (CV)'), $candidat->CV],
+                    [__('Lettre de demande'), $candidat->demande],
+                    [__("Pièce d'identité"), $candidat->scan_cartid],
+                    [__("Photo d'identité"), $candidat->photo],
+                    [__('Scan du baccalauréat'), $candidat->scan_bac],
+                    [__('Diplômes'), $d?->scan_bac_2 || $d?->scan_bac_3],
+                ])->chunk(2) as $paire)
+                    <tr>
+                        @foreach ($paire as [$piece, $fournie])
+                            <td>{{ $piece }}</td><td style="width: 8%; text-align: right;" class="{{ $fournie ? 'ok' : 'non' }}">{{ $oui($fournie) }}</td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </table>
+        </div>
+    </div>
 
     <div class="note">
         {{ __("Ce document récapitule la préinscription déposée en ligne. Il ne vaut pas admission : la décision de l'établissement est communiquée par email et visible sur la page « Suivre mon dossier ».") }}
