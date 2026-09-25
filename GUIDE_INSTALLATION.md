@@ -57,7 +57,7 @@ php artisan serve
 Le projet sera accessible à : **http://localhost:8000**
 
 ## 🔑 Compte Administrateur
-Aucun compte n'est fourni par défaut. Créez le vôtre (le mot de passe vous est demandé, il n'est jamais écrit dans le code) :
+Le plus simple : renseignez `ADMIN_EMAIL` et `ADMIN_PASSWORD` dans `.env` avant `php artisan migrate`, le compte est créé automatiquement. Sinon, aucun compte n'est fourni par défaut. Créez le vôtre (le mot de passe vous est demandé, il n'est jamais écrit dans le code) :
 ```bash
 php artisan admin:creer
 ```

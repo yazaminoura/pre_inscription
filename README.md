@@ -45,7 +45,7 @@ Accès : **http://localhost:8000**
 ---
 
 ## 🔐 Compte Admin
-Aucun compte n'est fourni par défaut. Créez le vôtre (le mot de passe vous est demandé) :
+Le plus simple : renseignez `ADMIN_EMAIL` et `ADMIN_PASSWORD` dans `.env` avant `php artisan migrate`, le compte est créé automatiquement. Sinon, aucun compte n'est fourni par défaut. Créez le vôtre (le mot de passe vous est demandé) :
 ```bash
 php artisan admin:creer
 ```
