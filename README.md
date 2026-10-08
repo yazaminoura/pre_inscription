@@ -1,5 +1,7 @@
 #  Installation Rapide – Système de Préinscription
 
+🎬 **Démo vidéo (1 min 30)** : [docs/preinscription_demo.mp4](docs/preinscription_demo.mp4)
+
 ## Installation Manuelle
 
 ### ✅ Prérequis
